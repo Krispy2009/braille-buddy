@@ -25,6 +25,7 @@ const Cell: React.FC = () => {
     const newCells: CellType = { ...cells };
     newCells[dot] = !cells[dot];
     setCells(newCells);
+    console.log(newCells);
   };
 
   return (
@@ -46,13 +47,14 @@ type DotProps = {
   onClick: (dot: keyof CellType) => void;
 };
 
-const Dot = styled(({ cellId, isOn, className }: DotProps) => {
+const Dot = styled(({ cellId, isOn, className, onClick }: DotProps) => {
   return (
     <span
       className={className}
       style={{ backgroundColor: `${isOn ? "black" : "white"}` }}
+      onClick={(event) => onClick(cellId)}
     >
-      {cellId}
+      {cellId[3]}
     </span>
   );
 })`
