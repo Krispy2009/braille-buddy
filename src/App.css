@@ -30,3 +30,18 @@
   width: 60px;
   margin: auto;
 }
+.dot1,
+.dot4 {
+  grid-row-start: 1;
+  grid-row-end: 2;
+}
+.dot2,
+.dot5 {
+  grid-row-start: 2;
+  grid-row-end: 3;
+}
+.dot3,
+.dot6 {
+  grid-row-start: 3;
+  grid-row-end: 4;
+}

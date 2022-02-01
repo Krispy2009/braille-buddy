@@ -28,14 +28,48 @@ const Cell: React.FC = () => {
     console.log(newCells);
   };
 
+  const translateCellToLetter = () => {};
+
   return (
     <div className="cell">
-      <Dot cellId={"dot1"} isOn={cells.dot1} onClick={onClick} />
-      <Dot cellId={"dot2"} isOn={cells.dot2} onClick={onClick} />
-      <Dot cellId={"dot3"} isOn={cells.dot3} onClick={onClick} />
-      <Dot cellId={"dot4"} isOn={cells.dot4} onClick={onClick} />
-      <Dot cellId={"dot5"} isOn={cells.dot5} onClick={onClick} />
-      <Dot cellId={"dot6"} isOn={cells.dot6} onClick={onClick} />
+      <Dot
+        className={"dot1"}
+        cellId={"dot1"}
+        isOn={cells.dot1}
+        onClick={onClick}
+      />
+      <Dot
+        className={"dot2"}
+        cellId={"dot2"}
+        isOn={cells.dot2}
+        onClick={onClick}
+      />
+
+      <Dot
+        className={"dot3"}
+        cellId={"dot3"}
+        isOn={cells.dot3}
+        onClick={onClick}
+      />
+      <Dot
+        className={"dot4"}
+        cellId={"dot4"}
+        isOn={cells.dot4}
+        onClick={onClick}
+      />
+
+      <Dot
+        className={"dot5"}
+        cellId={"dot5"}
+        isOn={cells.dot5}
+        onClick={onClick}
+      />
+      <Dot
+        className={"dot6"}
+        cellId={"dot6"}
+        isOn={cells.dot6}
+        onClick={onClick}
+      />
     </div>
   );
 };
