@@ -11,15 +11,18 @@ export const Cell: React.FC = () => {
     dot5: false,
     dot6: false,
   });
-  const [letter, setLetter] = React.useState("");
+  const [letterEN, setLetterEN] = React.useState("");
+  const [letterGR, setLetterGR] = React.useState("");
 
   const onClick = (dot: keyof CellType) => {
     const newCells: CellType = { ...cells };
     newCells[dot] = !cells[dot];
     setCells(newCells);
-    const translatedLetter: string = translateCellToLetter(newCells);
+    const translatedLetterEN: string = translateCellToLetter(newCells);
+    setLetterEN(translatedLetterEN);
 
-    setLetter(translatedLetter);
+    const translatedLetterGR: string = translateCellToLetter(newCells, "gr");
+    setLetterGR(translatedLetterGR);
   };
 
   const translateCellToBitmap = (cells: CellType): string => {
@@ -31,10 +34,16 @@ export const Cell: React.FC = () => {
     return bitmap;
   };
 
-  const translateCellToLetter = (cells: CellType): string => {
+  const translateCellToLetter = (
+    cells: CellType,
+    language: string = "en"
+  ): string => {
     const bitmap: string = translateCellToBitmap(cells);
-
-    return (positions.english as any)[bitmap];
+    if (language === "en") {
+      return (positions.english as any)[bitmap];
+    } else {
+      return (positions.greek as any)[bitmap];
+    }
   };
 
   return (
@@ -79,7 +88,12 @@ export const Cell: React.FC = () => {
           onClick={onClick}
         />
       </div>
-      <span>Translated Letter: {letter}</span>
+      <div>
+        English: <span className={"TranslatedLetter"}>{letterEN}</span>
+      </div>
+      <div>
+        Greek: <span className={"TranslatedLetter"}>{letterGR}</span>
+      </div>
     </div>
   );
 };
