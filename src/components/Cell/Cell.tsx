@@ -11,6 +11,7 @@ export const Cell: React.FC = () => {
     dot5: false,
     dot6: false,
   });
+
   const [letterEN, setLetterEN] = React.useState("");
   const [letterGR, setLetterGR] = React.useState("");
 
@@ -18,6 +19,7 @@ export const Cell: React.FC = () => {
     const newCells: CellType = { ...cells };
     newCells[dot] = !cells[dot];
     setCells(newCells);
+
     const translatedLetterEN: string = translateCellToLetter(newCells);
     setLetterEN(translatedLetterEN);
 
@@ -88,11 +90,13 @@ export const Cell: React.FC = () => {
           onClick={onClick}
         />
       </div>
-      <div>
-        English: <span className={"TranslatedLetter"}>{letterEN}</span>
-      </div>
-      <div>
-        Greek: <span className={"TranslatedLetter"}>{letterGR}</span>
+      <div className={"results"}>
+        <div className={"result"}>
+          <span className={"TranslatedLetter"}>{letterEN}</span> English
+        </div>
+        <div className={"result"}>
+          <span className={"TranslatedLetter"}>{letterGR} </span> Greek
+        </div>
       </div>
     </div>
   );

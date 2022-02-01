@@ -48,4 +48,19 @@
 
 .TranslatedLetter {
   font-size: 3em;
+  display: block;
+  min-height: 70px;
+}
+
+.results {
+  padding-top: 25px;
+  display: flex;
+  flex-direction: row;
+}
+
+.result {
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 100px;
+  height: 100px;
 }

@@ -3,7 +3,7 @@ import { Cell } from "../Cell/Cell";
 
 export const Board = () => (
   <div>
-    <h2> A braille cell</h2>
+    <h2> braille cell</h2>
     <Cell />
   </div>
 );
