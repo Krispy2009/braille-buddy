@@ -3,29 +3,59 @@ import { Cell } from "../Cell/Cell";
 import { CellType } from "../Dot/Dot";
 import mappings from "./mappings.json";
 
+const CLEAR_CELL = {
+  dot1: false,
+  dot2: false,
+  dot3: false,
+  dot4: false,
+  dot5: false,
+  dot6: false,
+};
+
 export const Board = () => {
-  const [positions, setCells] = React.useState({
-    dot1: false,
-    dot2: false,
-    dot3: false,
-    dot4: false,
-    dot5: false,
-    dot6: false,
-  });
+  const [positions, setPositions] = React.useState(CLEAR_CELL);
 
   const [letterEN, setLetterEN] = React.useState("");
   const [letterGR, setLetterGR] = React.useState("");
 
-  const onClick = (dot: keyof CellType) => {
+  const updatePositions = (dot: keyof CellType) => {
     const newCells: CellType = { ...positions };
     newCells[dot] = !positions[dot];
-    setCells(newCells);
+    setPositions(newCells);
+    return newCells;
+  };
 
+  const translate = (newCells: CellType) => {
     const translatedLetterEN: string = translateCellToLetter(newCells);
     setLetterEN(translatedLetterEN);
 
     const translatedLetterGR: string = translateCellToLetter(newCells, "gr");
     setLetterGR(translatedLetterGR);
+  };
+
+  React.useEffect(() => {
+    let keyPressedDot: keyof CellType;
+    const onKeyUp = (event: any) => {
+      if ([1, 2, 3, 4, 5, 6].includes(parseInt(event.key))) {
+        keyPressedDot = `dot${event.key}` as keyof CellType;
+        const newCells = updatePositions(keyPressedDot);
+        translate(newCells);
+      }
+      if (event.key === "Escape") {
+        setPositions(CLEAR_CELL);
+        translate(CLEAR_CELL);
+      }
+    };
+    document.body.addEventListener("keyup", onKeyUp);
+
+    return () => {
+      document.body.removeEventListener("keyup", onKeyUp);
+    };
+  }, [positions]);
+
+  const onClick = (dot: keyof CellType) => {
+    const newCells = updatePositions(dot);
+    translate(newCells);
   };
 
   const translateCellToBitmap = (cells: CellType): string => {
