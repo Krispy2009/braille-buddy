@@ -1,3 +1,8 @@
+# Braille Buddy
+An interactive way to practice the braille alphabet. It has output for English🇬🇧 and Greek🇬🇷 characters
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
