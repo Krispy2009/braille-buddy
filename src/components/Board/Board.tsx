@@ -69,9 +69,13 @@ const describeCell = (
   if (raised.length === 0) {
     return "Cell is empty.";
   }
-  return `Dots ${raised.join(", ")} raised. English: ${
-    english ?? "no letter"
-  }. Greek: ${greek ? speakGreek(greek) : "no letter"}.`;
+  // Never end a sentence on a single letter: screen readers read "w." as an
+  // abbreviation and run straight into the next sentence without a pause.
+  const englishPart = english ? `${english} in English.` : "No English letter.";
+  const greekPart = greek
+    ? `${speakGreek(greek)} in Greek.`
+    : "No Greek letter.";
+  return `Dots ${raised.join(", ")} raised. ${englishPart} ${greekPart}`;
 };
 
 type ResultProps = {
