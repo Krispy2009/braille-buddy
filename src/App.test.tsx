@@ -30,3 +30,18 @@ test('keyboard toggles dots and Escape clears the cell', async () => {
   await user.keyboard('{Escape}');
   expect(screen.queryByText('a')).not.toBeInTheDocument();
 });
+
+test('Backspace and the clear button reset the cell', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.keyboard('1');
+  expect(screen.getByText('a')).toBeInTheDocument();
+  await user.keyboard('{Backspace}');
+  expect(screen.queryByText('a')).not.toBeInTheDocument();
+
+  await user.keyboard('1');
+  expect(screen.getByText('a')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Clear' }));
+  expect(screen.queryByText('a')).not.toBeInTheDocument();
+});

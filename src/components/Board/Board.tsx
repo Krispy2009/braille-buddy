@@ -35,13 +35,15 @@ export const Board = () => {
     setPositions((current) => ({ ...current, [dot]: !current[dot] }));
   }, []);
 
+  const clearCell = React.useCallback(() => setPositions(CLEAR_CELL), []);
+
   React.useEffect(() => {
     const onKeyUp = (event: KeyboardEvent) => {
       if (/^[1-6]$/.test(event.key)) {
         toggleDot(`dot${event.key}` as keyof CellType);
       }
-      if (event.key === "Escape") {
-        setPositions(CLEAR_CELL);
+      if (event.key === "Escape" || event.key === "Backspace") {
+        clearCell();
       }
     };
     document.body.addEventListener("keyup", onKeyUp);
@@ -49,12 +51,36 @@ export const Board = () => {
     return () => {
       document.body.removeEventListener("keyup", onKeyUp);
     };
-  }, [toggleDot]);
+  }, [toggleDot, clearCell]);
 
   return (
     <div>
       <h2> braille cell</h2>
       <Cell positions={positions} onClick={toggleDot} />
+      <button
+        type="button"
+        className="clear-button"
+        onClick={clearCell}
+        aria-label="Clear"
+        title="Clear (Backspace)"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" />
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        </svg>
+      </button>
       <div className={"results"}>
         <div className={"result"}>
           <span className={"TranslatedLetter"}>{letterEN}</span> English
