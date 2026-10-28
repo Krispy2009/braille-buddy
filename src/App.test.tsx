@@ -69,7 +69,7 @@ test('announces the result in a status region', async () => {
   expect(status).toHaveTextContent('Cell is empty.');
 
   await user.keyboard('145');
-  expect(status).toHaveTextContent('Dots 1, 4, 5 raised. English: d. Greek: δ.');
+  expect(status).toHaveTextContent('Dots 1, 4, 5 raised. d in English. delta in Greek.');
 
   await user.keyboard('{Backspace}');
   expect(status).toHaveTextContent('Cell is empty.');
@@ -108,4 +108,26 @@ test('switches theme from the theme radios and remembers the choice', async () =
   await user.click(screen.getByRole('radio', { name: 'High visibility' }));
   expect(document.documentElement.dataset.theme).toBe('high-visibility');
   expect(screen.getByRole('radio', { name: 'High visibility' })).toBeChecked();
+});
+
+test('announces Greek letters and diphthongs by name', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.keyboard('146');
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Dots 1, 4, 6 raised. No English letter. epsilon iota in Greek.'
+  );
+  expect(screen.getByText('ει')).toHaveAttribute('aria-hidden', 'true');
+  expect(screen.getByText('epsilon iota')).toBeInTheDocument();
+});
+
+test('never ends an announcement sentence on a single letter', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.keyboard('2456');
+  const text = screen.getByRole('status').textContent ?? '';
+  expect(text).toBe('Dots 2, 4, 5, 6 raised. w in English. No Greek letter.');
+  expect(text).not.toMatch(/(^|\s)\S\./);
 });
