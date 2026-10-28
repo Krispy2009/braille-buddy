@@ -19,28 +19,25 @@ const DotButton = styled.button<{ $on: boolean }>`
   width: 4.5rem;
   height: 4.5rem;
   border-radius: 50%;
-  border: 0;
   padding: 0;
   font: inherit;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: var(--label-weight);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease;
 
-  /* Off: a dimple pressed into the plate. On: a raised, pale dot. */
-  color: ${({ $on }) => ($on ? "#1c2745" : "#a9b4d0")};
-  background: ${({ $on }) =>
-    $on
-      ? "radial-gradient(circle at 35% 30%, #fffaf0, #e9e1cc 75%)"
-      : "#0f1830"};
+  /* Off: a dimple pressed into the plate. On: a raised dot. Colors come
+     from the theme tokens in index.css. */
+  color: ${({ $on }) => ($on ? "var(--dot-on-fg)" : "var(--dot-off-fg)")};
+  background: ${({ $on }) => ($on ? "var(--dot-on-bg)" : "var(--dot-off-bg)")};
+  border: 4px solid
+    ${({ $on }) => ($on ? "var(--dot-on-border)" : "var(--dot-off-border)")};
   box-shadow: ${({ $on }) =>
-    $on
-      ? "0 5px 10px rgba(0, 0, 0, 0.5), inset -2px -3px 5px rgba(0, 0, 0, 0.14)"
-      : "inset 0 4px 8px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.08)"};
-  transform: ${({ $on }) => ($on ? "translateY(-2px)" : "none")};
+    $on ? "var(--dot-on-shadow)" : "var(--dot-off-shadow)"};
+  transform: ${({ $on }) => ($on ? "translateY(var(--dot-lift))" : "none")};
 
   &:focus-visible {
-    outline: 3px solid #ffb703;
+    outline: 3px solid var(--plate-focus);
     outline-offset: 4px;
   }
 

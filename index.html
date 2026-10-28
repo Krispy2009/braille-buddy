@@ -9,6 +9,26 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>Braille Buddy</title>
+    <script>
+      // Apply the saved or system theme before first paint. Keep in sync with
+      // getInitialTheme in src/components/ThemeSwitcher/ThemeSwitcher.tsx.
+      (function () {
+        var theme;
+        try {
+          theme = localStorage.getItem("theme");
+        } catch (e) {}
+        if (!/^(light|dark|high-visibility)$/.test(theme || "")) {
+          var mq = window.matchMedia;
+          theme =
+            mq && mq("(prefers-contrast: more)").matches
+              ? "high-visibility"
+              : mq && mq("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

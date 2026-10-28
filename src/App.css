@@ -10,6 +10,7 @@
 .App h1 {
   margin: 0;
   font-size: 2rem;
+  font-weight: var(--heading-weight);
   letter-spacing: -0.01em;
 }
 
@@ -30,8 +31,8 @@
   padding: 1.75rem 2.25rem;
   border-radius: 1.5rem;
   background: var(--plate);
-  box-shadow: 0 14px 30px rgba(23, 32, 58, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--plate-border);
+  box-shadow: var(--plate-shadow);
 }
 
 .cell {
@@ -89,13 +90,13 @@ kbd {
 .result {
   padding: 0.9rem 1rem 1rem;
   background: var(--tile);
-  border: 1px solid var(--line);
+  border: var(--line-width) solid var(--line);
   border-radius: 1rem;
 }
 
 .result dt {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: var(--label-weight);
   color: var(--muted);
 }
 
@@ -112,7 +113,59 @@ kbd {
 }
 
 .letter.empty {
-  color: var(--line);
+  color: var(--empty);
+}
+
+:root[data-theme="high-visibility"] .letter {
+  font-family: var(--sans);
+  font-weight: 800;
+}
+
+:root[data-theme="high-visibility"] .help {
+  font-weight: 600;
+}
+
+/* Theme switcher: a segmented control built from native radio buttons. */
+.theme-switcher {
+  align-self: flex-end;
+  display: inline-flex;
+  margin: 0 0 1.5rem;
+  padding: 3px;
+  border: var(--line-width) solid var(--line);
+  border-radius: 999px;
+  background: var(--tile);
+}
+
+.theme-switcher label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: var(--label-weight);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.theme-switcher input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.theme-switcher label:has(input:checked) {
+  background: var(--ink);
+  color: var(--page);
+}
+
+.theme-switcher label:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
 }
 
 @media (forced-colors: active) {

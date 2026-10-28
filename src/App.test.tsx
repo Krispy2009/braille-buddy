@@ -93,3 +93,19 @@ test('ignores number keys pressed with a modifier', async () => {
     'false'
   );
 });
+
+test('switches theme from the theme radios and remembers the choice', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  const group = screen.getByRole('group', { name: 'Color theme' });
+  expect(group).toBeInTheDocument();
+
+  await user.click(screen.getByRole('radio', { name: 'Dark' }));
+  expect(document.documentElement.dataset.theme).toBe('dark');
+  expect(localStorage.getItem('theme')).toBe('dark');
+
+  await user.click(screen.getByRole('radio', { name: 'High visibility' }));
+  expect(document.documentElement.dataset.theme).toBe('high-visibility');
+  expect(screen.getByRole('radio', { name: 'High visibility' })).toBeChecked();
+});
