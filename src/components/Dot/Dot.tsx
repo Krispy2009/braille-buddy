@@ -22,7 +22,7 @@ export const Dot = styled(({ cellId, isOn, className, onClick }: DotProps) => {
     <span
       className={className}
       style={{ backgroundColor: `${isOn ? "black" : "white"}` }}
-      onClick={(event) => onClick(cellId)}
+      onClick={() => onClick(cellId)}
     >
       {cellId[3]}
     </span>
