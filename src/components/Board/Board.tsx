@@ -25,6 +25,39 @@ const translateCellToLetter = (
 ): string | undefined =>
   (mappings[language] as Record<string, string>)[translateCellToBitmap(cells)];
 
+// Screen readers without a Greek voice spell Greek characters as symbols
+// ("greek letter epsilon") and drop the rest of a diphthong, so we announce
+// the letter names instead: ει is read as "epsilon iota".
+const GREEK_NAMES: Record<string, string> = {
+  α: "alpha",
+  β: "beta",
+  γ: "gamma",
+  δ: "delta",
+  ε: "epsilon",
+  ζ: "zeta",
+  η: "eta",
+  θ: "theta",
+  ι: "iota",
+  κ: "kappa",
+  λ: "lambda",
+  μ: "mu",
+  ν: "nu",
+  ξ: "xi",
+  ο: "omicron",
+  π: "pi",
+  ρ: "rho",
+  σ: "sigma",
+  τ: "tau",
+  υ: "upsilon",
+  φ: "phi",
+  χ: "chi",
+  ψ: "psi",
+  ω: "omega",
+};
+
+const speakGreek = (letters: string): string =>
+  [...letters].map((letter) => GREEK_NAMES[letter] ?? letter).join(" ");
+
 const describeCell = (
   cells: CellType,
   english?: string,
@@ -38,21 +71,31 @@ const describeCell = (
   }
   return `Dots ${raised.join(", ")} raised. English: ${
     english ?? "no letter"
-  }. Greek: ${greek ?? "no letter"}.`;
+  }. Greek: ${greek ? speakGreek(greek) : "no letter"}.`;
 };
 
 type ResultProps = {
   label: string;
   lang: string;
   letter?: string;
+  spoken?: string;
 };
 
-const Result = ({ label, lang, letter }: ResultProps) => (
+const Result = ({ label, lang, letter, spoken }: ResultProps) => (
   <div className="result">
     <dt>{label}</dt>
-    <dd lang={lang}>
-      {letter ? (
-        <span className="letter">{letter}</span>
+    <dd>
+      {letter && spoken ? (
+        <>
+          <span className="letter" lang={lang} aria-hidden="true">
+            {letter}
+          </span>
+          <span className="sr-only">{spoken}</span>
+        </>
+      ) : letter ? (
+        <span className="letter" lang={lang}>
+          {letter}
+        </span>
       ) : (
         <>
           <span className="letter empty" aria-hidden="true">
@@ -105,7 +148,12 @@ export const Board = () => {
 
       <dl className="results" aria-label="Translation">
         <Result label="English" lang="en" letter={letterEN} />
-        <Result label="Greek" lang="el" letter={letterGR} />
+        <Result
+          label="Greek"
+          lang="el"
+          letter={letterGR}
+          spoken={letterGR && speakGreek(letterGR)}
+        />
       </dl>
 
       <button type="button" className="clear-button" onClick={clearCell}>
