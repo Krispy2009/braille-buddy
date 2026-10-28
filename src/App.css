@@ -64,3 +64,19 @@
   width: 100px;
   height: 100px;
 }
+
+.clear-button {
+  display: block;
+  margin: 16px auto 0;
+  padding: 6px 10px;
+  color: #282c34;
+  background: transparent;
+  border: 1px solid #282c34;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.clear-button:hover {
+  background: #282c34;
+  color: #eaeaea;
+}
