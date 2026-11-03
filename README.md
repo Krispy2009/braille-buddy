@@ -2,7 +2,7 @@
 
 > Raise the dots, see the letter. A small, accessible way to learn the braille alphabet in English and Greek.
 
-**[Try it live →](https://braille-buddy.krispy2009.workers.dev/)**
+**[Try it live →](https://braille-buddy.krispytech.workers.dev/)**
 
 ## What it does
 
