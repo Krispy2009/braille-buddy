@@ -4,12 +4,19 @@ import { ThemeSwitcher } from "./components/ThemeSwitcher/ThemeSwitcher";
 
 function App() {
   return (
-    <main className="App">
-      <ThemeSwitcher />
-      <h1>Braille Buddy</h1>
-      <p className="intro">Raise dots to see which letter they make.</p>
-      <Board />
-    </main>
+    <>
+      <main className="App">
+        <ThemeSwitcher />
+        <h1>Braille Buddy</h1>
+        <p className="intro">Raise dots to see which letter they make.</p>
+        <Board />
+      </main>
+      <footer className="site-footer">
+        made with <span aria-hidden="true">❤️</span>
+        <span className="sr-only">love</span> by{" "}
+        <a href="https://kristi.cy">kristi.cy</a>
+      </footer>
+    </>
   );
 }
 

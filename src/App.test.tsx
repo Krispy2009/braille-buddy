@@ -131,3 +131,14 @@ test('never ends an announcement sentence on a single letter', async () => {
   expect(text).toBe('Dots 2, 4, 5, 6 raised. w in English. No Greek letter.');
   expect(text).not.toMatch(/(^|\s)\S\./);
 });
+
+test('footer credits and links to kristi.cy', () => {
+  render(<App />);
+
+  const footer = screen.getByRole('contentinfo');
+  expect(footer).toHaveTextContent('made with');
+  expect(screen.getByRole('link', { name: 'kristi.cy' })).toHaveAttribute(
+    'href',
+    'https://kristi.cy'
+  );
+});
