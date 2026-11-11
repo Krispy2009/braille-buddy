@@ -9,7 +9,7 @@
 Two modes:
 
 - **Explore:** a six-dot braille cell you can click or type on. Raise dots and the matching English and Greek letters appear straight away.
-- **Practice:** a quiz in English or Greek. Either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
+- **Practice:** pick a course (English or Greek) and work through its lessons, a handful of letters at a time. Either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Get every letter in a lesson right twice in a row and the next lesson opens. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
 
 - **English:** all 26 letters
 - **Greek:** the 24 letters, plus 8 common letter pairs (ου, αι, ει, οι, ευ, αυ, υι, ηυ)
@@ -28,6 +28,14 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 - **Greek text is marked up** with its language
 
 Braille Buddy teaches the dot patterns. Reading braille by touch takes practice on real embossed braille.
+
+## Install it and play offline
+
+Braille Buddy can be installed from the browser (Install app, or Add to Home Screen on iOS) and works fully offline once it has been opened online once. A hand-written service worker (`src/pwa/sw.js`), generated at build time with the exact file list, caches each deploy as one version. An update is picked up the next time the app is opened online, and an open page is never reloaded.
+
+## Adding a language
+
+Each language is one file in `src/courses/`: its letters with their dots, an optional spoken name for screen readers, and its lessons. Copy `english.json`, change it, and the new course appears in Explore and Practice with no code changes. `npm test` checks every course file. The sources the current tables were checked against are in [docs/braille-sources.md](docs/braille-sources.md).
 
 ## Tech
 
