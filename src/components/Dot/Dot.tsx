@@ -1,13 +1,8 @@
 import styled from "styled-components";
 
-export type CellType = {
-  dot1: boolean;
-  dot2: boolean;
-  dot3: boolean;
-  dot4: boolean;
-  dot5: boolean;
-  dot6: boolean;
-};
+import type { CellType } from "../../game/braille";
+
+export type { CellType };
 
 type DotProps = {
   cellId: keyof CellType;

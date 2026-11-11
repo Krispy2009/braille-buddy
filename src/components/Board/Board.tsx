@@ -1,71 +1,19 @@
 import React from "react";
 import { Cell } from "../Cell/Cell";
-import { CellType } from "../Dot/Dot";
-import mappings from "./mappings.json";
-
-const CLEAR_CELL: CellType = {
-  dot1: false,
-  dot2: false,
-  dot3: false,
-  dot4: false,
-  dot5: false,
-  dot6: false,
-};
-
-type Language = keyof typeof mappings;
-
-const DOT_KEYS = Object.keys(CLEAR_CELL) as (keyof CellType)[];
-
-const translateCellToBitmap = (cells: CellType): string =>
-  DOT_KEYS.map((dot) => (cells[dot] ? "1" : "0")).join("");
-
-const translateCellToLetter = (
-  cells: CellType,
-  language: Language
-): string | undefined =>
-  (mappings[language] as Record<string, string>)[translateCellToBitmap(cells)];
-
-// Screen readers without a Greek voice spell Greek characters as symbols
-// ("greek letter epsilon") and drop the rest of a diphthong, so we announce
-// the letter names instead: ει is read as "epsilon iota".
-const GREEK_NAMES: Record<string, string> = {
-  α: "alpha",
-  β: "beta",
-  γ: "gamma",
-  δ: "delta",
-  ε: "epsilon",
-  ζ: "zeta",
-  η: "eta",
-  θ: "theta",
-  ι: "iota",
-  κ: "kappa",
-  λ: "lambda",
-  μ: "mu",
-  ν: "nu",
-  ξ: "xi",
-  ο: "omicron",
-  π: "pi",
-  ρ: "rho",
-  σ: "sigma",
-  τ: "tau",
-  υ: "upsilon",
-  φ: "phi",
-  χ: "chi",
-  ψ: "psi",
-  ω: "omega",
-};
-
-const speakGreek = (letters: string): string =>
-  [...letters].map((letter) => GREEK_NAMES[letter] ?? letter).join(" ");
+import {
+  CellType,
+  CLEAR_CELL,
+  letterForCell,
+  raisedDots,
+  speakGreek,
+} from "../../game/braille";
 
 const describeCell = (
   cells: CellType,
   english?: string,
   greek?: string
 ): string => {
-  const raised = DOT_KEYS.filter((dot) => cells[dot]).map((dot) =>
-    dot.slice(3)
-  );
+  const raised = raisedDots(cells);
   if (raised.length === 0) {
     return "Cell is empty.";
   }
@@ -115,8 +63,8 @@ const Result = ({ label, lang, letter, spoken }: ResultProps) => (
 export const Board = () => {
   const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
 
-  const letterEN = translateCellToLetter(positions, "english");
-  const letterGR = translateCellToLetter(positions, "greek");
+  const letterEN = letterForCell(positions, "english");
+  const letterGR = letterForCell(positions, "greek");
 
   const toggleDot = React.useCallback((dot: keyof CellType) => {
     setPositions((current) => ({ ...current, [dot]: !current[dot] }));
