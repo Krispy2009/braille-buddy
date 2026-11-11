@@ -7,6 +7,8 @@ type ChordPadProps = {
   ref?: React.Ref<HTMLDivElement>;
   /** Mention Enter in the instructions (practice mode). */
   canSubmit?: boolean;
+  /** Ids of text read before the instructions, such as the question. */
+  describedBy?: string;
 };
 
 const Pad = styled.div`
@@ -45,6 +47,8 @@ const Pad = styled.div`
 
 const Keys = styled.span`
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.35rem;
 
   & > span:nth-child(3) {
@@ -65,24 +69,37 @@ const KEYS = ["KeyS", "KeyD", "KeyF", "KeyJ", "KeyK", "KeyL"].map((code) => ({
   dot: CHORD_KEYS[code].slice(3),
 }));
 
+// Phones and tablets without a mouse or trackpad. A blind player may still
+// pair a Bluetooth keyboard, which no media query reveals, so the pad is
+// collapsed there rather than removed.
+const isTouchOnly = (): boolean =>
+  !!window.matchMedia?.("(pointer: coarse)").matches &&
+  !window.matchMedia("(any-pointer: fine)").matches;
+
 /**
  * A focus target for chord entry. role="application" makes NVDA and JAWS
  * switch to focus mode on their own when it is focused, so the letter keys
  * reach the page instead of being taken as quick navigation keys. It holds
  * no content to read, and Tab leaves it as usual, so nothing is trapped.
  */
-export const ChordPad = ({ ref, canSubmit = false }: ChordPadProps) => {
+export const ChordPad = ({
+  ref,
+  canSubmit = false,
+  describedBy,
+}: ChordPadProps) => {
   const helpId = React.useId();
   const [active, setActive] = React.useState(false);
+  const [collapsible] = React.useState(isTouchOnly);
+  const [open, setOpen] = React.useState(false);
 
-  return (
+  const pad = (
     <div className="chord-pad">
       <Pad
         ref={ref}
         tabIndex={0}
         role="application"
         aria-label="Braille keyboard"
-        aria-describedby={helpId}
+        aria-describedby={describedBy ? `${describedBy} ${helpId}` : helpId}
         data-active={active}
         onFocus={() => setActive(true)}
         onBlur={() => setActive(false)}
@@ -118,5 +135,19 @@ export const ChordPad = ({ ref, canSubmit = false }: ChordPadProps) => {
         Press <kbd>Tab</kbd> to leave.
       </p>
     </div>
+  );
+
+  if (!collapsible) {
+    return pad;
+  }
+  return (
+    <details
+      className="chord-pad-disclosure"
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
+      <summary>Typing on a keyboard?</summary>
+      {pad}
+    </details>
   );
 };

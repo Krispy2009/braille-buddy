@@ -352,6 +352,29 @@ describe("number keys, clear and submit", () => {
     await user.keyboard("{Enter}");
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
+
+  test("a submit that moves focus to a button does not also press it", async () => {
+    const onButton = vi.fn();
+    const user = userEvent.setup();
+    const Submitting = () => {
+      const next = React.useRef<HTMLButtonElement>(null);
+      useBrailleKeys({
+        onToggleDot: () => {},
+        onChord: () => {},
+        onClear: () => {},
+        onSubmit: () => next.current?.focus(),
+      });
+      return (
+        <button type="button" ref={next} onClick={onButton}>
+          Next
+        </button>
+      );
+    };
+    render(<Submitting />);
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("button", { name: "Next" })).toHaveFocus();
+    expect(onButton).not.toHaveBeenCalled();
+  });
 });
 
 describe("options", () => {

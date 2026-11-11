@@ -114,3 +114,46 @@ test("shows the Perkins key layout", () => {
   );
   expect(keys).toEqual(["S", "D", "F", "J", "K", "L"]);
 });
+
+describe("on a touch-only device", () => {
+  const mockPointer = (coarse: boolean, fine: boolean) =>
+    vi.spyOn(window, "matchMedia").mockImplementation(
+      (query: string) =>
+        ({
+          matches: query.includes("coarse") ? coarse : fine,
+        }) as MediaQueryList
+    );
+
+  beforeEach(() => {
+    // jsdom has no matchMedia to spy on.
+    window.matchMedia = () => ({ matches: false }) as MediaQueryList;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    // @ts-expect-error removing the stub again
+    delete window.matchMedia;
+  });
+
+  test("collapses the pad, but a keyboard user can open it", async () => {
+    mockPointer(true, false);
+    const { user, onChord } = setup();
+    const summary = screen.getByText("Typing on a keyboard?");
+    expect(
+      screen.queryByRole("application", { name: "Braille keyboard" })
+    ).not.toBeVisible();
+
+    await user.click(summary);
+    const pad = screen.getByRole("application", { name: "Braille keyboard" });
+    expect(pad).toBeVisible();
+    await user.click(pad);
+    await user.keyboard("f");
+    expect(onChord).toHaveBeenCalledTimes(1);
+  });
+
+  test("stays open when there is also a mouse or trackpad", () => {
+    mockPointer(true, true);
+    setup();
+    expect(screen.queryByText("Typing on a keyboard?")).not.toBeInTheDocument();
+  });
+});

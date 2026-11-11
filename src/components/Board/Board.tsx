@@ -1,5 +1,8 @@
 import React from "react";
 import { Cell } from "../Cell/Cell";
+import { ChordPad } from "../ChordPad/ChordPad";
+import { ClearButton } from "../ClearButton/ClearButton";
+import { useBrailleKeys } from "../../hooks/useBrailleKeys";
 import {
   CellType,
   CLEAR_CELL,
@@ -72,30 +75,24 @@ export const Board = () => {
 
   const clearCell = React.useCallback(() => setPositions(CLEAR_CELL), []);
 
-  React.useEffect(() => {
-    const onKeyUp = (event: KeyboardEvent) => {
-      // Leave browser and screen reader shortcuts (Ctrl+1, Alt+2...) alone.
-      if (event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-      if (/^[1-6]$/.test(event.key)) {
-        toggleDot(`dot${event.key}` as keyof CellType);
-      }
-      if (event.key === "Escape" || event.key === "Backspace") {
-        clearCell();
-      }
-    };
-    document.body.addEventListener("keyup", onKeyUp);
+  const padRef = React.useRef<HTMLDivElement>(null);
+  useBrailleKeys({
+    onToggleDot: toggleDot,
+    onChord: setPositions,
+    onClear: clearCell,
+    chordArea: padRef,
+  });
 
-    return () => {
-      document.body.removeEventListener("keyup", onKeyUp);
-    };
-  }, [toggleDot, clearCell]);
+  const helpId = React.useId();
 
   return (
     <div className="board">
       <div className="plate">
-        <Cell positions={positions} onClick={toggleDot} />
+        <Cell
+          positions={positions}
+          onClick={toggleDot}
+          describedBy={helpId}
+        />
       </div>
 
       <dl className="results" aria-label="Translation">
@@ -108,31 +105,15 @@ export const Board = () => {
         />
       </dl>
 
-      <button type="button" className="clear-button" onClick={clearCell}>
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-          <path d="M10 11v6M14 11v6" />
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-        </svg>
-        Clear
-      </button>
+      <ClearButton onClick={clearCell} />
 
-      <p id="cell-help" className="help">
-        Press <kbd>1</kbd> to <kbd>6</kbd> to raise or lower a dot, or select
-        a dot. <kbd>Backspace</kbd> clears the cell.
+      <p id={helpId} className="help">
+        Select a dot to raise or lower it. On a keyboard, press <kbd>1</kbd>{" "}
+        to <kbd>6</kbd>, or type a whole letter as a chord in the braille
+        keyboard below.
       </p>
+
+      <ChordPad ref={padRef} />
 
       <p className="sr-only" role="status">
         {describeCell(positions, letterEN, letterGR)}

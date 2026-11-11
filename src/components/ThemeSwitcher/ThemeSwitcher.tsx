@@ -67,7 +67,7 @@ export const ThemeSwitcher = () => {
   };
 
   return (
-    <fieldset className="theme-switcher">
+    <fieldset className="segmented theme-switcher">
       <legend className="sr-only">Color theme</legend>
       {THEMES.map((option) => (
         <label key={option}>

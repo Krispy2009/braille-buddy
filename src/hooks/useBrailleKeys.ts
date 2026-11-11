@@ -142,10 +142,14 @@ export const useBrailleKeys = ({
 
       // Enter on keydown, not keyup: a button that moves focus on Enter would
       // otherwise hand the keyup to whatever it focused and submit as well.
+      // preventDefault for the mirror case: when submitting moves focus to a
+      // button (Next), the browser would activate that button with this
+      // same Enter press.
       if (
         event.key === "Enter" &&
         !(target && target.closest(ACTIVATES_ON_ENTER))
       ) {
+        event.preventDefault();
         submit();
       }
     };

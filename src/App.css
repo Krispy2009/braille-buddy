@@ -21,7 +21,15 @@
 }
 
 .site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--ink);
+}
+
+.about {
+  max-width: 32rem;
+  margin: 0 auto 0.75rem;
 }
 
 .App h1 {
@@ -36,27 +44,54 @@
   color: var(--muted);
 }
 
-.board {
+.mode-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border-radius: 1rem;
+}
+
+.mode-panel[hidden] {
+  display: none;
+}
+
+.board,
+.practice {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: min(100%, 26rem);
 }
 
-/* The cell reads as a plate with six dimples: dots 1-3 left, 4-6 right. */
+/* The cell reads as a plate with six dimples: dots 1-3 left, 4-6 right.
+   Sizes shrink with the viewport so the cell fits a 320px phone even with
+   large text, but dots never go below a 44px touch target. */
 .plate {
-  padding: 1.75rem 2.25rem;
+  padding: min(1.75rem, 6vw) min(2.25rem, 8vw);
   border-radius: 1.5rem;
   background: var(--plate);
   border: 1px solid var(--plate-border);
   box-shadow: var(--plate-shadow);
 }
 
+.plate.small {
+  padding: 0.75rem 1rem;
+  border-radius: 0.9rem;
+}
+
 .cell {
+  --dot-size: max(44px, min(4.5rem, 19vw));
   display: grid;
   grid-template-rows: repeat(3, auto);
   grid-auto-flow: column;
-  gap: 1.1rem 1.6rem;
+  gap: min(1.1rem, 4vw) min(1.6rem, 6vw);
+}
+
+.cell.small {
+  --dot-size: 1.75rem;
+  --dot-font-size: 0.75rem;
+  gap: 0.4rem 0.6rem;
 }
 
 .help {
@@ -91,14 +126,42 @@ kbd {
   cursor: pointer;
 }
 
-.clear-button:hover {
-  background: var(--ink);
+/* Only where hover is real: on touch screens it sticks after a tap. */
+@media (hover: hover) {
+  .clear-button:hover {
+    background: var(--ink);
+    color: var(--page);
+  }
+
+  .primary-button:hover {
+    background: var(--tile);
+    color: var(--ink);
+  }
+}
+
+.primary-button {
+  min-height: 2.75rem;
+  padding: 0 1.4rem;
+  font: inherit;
+  font-weight: 700;
   color: var(--page);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
 }
 
 .results {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
   gap: 1rem;
   width: 100%;
   margin: 1.5rem 0 1.5rem;
@@ -143,32 +206,56 @@ kbd {
   font-weight: 600;
 }
 
-/* Theme switcher: a segmented control built from native radio buttons. */
-.theme-switcher {
-  align-self: flex-end;
+:root[data-theme="high-visibility"] .choice,
+:root[data-theme="high-visibility"] .prompt .target,
+:root[data-theme="high-visibility"] .answer-card .letter {
+  font-family: var(--sans);
+  font-weight: 800;
+}
+
+:root[data-theme="high-visibility"] .choice {
+  border-width: 3px;
+}
+
+:root[data-theme="high-visibility"] .feedback,
+:root[data-theme="high-visibility"] .score dd {
+  font-weight: 600;
+}
+
+/* Segmented controls: the theme and language radios, and the mode tabs.
+   They wrap instead of overflowing on narrow screens or with large text. */
+.segmented {
   display: inline-flex;
-  margin: 0 0 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0;
   padding: 3px;
   border: var(--line-width) solid var(--line);
-  border-radius: 999px;
+  border-radius: 1.5rem;
   background: var(--tile);
 }
 
-.theme-switcher label {
+.segmented label,
+.segmented [role="tab"] {
   position: relative;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
-  min-height: 2.25rem;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
   padding: 0 0.8rem;
+  border: 0;
   border-radius: 999px;
+  background: transparent;
+  font: inherit;
   font-size: 0.9rem;
   font-weight: var(--label-weight);
   color: var(--muted);
   cursor: pointer;
 }
 
-.theme-switcher input {
+.segmented input {
   position: absolute;
   inset: 0;
   margin: 0;
@@ -176,19 +263,208 @@ kbd {
   cursor: pointer;
 }
 
-.theme-switcher label:has(input:checked) {
+.segmented label:has(input:checked),
+.segmented [aria-selected="true"] {
   background: var(--ink);
   color: var(--page);
 }
 
-.theme-switcher label:has(input:focus-visible) {
+.segmented label:has(input:focus-visible) {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
+.theme-switcher {
+  align-self: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.mode-tabs {
+  margin: 1rem 0 0.25rem;
+}
+
+.mode-tabs [role="tab"] {
+  min-width: 7rem;
+  font-size: 1rem;
+}
+
+/* Practice */
+.practice-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.score {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.score div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: 999px;
+  background: var(--tile);
+}
+
+.score dt {
+  font-size: 0.85rem;
+  font-weight: var(--label-weight);
+  color: var(--muted);
+}
+
+.score dd {
+  margin: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prompt {
+  margin: 0 0 1.25rem;
+  font-size: 1.25rem;
+  font-weight: var(--heading-weight);
+  line-height: 1.4;
+}
+
+.prompt .target {
+  padding: 0 0.15em;
+  font-family: var(--serif);
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(4.5rem, 100%), 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  margin: 1.5rem 0 0;
+}
+
+.choice {
+  position: relative;
+  min-height: 4.5rem;
+  padding: 0.25rem;
+  font-family: var(--serif);
+  font-size: 2.25rem;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--tile);
+  border: 2px solid var(--line);
+  border-radius: 1rem;
+  cursor: pointer;
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choice[data-mark] {
+  border-width: 4px;
+  border-color: var(--ink);
+}
+
+.choice[data-mark="wrong"] {
+  border-style: dashed;
+}
+
+.choice-mark {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.45rem;
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+@media (hover: hover) {
+  .choice:enabled:hover {
+    border-color: var(--ink);
+  }
+}
+
+.feedback {
+  max-width: 24rem;
+  margin: 1.25rem 0 0;
+  font-weight: 600;
+}
+
+.feedback:empty {
+  margin: 0;
+}
+
+.answer-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  background: var(--tile);
+  border: var(--line-width) solid var(--line);
+  border-radius: 1rem;
+}
+
+.answer-label {
+  font-size: 0.95rem;
+  font-weight: var(--label-weight);
+  color: var(--muted);
+}
+
+.answer-card .letter {
+  min-height: 0;
+  font-size: 3rem;
+}
+
+.practice > .primary-button {
+  margin-top: 1.5rem;
+}
+
+.chord-pad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.chord-pad-disclosure {
+  margin-top: 1.5rem;
+}
+
+.chord-pad-disclosure summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  font-weight: var(--label-weight);
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.chord-pad-disclosure .chord-pad {
+  margin-top: 0.5rem;
+}
+
 @media (forced-colors: active) {
   .plate,
-  .result {
+  .result,
+  .answer-card {
     border: 1px solid CanvasText;
+  }
+
+  .segmented label:has(input:checked),
+  .segmented [aria-selected="true"] {
+    outline: 2px solid Highlight;
   }
 }
