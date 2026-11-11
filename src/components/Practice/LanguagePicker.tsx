@@ -11,7 +11,7 @@ export const loadLanguage = (): Language => {
   } catch {
     // Storage can be unavailable (private mode, blocked site data).
   }
-  return "english";
+  return LANGUAGES.includes("english") ? "english" : LANGUAGES[0];
 };
 
 export const saveLanguage = (language: Language) => {
@@ -27,9 +27,10 @@ type LanguagePickerProps = {
   onChange: (language: Language) => void;
 };
 
+/** One radio per course in src/courses. */
 export const LanguagePicker = ({ language, onChange }: LanguagePickerProps) => (
   <fieldset className="segmented">
-    <legend className="sr-only">Practice language</legend>
+    <legend className="sr-only">Course</legend>
     {LANGUAGES.map((option) => (
       <label key={option}>
         <input

@@ -3,6 +3,7 @@ import { Cell } from "../Cell/Cell";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
+import { COURSES, Course } from "../../courses";
 import {
   CellType,
   CLEAR_CELL,
@@ -11,22 +12,21 @@ import {
   spokenLetter,
 } from "../../game/braille";
 
-const describeCell = (
-  cells: CellType,
-  english?: string,
-  greek?: string
-): string => {
+type Reading = { course: Course; letter?: string };
+
+const describeCell = (cells: CellType, readings: Reading[]): string => {
   const raised = raisedDots(cells);
   if (raised.length === 0) {
     return "Cell is empty.";
   }
   // Never end a sentence on a single letter: screen readers read "w." as an
   // abbreviation and run straight into the next sentence without a pause.
-  const englishPart = english ? `${english} in English.` : "No English letter.";
-  const greekPart = greek
-    ? `${spokenLetter(greek, "greek")} in Greek.`
-    : "No Greek letter.";
-  return `Dots ${raised.join(", ")} raised. ${englishPart} ${greekPart}`;
+  const parts = readings.map(({ course, letter }) =>
+    letter
+      ? `${spokenLetter(letter, course.id)} in ${course.name}.`
+      : `No ${course.name} letter.`
+  );
+  return `Dots ${raised.join(", ")} raised. ${parts.join(" ")}`;
 };
 
 type ResultProps = {
@@ -66,8 +66,11 @@ const Result = ({ label, lang, letter, spoken }: ResultProps) => (
 export const Board = () => {
   const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
 
-  const letterEN = letterForCell(positions, "english");
-  const letterGR = letterForCell(positions, "greek");
+  // One result per course, so a new course file shows up here on its own.
+  const readings: Reading[] = COURSES.map((course) => ({
+    course,
+    letter: letterForCell(positions, course.id),
+  }));
 
   const toggleDot = React.useCallback((dot: keyof CellType) => {
     setPositions((current) => ({ ...current, [dot]: !current[dot] }));
@@ -96,13 +99,18 @@ export const Board = () => {
       </div>
 
       <dl className="results" aria-label="Translation">
-        <Result label="English" lang="en" letter={letterEN} />
-        <Result
-          label="Greek"
-          lang="el"
-          letter={letterGR}
-          spoken={letterGR && spokenLetter(letterGR, "greek")}
-        />
+        {readings.map(({ course, letter }) => {
+          const spoken = letter && spokenLetter(letter, course.id);
+          return (
+            <Result
+              key={course.id}
+              label={course.name}
+              lang={course.lang}
+              letter={letter}
+              spoken={spoken !== letter ? spoken : undefined}
+            />
+          );
+        })}
       </dl>
 
       <ClearButton onClick={clearCell} />
@@ -116,7 +124,7 @@ export const Board = () => {
       <ChordPad ref={padRef} />
 
       <p className="sr-only" role="status">
-        {describeCell(positions, letterEN, letterGR)}
+        {describeCell(positions, readings)}
       </p>
     </div>
   );

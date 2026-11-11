@@ -6,11 +6,11 @@ import {
   ItemId,
   Language,
   LANGUAGE_LABELS,
-  lettersIn,
   parseItemId,
   raisedDots,
   spokenLetter,
 } from "../../game/braille";
+import type { Course, Lesson } from "../../courses";
 import { POINTS_PER_CORRECT, Progress } from "../../game/progress";
 import { pickDistractors, pickNextItem } from "../../game/review";
 
@@ -22,20 +22,57 @@ export type Question =
 
 const CHOICES = 4;
 
+/** What a run of questions draws from: a lesson, or everything met so far. */
+export type QuestionSource = {
+  language: Language;
+  /** The letters asked about. */
+  letters: readonly string[];
+  /** Other letters the player has already met, used as wrong choices too. */
+  others: readonly string[];
+};
+
+// Mostly letters from the lesson itself, since telling its new letters apart
+// is the point, plus one letter met earlier when there is one, so old letters
+// stay in view. Short lessons borrow more from earlier ones.
+const wrongChoices = (
+  answer: string,
+  { letters, others }: QuestionSource,
+  random: () => number
+): string[] => {
+  const pool = others.filter((letter) => !letters.includes(letter));
+  const earlier = pickDistractors(answer, pool, 1, random);
+  const fromLesson = pickDistractors(
+    answer,
+    letters,
+    CHOICES - 1 - earlier.length,
+    random
+  );
+  const short = CHOICES - 1 - earlier.length - fromLesson.length;
+  const more =
+    short > 0
+      ? pickDistractors(
+          answer,
+          pool.filter((letter) => !earlier.includes(letter)),
+          short,
+          random
+        )
+      : [];
+  return [...fromLesson, ...earlier, ...more];
+};
+
 export const makeQuestion = (
-  language: Language,
+  source: QuestionSource,
   progress: Progress,
   previous: ItemId | undefined,
   random: () => number
 ): Question => {
-  const letters = lettersIn(language);
-  const items = letters.map((letter) => itemId(language, letter));
+  const items = source.letters.map((letter) => itemId(source.language, letter));
   const item = pickNextItem(items, progress, { previous, random });
   if (random() < 0.5) {
     return { kind: "dots", item };
   }
   const { letter } = parseItemId(item);
-  const choices = pickDistractors(letter, letters, CHOICES - 1, random);
+  const choices = wrongChoices(letter, source, random);
   choices.splice(Math.floor(random() * (choices.length + 1)), 0, letter);
   return { kind: "letter", item, choices };
 };
@@ -93,3 +130,26 @@ export const resultText = (item: ItemId, answer: Answer): string =>
   answer.correct
     ? `Correct, plus ${POINTS_PER_CORRECT} points. ${rule(item)}`
     : `Not quite. ${rule(item)} ${mistakeText(item, answer)}`;
+
+export type Finished = {
+  lesson: Lesson;
+  /** The lesson it opened, if any. */
+  next?: Lesson;
+  /** Every lesson of the course is now done. */
+  courseDone: boolean;
+};
+
+// Lesson titles never end a sentence either, since a title such as
+// "Letters a to e" ends on a single letter.
+export const finishedText = (
+  course: Course,
+  { lesson, next, courseDone }: Finished
+): string => {
+  if (courseDone) {
+    return `You have finished ${lesson.title}, the last lesson in the ${course.name} course. Congratulations, you have learnt every letter it teaches.`;
+  }
+  if (next) {
+    return `You have finished the lesson ${lesson.title}, and ${next.title} is now open.`;
+  }
+  return `You have finished the lesson ${lesson.title}, well done.`;
+};

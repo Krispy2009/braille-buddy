@@ -1,14 +1,20 @@
 type ScoreProps = {
   points: number;
   streak: number;
+  /** Points earned in the chosen course. */
+  course: { name: string; points: number };
 };
 
 // Not a live region: the points gained are already part of each result, and
 // repeating the totals after every answer would only add noise.
-export const Score = ({ points, streak }: ScoreProps) => (
+export const Score = ({ points, streak, course }: ScoreProps) => (
   <dl className="score">
     <div>
-      <dt>Points</dt>
+      <dt>{course.name} points</dt>
+      <dd>{course.points}</dd>
+    </div>
+    <div>
+      <dt>Total points</dt>
       <dd>{points}</dd>
     </div>
     <div>
