@@ -5,10 +5,12 @@ export type Theme = (typeof THEMES)[number];
 
 const STORAGE_KEY = "theme";
 
+// The stored values stay light/dark/high-visibility so saved choices and
+// the pre-paint script in index.html keep working; only the names changed.
 const LABELS: Record<Theme, string> = {
-  light: "Light",
-  dark: "Dark",
-  "high-visibility": "High visibility",
+  light: "Paper",
+  dark: "Ink",
+  "high-visibility": "High vis",
 };
 
 const ICONS: Record<Theme, React.ReactNode> = {
