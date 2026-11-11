@@ -1,30 +1,33 @@
 import styled from "styled-components";
 
-export type CellType = {
-  dot1: boolean;
-  dot2: boolean;
-  dot3: boolean;
-  dot4: boolean;
-  dot5: boolean;
-  dot6: boolean;
-};
+import type { CellType } from "../../game/braille";
+
+export type { CellType };
 
 type DotProps = {
   cellId: keyof CellType;
   isOn: boolean;
-  onClick: (dot: keyof CellType) => void;
+  /** Without it the dot is a picture, not a button (read-only cells). */
+  onClick?: (dot: keyof CellType) => void;
 };
 
 const DotButton = styled.button<{ $on: boolean }>`
-  width: 4.5rem;
-  height: 4.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dot-size, 4.5rem);
+  height: var(--dot-size, 4.5rem);
   border-radius: 50%;
   padding: 0;
   font: inherit;
-  font-size: 1.1rem;
+  font-size: var(--dot-font-size, 1.1rem);
   font-weight: var(--label-weight);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease;
+
+  &:is(span) {
+    cursor: default;
+  }
 
   /* Off: a dimple pressed into the plate. On: a raised dot. Colors come
      from the theme tokens in index.css. */
@@ -55,6 +58,13 @@ const DotButton = styled.button<{ $on: boolean }>`
 
 export const Dot = ({ cellId, isOn, onClick }: DotProps) => {
   const number = cellId.slice(3);
+  if (!onClick) {
+    return (
+      <DotButton as="span" $on={isOn}>
+        {number}
+      </DotButton>
+    );
+  }
   return (
     <DotButton
       type="button"

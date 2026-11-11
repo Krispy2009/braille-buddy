@@ -1,71 +1,22 @@
 import React from "react";
 import { Cell } from "../Cell/Cell";
-import { CellType } from "../Dot/Dot";
-import mappings from "./mappings.json";
-
-const CLEAR_CELL: CellType = {
-  dot1: false,
-  dot2: false,
-  dot3: false,
-  dot4: false,
-  dot5: false,
-  dot6: false,
-};
-
-type Language = keyof typeof mappings;
-
-const DOT_KEYS = Object.keys(CLEAR_CELL) as (keyof CellType)[];
-
-const translateCellToBitmap = (cells: CellType): string =>
-  DOT_KEYS.map((dot) => (cells[dot] ? "1" : "0")).join("");
-
-const translateCellToLetter = (
-  cells: CellType,
-  language: Language
-): string | undefined =>
-  (mappings[language] as Record<string, string>)[translateCellToBitmap(cells)];
-
-// Screen readers without a Greek voice spell Greek characters as symbols
-// ("greek letter epsilon") and drop the rest of a diphthong, so we announce
-// the letter names instead: ει is read as "epsilon iota".
-const GREEK_NAMES: Record<string, string> = {
-  α: "alpha",
-  β: "beta",
-  γ: "gamma",
-  δ: "delta",
-  ε: "epsilon",
-  ζ: "zeta",
-  η: "eta",
-  θ: "theta",
-  ι: "iota",
-  κ: "kappa",
-  λ: "lambda",
-  μ: "mu",
-  ν: "nu",
-  ξ: "xi",
-  ο: "omicron",
-  π: "pi",
-  ρ: "rho",
-  σ: "sigma",
-  τ: "tau",
-  υ: "upsilon",
-  φ: "phi",
-  χ: "chi",
-  ψ: "psi",
-  ω: "omega",
-};
-
-const speakGreek = (letters: string): string =>
-  [...letters].map((letter) => GREEK_NAMES[letter] ?? letter).join(" ");
+import { ChordPad } from "../ChordPad/ChordPad";
+import { ClearButton } from "../ClearButton/ClearButton";
+import { useBrailleKeys } from "../../hooks/useBrailleKeys";
+import {
+  CellType,
+  CLEAR_CELL,
+  letterForCell,
+  raisedDots,
+  speakGreek,
+} from "../../game/braille";
 
 const describeCell = (
   cells: CellType,
   english?: string,
   greek?: string
 ): string => {
-  const raised = DOT_KEYS.filter((dot) => cells[dot]).map((dot) =>
-    dot.slice(3)
-  );
+  const raised = raisedDots(cells);
   if (raised.length === 0) {
     return "Cell is empty.";
   }
@@ -115,8 +66,8 @@ const Result = ({ label, lang, letter, spoken }: ResultProps) => (
 export const Board = () => {
   const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
 
-  const letterEN = translateCellToLetter(positions, "english");
-  const letterGR = translateCellToLetter(positions, "greek");
+  const letterEN = letterForCell(positions, "english");
+  const letterGR = letterForCell(positions, "greek");
 
   const toggleDot = React.useCallback((dot: keyof CellType) => {
     setPositions((current) => ({ ...current, [dot]: !current[dot] }));
@@ -124,30 +75,24 @@ export const Board = () => {
 
   const clearCell = React.useCallback(() => setPositions(CLEAR_CELL), []);
 
-  React.useEffect(() => {
-    const onKeyUp = (event: KeyboardEvent) => {
-      // Leave browser and screen reader shortcuts (Ctrl+1, Alt+2...) alone.
-      if (event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-      if (/^[1-6]$/.test(event.key)) {
-        toggleDot(`dot${event.key}` as keyof CellType);
-      }
-      if (event.key === "Escape" || event.key === "Backspace") {
-        clearCell();
-      }
-    };
-    document.body.addEventListener("keyup", onKeyUp);
+  const padRef = React.useRef<HTMLDivElement>(null);
+  useBrailleKeys({
+    onToggleDot: toggleDot,
+    onChord: setPositions,
+    onClear: clearCell,
+    chordArea: padRef,
+  });
 
-    return () => {
-      document.body.removeEventListener("keyup", onKeyUp);
-    };
-  }, [toggleDot, clearCell]);
+  const helpId = React.useId();
 
   return (
     <div className="board">
       <div className="plate">
-        <Cell positions={positions} onClick={toggleDot} />
+        <Cell
+          positions={positions}
+          onClick={toggleDot}
+          describedBy={helpId}
+        />
       </div>
 
       <dl className="results" aria-label="Translation">
@@ -160,31 +105,15 @@ export const Board = () => {
         />
       </dl>
 
-      <button type="button" className="clear-button" onClick={clearCell}>
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-          <path d="M10 11v6M14 11v6" />
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-        </svg>
-        Clear
-      </button>
+      <ClearButton onClick={clearCell} />
 
-      <p id="cell-help" className="help">
-        Press <kbd>1</kbd> to <kbd>6</kbd> to raise or lower a dot, or select
-        a dot. <kbd>Backspace</kbd> clears the cell.
+      <p id={helpId} className="help">
+        Select a dot to raise or lower it. On a keyboard, press <kbd>1</kbd>{" "}
+        to <kbd>6</kbd>, or type a whole letter as a chord in the braille
+        keyboard below.
       </p>
+
+      <ChordPad ref={padRef} />
 
       <p className="sr-only" role="status">
         {describeCell(positions, letterEN, letterGR)}

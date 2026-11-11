@@ -142,3 +142,85 @@ test('footer credits and links to kristi.cy', () => {
     'https://kristi.cy'
   );
 });
+
+test('footer says honestly what the app can and cannot teach', () => {
+  render(<App />);
+  expect(screen.getByRole('contentinfo')).toHaveTextContent(
+    'Reading braille by touch takes practice on real embossed braille.'
+  );
+});
+
+test('types a whole letter as a chord in the braille keyboard', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(screen.getByRole('application', { name: 'Braille keyboard' }));
+  await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Dots 1, 4, 5 raised. d in English. delta in Greek.'
+  );
+  // Each dot is set once, not toggled by the old key handler as well.
+  expect(screen.getByRole('button', { name: 'Dot 1' })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+});
+
+describe('mode tabs', () => {
+  beforeEach(() => localStorage.clear());
+
+  test('switch between Explore and Practice', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const explore = screen.getByRole('tab', { name: 'Explore' });
+    const practice = screen.getByRole('tab', { name: 'Practice' });
+    expect(screen.getByRole('tablist', { name: 'Mode' })).toBeInTheDocument();
+    expect(explore).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Explore' })).toBeInTheDocument();
+
+    await user.click(practice);
+    expect(practice).toHaveAttribute('aria-selected', 'true');
+    expect(explore).toHaveAttribute('aria-selected', 'false');
+    const panel = screen.getByRole('tabpanel', { name: 'Practice' });
+    expect(panel).toHaveTextContent(/write the letter|which letter has/i);
+    expect(screen.queryByRole('tabpanel', { name: 'Explore' })).not.toBeInTheDocument();
+    // Only one live region on the page at a time.
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+  });
+
+  test('arrow keys, Home and End move between tabs with one tab stop', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const explore = screen.getByRole('tab', { name: 'Explore' });
+    const practice = screen.getByRole('tab', { name: 'Practice' });
+    expect(explore).toHaveAttribute('tabindex', '0');
+    expect(practice).toHaveAttribute('tabindex', '-1');
+
+    await user.click(explore);
+    await user.keyboard('{ArrowRight}');
+    expect(practice).toHaveFocus();
+    expect(practice).toHaveAttribute('aria-selected', 'true');
+
+    await user.keyboard('{ArrowRight}');
+    expect(explore).toHaveFocus();
+    await user.keyboard('{End}');
+    expect(practice).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(explore).toHaveAttribute('aria-selected', 'true');
+
+    await user.keyboard('{ArrowLeft}');
+    await user.tab();
+    expect(screen.getByRole('tabpanel', { name: 'Practice' })).toHaveFocus();
+  });
+
+  test('Enter on a tab does not answer the practice question', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('tab', { name: 'Practice' }));
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('status')).toHaveTextContent('');
+  });
+});
