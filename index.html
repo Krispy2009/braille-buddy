@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#e4e9f0" />
+    <meta name="theme-color" content="#eceae4" />
     <meta name="description" content="Learn braille letters in English and Greek" />
     <link rel="apple-touch-icon" href="/logo192.png" />
     <meta name="apple-mobile-web-app-title" content="Braille Buddy" />
@@ -30,9 +30,9 @@
         var root = document.documentElement;
         root.dataset.theme = theme;
 
-        // Match the browser/status bar to the page colour (--page in
-        // index.css), also when the theme switcher changes the theme later.
-        var colors = { light: "#e4e9f0", dark: "#0f1525", "high-visibility": "#ffd60a" };
+        // Match the browser/status bar to the page colour (--bg in
+        // src/theme/tokens.css), also when the theme switcher changes the theme later.
+        var colors = { light: "#eceae4", dark: "#17171a", "high-visibility": "#ffd60a" };
         var meta = document.querySelector('meta[name="theme-color"]');
         var syncThemeColor = function () {
           var color = colors[root.dataset.theme];

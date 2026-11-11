@@ -20,6 +20,7 @@ const DotButton = styled.button<{ $on: boolean }>`
   border-radius: 50%;
   padding: 0;
   font: inherit;
+  font-family: var(--font-mono);
   font-size: var(--dot-font-size, 1.1rem);
   font-weight: var(--label-weight);
   cursor: pointer;
@@ -29,11 +30,12 @@ const DotButton = styled.button<{ $on: boolean }>`
     cursor: default;
   }
 
-  /* Off: a dimple pressed into the plate. On: a raised dot. Colors come
-     from the theme tokens in index.css. */
+  /* Off: a flat mark pressed into the plate. On: a raised dot. Colors
+     come from the theme tokens (theme/tokens.css, mapped in index.css). */
   color: ${({ $on }) => ($on ? "var(--dot-on-fg)" : "var(--dot-off-fg)")};
   background: ${({ $on }) => ($on ? "var(--dot-on-bg)" : "var(--dot-off-bg)")};
-  border: 4px solid
+  border: 3px
+    ${({ $on }) => ($on ? "solid" : "var(--dot-off-border-style, solid)")}
     ${({ $on }) => ($on ? "var(--dot-on-border)" : "var(--dot-off-border)")};
   box-shadow: ${({ $on }) =>
     $on ? "var(--dot-on-shadow)" : "var(--dot-off-shadow)"};
