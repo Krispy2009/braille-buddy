@@ -1,6 +1,16 @@
 {
-  "short_name": "Braille Buddy",
+  "id": "./",
   "name": "Braille Buddy",
+  "short_name": "Braille Buddy",
+  "description": "Learn braille letters in English and Greek",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#e4e9f0",
+  "background_color": "#e4e9f0",
+  "categories": ["education"],
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +20,14 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  ]
 }

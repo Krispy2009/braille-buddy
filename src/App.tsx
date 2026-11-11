@@ -13,7 +13,7 @@ import { ThemeSwitcher } from "./components/ThemeSwitcher/ThemeSwitcher";
 
 const INTROS: Record<Mode, string> = {
   explore: "Raise dots to see which letter they make.",
-  practice: "Answer questions to earn points and keep a daily streak.",
+  practice: "Learn the letters one lesson at a time, earn points and keep a daily streak.",
 };
 
 function App() {

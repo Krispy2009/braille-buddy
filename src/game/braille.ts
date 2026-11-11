@@ -1,4 +1,4 @@
-import mappings from "../components/Board/mappings.json";
+import { COURSES, findCourse } from "../courses";
 
 export type CellType = {
   dot1: boolean;
@@ -11,23 +11,22 @@ export type CellType = {
 
 export type DotKey = keyof CellType;
 
-export type Language = keyof typeof mappings;
+/** A course id, such as "english". See src/courses. */
+export type Language = string;
 
 /** Identifies one thing to learn, e.g. "english:a" or "greek:ει". */
 export type ItemId = `${Language}:${string}`;
 
-export const LANGUAGES = Object.keys(mappings) as Language[];
+export const LANGUAGES: Language[] = COURSES.map((course) => course.id);
 
-export const LANGUAGE_LABELS: Record<Language, string> = {
-  english: "English",
-  greek: "Greek",
-};
+export const LANGUAGE_LABELS: Record<Language, string> = Object.fromEntries(
+  COURSES.map((course) => [course.id, course.name])
+);
 
 /** BCP 47 tags, for the `lang` attribute on letters. */
-export const LANGUAGE_TAGS: Record<Language, string> = {
-  english: "en",
-  greek: "el",
-};
+export const LANGUAGE_TAGS: Record<Language, string> = Object.fromEntries(
+  COURSES.map((course) => [course.id, course.lang])
+);
 
 export const DOT_KEYS: readonly DotKey[] = [
   "dot1",
@@ -60,26 +59,31 @@ export const bitmapToCell = (bitmap: string): CellType =>
 export const raisedDots = (cell: CellType): number[] =>
   DOT_KEYS.filter((dot) => cell[dot]).map((dot) => Number(dot.slice(3)));
 
-const table = (language: Language): Record<string, string> =>
-  mappings[language] as Record<string, string>;
+const letters = (language: Language) => findCourse(language)?.letters ?? [];
+
+const sameDots = (dots: number[], cell: CellType): boolean =>
+  dots.join() === raisedDots(cell).join();
 
 export const letterForCell = (
   cell: CellType,
   language: Language
-): string | undefined => table(language)[cellToBitmap(cell)];
+): string | undefined =>
+  letters(language).find((entry) => sameDots(entry.dots, cell))?.letter;
 
-/** Every letter (or letter pair) a language teaches, in mapping order. */
+/** Every letter (or letter pair) a language teaches, in teaching order. */
 export const lettersIn = (language: Language): string[] =>
-  Object.values(table(language));
+  letters(language).map((entry) => entry.letter);
 
 export const cellForLetter = (
   letter: string,
   language: Language
 ): CellType | undefined => {
-  const entry = Object.entries(table(language)).find(
-    ([, value]) => value === letter
-  );
-  return entry ? bitmapToCell(entry[0]) : undefined;
+  const entry = letters(language).find((item) => item.letter === letter);
+  return entry
+    ? (Object.fromEntries(
+        DOT_KEYS.map((dot, index) => [dot, entry.dots.includes(index + 1)])
+      ) as CellType)
+    : undefined;
 };
 
 export const itemId = (language: Language, letter: string): ItemId =>
@@ -96,38 +100,8 @@ export const parseItemId = (
 };
 
 // Screen readers without a Greek voice spell Greek characters as symbols
-// ("greek letter epsilon") and drop the rest of a diphthong, so we announce
-// the letter names instead: ει is read as "epsilon iota".
-const GREEK_NAMES: Record<string, string> = {
-  α: "alpha",
-  β: "beta",
-  γ: "gamma",
-  δ: "delta",
-  ε: "epsilon",
-  ζ: "zeta",
-  η: "eta",
-  θ: "theta",
-  ι: "iota",
-  κ: "kappa",
-  λ: "lambda",
-  μ: "mu",
-  ν: "nu",
-  ξ: "xi",
-  ο: "omicron",
-  π: "pi",
-  ρ: "rho",
-  σ: "sigma",
-  τ: "tau",
-  υ: "upsilon",
-  φ: "phi",
-  χ: "chi",
-  ψ: "psi",
-  ω: "omega",
-};
-
-export const speakGreek = (letters: string): string =>
-  [...letters].map((letter) => GREEK_NAMES[letter] ?? letter).join(" ");
-
+// ("greek letter epsilon") and drop the rest of a letter pair, so courses can
+// give a spoken name: ει is read as "epsilon iota".
 /** How a letter should be announced by a screen reader. */
 export const spokenLetter = (letter: string, language: Language): string =>
-  language === "greek" ? speakGreek(letter) : letter;
+  letters(language).find((entry) => entry.letter === letter)?.spoken ?? letter;

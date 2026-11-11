@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
+import { COURSES } from './courses';
 
 test('renders the braille cell', () => {
   render(<App />);
@@ -122,6 +123,21 @@ test('announces Greek letters and diphthongs by name', async () => {
   expect(screen.getByText('epsilon iota')).toBeInTheDocument();
 });
 
+test('shows one result for every course, in Explore and in the status', async () => {
+  const user = userEvent.setup();
+  render(<App />);
+
+  const results = screen.getByLabelText('Translation');
+  expect(
+    within(results).getAllByRole('term').map((term) => term.textContent)
+  ).toEqual(COURSES.map((course) => course.name));
+
+  await user.keyboard('1');
+  for (const course of COURSES) {
+    expect(screen.getByRole('status')).toHaveTextContent(` in ${course.name}.`);
+  }
+});
+
 test('never ends an announcement sentence on a single letter', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -183,8 +199,13 @@ describe('mode tabs', () => {
     expect(practice).toHaveAttribute('aria-selected', 'true');
     expect(explore).toHaveAttribute('aria-selected', 'false');
     const panel = screen.getByRole('tabpanel', { name: 'Practice' });
-    expect(panel).toHaveTextContent(/write the letter|which letter has/i);
+    expect(
+      within(panel).getByRole('heading', { level: 2, name: 'English lessons' })
+    ).toBeInTheDocument();
     expect(screen.queryByRole('tabpanel', { name: 'Explore' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Start Letters a to e' }));
+    expect(panel).toHaveTextContent(/write the letter|which letter has/i);
     // Only one live region on the page at a time.
     expect(screen.getAllByRole('status')).toHaveLength(1);
   });
@@ -219,7 +240,10 @@ describe('mode tabs', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(screen.getByRole('tab', { name: 'Practice' }));
+    const practice = screen.getByRole('tab', { name: 'Practice' });
+    await user.click(practice);
+    await user.click(screen.getByRole('button', { name: 'Start Letters a to e' }));
+    await user.click(practice);
     await user.keyboard('{Enter}');
     expect(screen.getByRole('status')).toHaveTextContent('');
   });
