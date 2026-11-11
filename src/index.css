@@ -1,88 +1,62 @@
-:root,
-:root[data-theme="light"] {
-  color-scheme: light;
-  --page: #e4e9f0;
-  --ink: #17203a;
-  --muted: #465273;
-  --tile: #f7f9fc;
-  --line: #b9c4d8;
-  --line-width: 1px;
-  --empty: #b9c4d8;
-  --focus: #17203a;
+@import "./theme/fonts.css";
+@import "./theme/tokens.css";
 
-  --plate: #1c2745;
+/* Legacy names used by App.css and the components, mapped onto the Press
+   tokens in theme/tokens.css. New code should use the tokens directly. */
+:root {
+  --page: var(--bg);
+  --ink: var(--text);
+  --muted: var(--text-soft);
+  --tile: var(--surface);
+  /* --line and --line-width are tokens already. */
+  --empty: var(--text-soft);
+  --focus: var(--text);
+
+  /* The plate is the black brailler base the dots sit on. */
+  --plate: var(--base);
   --plate-border: transparent;
-  --plate-shadow: 0 14px 30px rgba(23, 32, 58, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  --plate-focus: #ffb703;
+  --plate-shadow: 0 6px 0 var(--shade);
+  --plate-focus: var(--accent);
 
-  --dot-off-bg: #0f1830;
-  --dot-off-fg: #a9b4d0;
-  --dot-off-border: transparent;
-  --dot-off-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.6),
-    0 1px 0 rgba(255, 255, 255, 0.08);
-  --dot-on-bg: radial-gradient(circle at 35% 30%, #fffaf0, #e9e1cc 75%);
-  --dot-on-fg: #1c2745;
-  --dot-on-border: transparent;
-  --dot-on-shadow: 0 5px 10px rgba(0, 0, 0, 0.5),
-    inset -2px -3px 5px rgba(0, 0, 0, 0.14);
-  --dot-lift: -2px;
+  /* Off: a flat mark pressed into the base, outlined with a dashed rim.
+     On: an orange dot embossed above it. */
+  --dot-off-bg: color-mix(in srgb, var(--on-base) 8%, var(--base));
+  --dot-off-fg: var(--on-base);
+  --dot-off-border: color-mix(in srgb, var(--on-base) 60%, var(--base));
+  --dot-off-border-style: dashed;
+  --dot-off-shadow: inset 0 3px 0 var(--shade);
+  --dot-on-bg: var(--accent);
+  --dot-on-fg: var(--on-accent);
+  --dot-on-border: var(--accent);
+  --dot-on-shadow: inset 0 3px 0 color-mix(in srgb, var(--hi) 45%, transparent),
+    0 4px 0 color-mix(in srgb, var(--accent) 55%, var(--base));
+  --dot-lift: -3px;
 
-  --heading-weight: 700;
-  --label-weight: 600;
+  --heading-weight: 900;
+  --label-weight: 700;
 
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Helvetica Neue", sans-serif;
-  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: var(--font-ui);
+  --serif: var(--font-ui);
 }
 
 :root[data-theme="dark"] {
-  color-scheme: dark;
-  --page: #0f1525;
-  --ink: #e6ebf5;
-  --muted: #a3aecb;
-  --tile: #182038;
-  --line: #34405f;
-  --empty: #4a5677;
-  --focus: #e6ebf5;
-
-  --plate: #222d4f;
-  --plate-border: #34405f;
-  --plate-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-
-  --dot-off-bg: #0b1122;
+  --plate-border: var(--key);
 }
 
-/* Black on signal yellow, like tactile signage. Flat, no shadows. */
+/* Black base, yellow dots: the accent is black here, so the raised dot
+   takes the on-base colour instead. Flat, solid lines. */
 :root[data-theme="high-visibility"] {
-  color-scheme: light;
-  --page: #ffd60a;
-  --ink: #000000;
-  --muted: #000000;
-  --tile: #ffd60a;
-  --line: #000000;
-  --line-width: 3px;
-  --empty: #000000;
-  --focus: #000000;
-
-  --plate: #000000;
-  --plate-border: #000000;
+  --plate-border: var(--base);
   --plate-shadow: none;
-  --plate-focus: #ffffff;
-
-  --dot-off-bg: #000000;
-  --dot-off-fg: #ffd60a;
-  --dot-off-border: #ffd60a;
+  --plate-focus: var(--on-base);
+  --dot-off-bg: var(--base);
+  --dot-off-border: var(--on-base);
   --dot-off-shadow: none;
-  --dot-on-bg: #ffd60a;
-  --dot-on-fg: #000000;
-  --dot-on-border: #ffd60a;
+  --dot-on-bg: var(--on-base);
+  --dot-on-fg: var(--base);
+  --dot-on-border: var(--on-base);
   --dot-on-shadow: none;
-  --dot-lift: 0;
-
-  --heading-weight: 800;
-  --label-weight: 800;
+  --dot-lift: 0px;
 }
 
 *,
@@ -93,9 +67,10 @@
 
 body {
   margin: 0;
-  background: var(--page);
-  color: var(--ink);
-  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 500;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
