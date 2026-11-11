@@ -8,7 +8,7 @@ import {
   CLEAR_CELL,
   letterForCell,
   raisedDots,
-  speakGreek,
+  spokenLetter,
 } from "../../game/braille";
 
 const describeCell = (
@@ -24,7 +24,7 @@ const describeCell = (
   // abbreviation and run straight into the next sentence without a pause.
   const englishPart = english ? `${english} in English.` : "No English letter.";
   const greekPart = greek
-    ? `${speakGreek(greek)} in Greek.`
+    ? `${spokenLetter(greek, "greek")} in Greek.`
     : "No Greek letter.";
   return `Dots ${raised.join(", ")} raised. ${englishPart} ${greekPart}`;
 };
@@ -101,7 +101,7 @@ export const Board = () => {
           label="Greek"
           lang="el"
           letter={letterGR}
-          spoken={letterGR && speakGreek(letterGR)}
+          spoken={letterGR && spokenLetter(letterGR, "greek")}
         />
       </dl>
 

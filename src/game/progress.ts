@@ -16,6 +16,11 @@ export type Progress = {
   /** Local calendar day of the last answered question, "YYYY-MM-DD", or null. */
   lastPlayed: string | null;
   letters: Record<string, LetterStats>; // keyed by ItemId
+  /**
+   * Finished lesson ids, keyed by course id. Kept rather than worked out from
+   * `letters`, so a later mistake never locks a lesson again.
+   */
+  completedLessons: Record<string, string[]>;
 };
 
 export const POINTS_PER_CORRECT = 10;
@@ -29,6 +34,7 @@ export const emptyProgress = (): Progress => ({
   bestStreak: 0,
   lastPlayed: null,
   letters: {},
+  completedLessons: {},
 });
 
 const pad = (value: number, length: number): string =>
@@ -121,6 +127,18 @@ const sanitizeLetters = (value: unknown): Record<string, LetterStats> => {
   return letters;
 };
 
+const sanitizeLessons = (value: unknown): Record<string, string[]> => {
+  const lessons: Record<string, string[]> = {};
+  if (!isRecord(value)) return lessons;
+  for (const [key, entry] of Object.entries(value)) {
+    if (key === "__proto__" || !Array.isArray(entry)) continue;
+    lessons[key] = [
+      ...new Set(entry.filter((id) => typeof id === "string")),
+    ];
+  }
+  return lessons;
+};
+
 const defaultStorage = (): Storage | undefined => {
   try {
     return window.localStorage;
@@ -152,6 +170,8 @@ export const loadProgress = (
       bestStreak: Math.max(bestStreak, streak),
       lastPlayed,
       letters: sanitizeLetters(data.letters),
+      // Missing in progress saved before lessons existed.
+      completedLessons: sanitizeLessons(data.completedLessons),
     };
   } catch {
     return emptyProgress();
