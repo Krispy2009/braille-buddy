@@ -1,3 +1,4 @@
+@import "./theme/fonts.css";
 @import "./theme/tokens.css";
 
 /* Legacy names used by App.css and the components, mapped onto the Press
