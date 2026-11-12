@@ -16,7 +16,9 @@ import {
   metLetters,
 } from "../../game/lessons";
 import { Progress, recordAnswer } from "../../game/progress";
+import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
+import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
 import { Cell } from "../Cell/Cell";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
@@ -39,10 +41,9 @@ type LessonPracticeProps = {
   course: Course;
   /** Leave out to practise every letter met so far. */
   lesson?: Lesson;
+  dotEntry: DotEntry;
   progress: Progress;
   onProgress: (next: Progress) => void;
-  /** The score, shown next to the way back. */
-  score: React.ReactNode;
   onBack: () => void;
   onStartLesson: (lesson: Lesson) => void;
   random: () => number;
@@ -90,9 +91,9 @@ const finishLesson = (
 export const LessonPractice = ({
   course,
   lesson,
+  dotEntry,
   progress,
   onProgress,
-  score,
   onBack,
   onStartLesson,
   random,
@@ -114,13 +115,15 @@ export const LessonPractice = ({
   }>({ target: "heading" });
 
   const promptId = React.useId();
+  const keysHelpId = React.useId();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
   const promptRef = React.useRef<HTMLHeadingElement>(null);
   const nextRef = React.useRef<HTMLButtonElement>(null);
   const finishRef = React.useRef<HTMLButtonElement>(null);
   const padRef = React.useRef<HTMLDivElement>(null);
-  // Chord typists who answered from the pad go back to it, so they don't
-  // have to Tab past six dots and two buttons for every question.
+  // Chord typists who answered from the pad (or the brailler keys) go back
+  // to it, so they don't have to Tab past six dots and two buttons for
+  // every question.
   const returnToPad = React.useRef(false);
 
   React.useEffect(() => {
@@ -137,6 +140,7 @@ export const LessonPractice = ({
   const { letter } = parseItemId(question.item);
   const asking = answer === null;
   const writing = asking && question.kind === "dots";
+  const withKeys = writing && dotEntry === "keys";
   const title = lesson ? lesson.title : "Everything so far";
   const learnt = source.letters.filter((entry) =>
     isLetterLearnt(progress, itemId(language, entry))
@@ -212,7 +216,6 @@ export const LessonPractice = ({
         <button type="button" className="clear-button" onClick={onBack}>
           Back to lessons
         </button>
-        {score}
       </div>
 
       {/* A plain div, not a labelled section: a region named after the heading
@@ -248,7 +251,7 @@ export const LessonPractice = ({
         </h3>
 
         <div className="plate">
-          {writing ? (
+          {writing && !withKeys ? (
             <Cell positions={positions} onClick={toggleDot} describedBy={promptId} />
           ) : (
             <Cell
@@ -258,6 +261,16 @@ export const LessonPractice = ({
             />
           )}
         </div>
+
+        {withKeys && (
+          <BraillerKeys
+            ref={padRef}
+            positions={positions}
+            onToggleDot={toggleDot}
+            onChord={setPositions}
+            describedBy={`${promptId} ${keysHelpId}`}
+          />
+        )}
 
         {question.kind === "letter" && (
           <Choices
@@ -327,7 +340,11 @@ export const LessonPractice = ({
                 </button>
                 <ClearButton onClick={() => setPositions(CLEAR_CELL)} />
               </div>
-              <ChordPad ref={padRef} canSubmit describedBy={promptId} />
+              {withKeys ? (
+                <BraillerKeysHelp id={keysHelpId} canSubmit />
+              ) : (
+                <ChordPad ref={padRef} canSubmit describedBy={promptId} />
+              )}
             </>
           )
         )}

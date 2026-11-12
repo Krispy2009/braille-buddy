@@ -2,27 +2,77 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { COURSES } from './courses';
+import type { DotEntry } from './game/settings';
 
-test('renders the braille cell', () => {
+// Each test starts as a new player: Tap the cell, English, no progress.
+beforeEach(() => localStorage.clear());
+
+const chooseEntry = (dotEntry: DotEntry) =>
+  localStorage.setItem(
+    'braille-buddy:settings',
+    JSON.stringify({ version: 1, dotEntry })
+  );
+
+const KEY_LETTERS = ['F', 'D', 'S', 'J', 'K', 'L'];
+/** The button that raises a dot: a brailler key, or a dot of the cell. */
+const dotButton = (dotEntry: DotEntry, dot: number) =>
+  screen.getByRole('button', {
+    name: dotEntry === 'keys' ? `Dot ${dot}, key ${KEY_LETTERS[dot - 1]}` : `Dot ${dot}`,
+  });
+
+test('Brailler keys mode has the keys and a read-only cell', () => {
+  chooseEntry('keys');
   render(<App />);
   expect(
     screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })
   ).toBeInTheDocument();
+  const keys = screen.getByRole('application', { name: 'Brailler keys' });
+  expect(within(keys).getAllByRole('button')).toHaveLength(6);
+  expect(
+    screen.queryByRole('group', { name: /braille cell/i })
+  ).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Dot 1' })).not.toBeInTheDocument();
+  expect(document.querySelector('.cell')).toHaveAttribute('aria-hidden', 'true');
+});
+
+test('a new player gets the tappable braille cell', () => {
+  render(<App />);
   expect(
     screen.getByRole('group', { name: /braille cell/i })
   ).toBeInTheDocument();
+  expect(screen.queryByRole('application', { name: 'Brailler keys' })).not.toBeInTheDocument();
+  expect(screen.getByRole('application', { name: 'Braille keyboard' })).toBeInTheDocument();
 });
 
-test('translates clicked dots to English and Greek letters', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+describe.each(['keys', 'cell'] as const)('Explore with %s', (dotEntry) => {
+  beforeEach(() => chooseEntry(dotEntry));
 
-  await user.click(screen.getByRole('button', { name: 'Dot 1' }));
-  await user.click(screen.getByRole('button', { name: 'Dot 4' }));
-  await user.click(screen.getByRole('button', { name: 'Dot 5' }));
+  test('translates clicked dots to English and Greek letters', async () => {
+    const user = userEvent.setup();
+    render(<App />);
 
-  expect(screen.getByText('d')).toBeInTheDocument();
-  expect(screen.getByText('δ')).toBeInTheDocument();
+    await user.click(dotButton(dotEntry, 1));
+    await user.click(dotButton(dotEntry, 4));
+    await user.click(dotButton(dotEntry, 5));
+
+    expect(screen.getByText('d')).toBeInTheDocument();
+    expect(screen.getByText('δ')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Dots 1, 4, 5 raised. d in English. delta in Greek.'
+    );
+  });
+
+  test('dots are toggle buttons that expose their pressed state', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const dot1 = dotButton(dotEntry, 1);
+    expect(dot1).toHaveAttribute('aria-pressed', 'false');
+    await user.click(dot1);
+    expect(dot1).toHaveAttribute('aria-pressed', 'true');
+    await user.click(dot1);
+    expect(dot1).toHaveAttribute('aria-pressed', 'false');
+  });
 });
 
 test('keyboard toggles dots and Escape clears the cell', async () => {
@@ -52,16 +102,6 @@ test('Backspace and the clear button reset the cell', async () => {
   expect(screen.queryByText('a')).not.toBeInTheDocument();
 });
 
-test('dots are toggle buttons that expose their pressed state', async () => {
-  const user = userEvent.setup();
-  render(<App />);
-
-  const dot1 = screen.getByRole('button', { name: 'Dot 1' });
-  expect(dot1).toHaveAttribute('aria-pressed', 'false');
-  await user.click(dot1);
-  expect(dot1).toHaveAttribute('aria-pressed', 'true');
-});
-
 test('announces the result in a status region', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -89,7 +129,7 @@ test('ignores number keys pressed with a modifier', async () => {
   render(<App />);
 
   await user.keyboard('{Control>}1{/Control}');
-  expect(screen.getByRole('button', { name: 'Dot 1' })).toHaveAttribute(
+  expect(dotButton('cell', 1)).toHaveAttribute(
     'aria-pressed',
     'false'
   );
@@ -166,6 +206,20 @@ test('footer says honestly what the app can and cannot teach', () => {
   );
 });
 
+test('types a whole letter as a chord in the brailler keys', async () => {
+  chooseEntry('keys');
+  const user = userEvent.setup();
+  render(<App />);
+
+  await user.click(dotButton('keys', 1));
+  await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Dots 1, 4, 5 raised. d in English. delta in Greek.'
+  );
+  // The chord replaces the cell, as on a brailler.
+  expect(dotButton('keys', 1)).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('types a whole letter as a chord in the braille keyboard', async () => {
   const user = userEvent.setup();
   render(<App />);
@@ -183,8 +237,6 @@ test('types a whole letter as a chord in the braille keyboard', async () => {
 });
 
 describe('mode tabs', () => {
-  beforeEach(() => localStorage.clear());
-
   test('switch between Explore and Practice', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -216,8 +268,10 @@ describe('mode tabs', () => {
 
     const explore = screen.getByRole('tab', { name: 'Explore' });
     const practice = screen.getByRole('tab', { name: 'Practice' });
+    const settings = screen.getByRole('tab', { name: 'Settings' });
     expect(explore).toHaveAttribute('tabindex', '0');
     expect(practice).toHaveAttribute('tabindex', '-1');
+    expect(settings).toHaveAttribute('tabindex', '-1');
 
     await user.click(explore);
     await user.keyboard('{ArrowRight}');
@@ -225,12 +279,16 @@ describe('mode tabs', () => {
     expect(practice).toHaveAttribute('aria-selected', 'true');
 
     await user.keyboard('{ArrowRight}');
+    expect(settings).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
     expect(explore).toHaveFocus();
     await user.keyboard('{End}');
-    expect(practice).toHaveFocus();
+    expect(settings).toHaveFocus();
     await user.keyboard('{Home}');
     expect(explore).toHaveAttribute('aria-selected', 'true');
 
+    await user.keyboard('{ArrowLeft}');
+    expect(settings).toHaveFocus();
     await user.keyboard('{ArrowLeft}');
     await user.tab();
     expect(screen.getByRole('tabpanel', { name: 'Practice' })).toHaveFocus();

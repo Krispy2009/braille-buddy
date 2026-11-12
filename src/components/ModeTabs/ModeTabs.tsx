@@ -1,11 +1,12 @@
 import React from "react";
 
-export const MODES = ["explore", "practice"] as const;
+export const MODES = ["explore", "practice", "settings"] as const;
 export type Mode = (typeof MODES)[number];
 
 const LABELS: Record<Mode, string> = {
   explore: "Explore",
   practice: "Practice",
+  settings: "Settings",
 };
 
 export const tabId = (mode: Mode) => `mode-tab-${mode}`;
@@ -19,9 +20,9 @@ type ModeTabsProps = {
 /**
  * The ARIA tabs pattern: both modes swap a panel in place on one page, with
  * no URL change, which is exactly what tabs announce ("Practice, tab, 2 of
- * 2, selected"). Links with aria-current would promise navigation that
+ * 3, selected"). Links with aria-current would promise navigation that
  * doesn't happen, and radio buttons describe a form value, not the content
- * below. Tabs activate on arrow keys because both panels render instantly.
+ * below. Tabs activate on arrow keys because every panel renders instantly.
  */
 export const ModeTabs = ({ mode, onChange }: ModeTabsProps) => {
   const tabs = React.useRef<Partial<Record<Mode, HTMLButtonElement | null>>>(

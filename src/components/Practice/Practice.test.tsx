@@ -1,5 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { Language } from "../../game/braille";
+import type { DotEntry } from "../../game/settings";
 import { Practice } from "./Practice";
 
 // In the first English lesson (a to e), random() = 0 asks "letter to dots":
@@ -7,11 +9,32 @@ import { Practice } from "./Practice";
 const DAY = new Date(2026, 10, 11, 12);
 const STORAGE_KEY = "braille-buddy:progress";
 
-const setup = (value = 0, now = () => DAY) => {
+type Options = { language?: Language; dotEntry?: DotEntry };
+
+// The course and the entry mode come from Settings, which lives in App.
+const practice = (
+  random: () => number,
+  now: () => Date,
+  { language = "english", dotEntry = "cell" }: Options = {},
+  onChangeCourse = () => {}
+) => (
+  <Practice
+    language={language}
+    dotEntry={dotEntry}
+    onChangeCourse={onChangeCourse}
+    random={random}
+    now={now}
+  />
+);
+
+const setup = (value = 0, now = () => DAY, options: Options = {}) => {
   const random = vi.fn(() => value);
+  const onChangeCourse = vi.fn();
   const user = userEvent.setup();
-  const view = render(<Practice random={random} now={now} />);
-  return { user, random, ...view };
+  const view = render(practice(random, now, options, onChangeCourse));
+  const switchTo = (next: Options) =>
+    view.rerender(practice(random, now, { ...options, ...next }, onChangeCourse));
+  return { user, random, onChangeCourse, switchTo, ...view };
 };
 
 const startButton = (name: string) => screen.getByRole("button", { name });
@@ -27,6 +50,8 @@ const term = (name: string) => screen.getByText(name).nextElementSibling;
 const points = () => term("Total points");
 const englishPoints = () => term("English points");
 const streak = () => term("Daily streak");
+/** Saved progress: the score is not shown while a question is on screen. */
+const saved = () => JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
 
 type Saved = {
   points?: number;
@@ -118,13 +143,13 @@ describe("lesson list", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  test("lists the letters of each lesson, Greek ones by name", async () => {
-    const { user } = setup();
+  test("lists the letters of each lesson, Greek ones by name", () => {
+    const { switchTo } = setup();
     expect(
       screen.getAllByRole("listitem")[0].querySelector(".lesson-letters")
     ).toHaveTextContent("Letters: a, b, c, d, e");
 
-    await user.click(screen.getByRole("radio", { name: "Greek" }));
+    switchTo({ language: "greek" });
     const letters = screen.getAllByRole("listitem")[0].querySelector(".lesson-letters");
     expect(letters).toHaveTextContent(/alpha, β?beta/);
     expect(within(letters as HTMLElement).getByText("α")).toHaveAttribute("lang", "el");
@@ -149,6 +174,13 @@ describe("lesson list", () => {
   });
 });
 
+const KEY_LETTERS = ["F", "D", "S", "J", "K", "L"];
+/** The button that raises a dot: a brailler key, or a dot of the cell. */
+const dotName = (dotEntry: DotEntry, dot: number) =>
+  dotEntry === "keys" ? `Dot ${dot}, key ${KEY_LETTERS[dot - 1]}` : `Dot ${dot}`;
+const dotButton = (dotEntry: DotEntry, dot: number) =>
+  screen.getByRole("button", { name: dotName(dotEntry, dot) });
+
 describe("letter to dots", () => {
   test("entering a lesson focuses its heading, then asks from its letters", async () => {
     const { user } = setup();
@@ -158,76 +190,113 @@ describe("letter to dots", () => {
     expect(screenHeading()).toHaveFocus();
     expect(screen.getByText("0 of 5 letters learnt")).toBeInTheDocument();
     expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
+    // A new player taps the cell's dots.
     expect(
       screen.getByRole("group", { name: /braille cell/i })
     ).toHaveAccessibleDescription("Write the letter a in braille");
+    expect(screen.queryByRole("application", { name: "Brailler keys" })).not.toBeInTheDocument();
     expect(status()).toHaveTextContent("");
+    // Points and streak stay on the lesson list, away from the question.
+    expect(screen.queryByText("Total points")).not.toBeInTheDocument();
+    expect(screen.queryByText("Daily streak")).not.toBeInTheDocument();
   });
 
-  test("keyboard: number keys raise dots, Enter checks and Enter moves on", async () => {
-    const { user } = setup();
+  test("Brailler keys: the keys are the buttons, the cell only shows", async () => {
+    const { user } = setup(0, undefined, { dotEntry: "keys" });
     await start(user);
-
-    await user.keyboard("1");
-    expect(screen.getByRole("button", { name: "Dot 1" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
-    await user.keyboard("{Enter}");
-
-    expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dot 1 makes a in English."
-    );
-    const next = screen.getByRole("button", { name: "Next question" });
-    expect(next).toHaveFocus();
-    expect(points()).toHaveTextContent("10");
-    expect(englishPoints()).toHaveTextContent("10");
-    expect(streak()).toHaveTextContent("1 day");
-
-    await user.keyboard("{Enter}");
-    expect(prompt()).toHaveAccessibleName("Write the letter b in braille");
-    expect(prompt()).toHaveFocus();
-    expect(status()).toHaveTextContent("");
-    expect(screen.getByRole("button", { name: "Dot 1" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
-    );
+    expect(
+      screen.getByRole("application", { name: "Brailler keys" })
+    ).toHaveAccessibleDescription(/^Write the letter a in braille On a keyboard/);
+    expect(
+      screen.queryByRole("group", { name: /braille cell/i })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("application", { name: "Braille keyboard" })).not.toBeInTheDocument();
   });
 
-  test("clicks: a wrong answer shows and announces the right dots", async () => {
-    const { user } = setup();
-    await start(user);
+  describe.each(["keys", "cell"] as const)("with %s", (dotEntry) => {
+    const setupMode = () => setup(0, undefined, { dotEntry });
 
-    await user.click(screen.getByRole("button", { name: "Dot 1" }));
-    await user.click(screen.getByRole("button", { name: "Dot 4" }));
-    await user.click(screen.getByRole("button", { name: "Check" }));
+    test("keyboard: number keys raise dots, Enter checks and Enter moves on", async () => {
+      const { user } = setupMode();
+      await start(user);
 
-    expect(status()).toHaveTextContent(
-      "Not quite. Dot 1 makes a in English. You raised dots 1 and 4."
-    );
-    expect(screen.getByText("Answer")).toBeInTheDocument();
-    expect(points()).toHaveTextContent("0");
-    // The cell is frozen: no dot buttons, and keys do nothing.
-    expect(screen.queryByRole("button", { name: "Dot 1" })).not.toBeInTheDocument();
-    await user.keyboard("2");
-    expect(status()).toHaveTextContent("You raised dots 1 and 4.");
+      await user.keyboard("1");
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
+      await user.keyboard("{Enter}");
 
-    await user.click(screen.getByRole("button", { name: "Next question" }));
-    expect(prompt()).toHaveFocus();
-    expect(screen.queryByText("Answer")).not.toBeInTheDocument();
-  });
+      expect(status()).toHaveTextContent(
+        "Correct, plus 10 points. Dot 1 makes a in English."
+      );
+      const next = screen.getByRole("button", { name: "Next question" });
+      expect(next).toHaveFocus();
+      expect(saved()).toMatchObject({ points: 10, streak: 1 });
 
-  test("Clear and Backspace empty the cell before checking", async () => {
-    const { user } = setup();
-    await start(user);
-    const dot1 = screen.getByRole("button", { name: "Dot 1" });
+      await user.keyboard("{Enter}");
+      expect(prompt()).toHaveAccessibleName("Write the letter b in braille");
+      expect(prompt()).toHaveFocus();
+      expect(status()).toHaveTextContent("");
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "false");
+    });
 
-    await user.keyboard("12");
-    await user.click(screen.getByRole("button", { name: "Clear" }));
-    expect(dot1).toHaveAttribute("aria-pressed", "false");
+    test("clicks: a wrong answer shows and announces the right dots", async () => {
+      const { user } = setupMode();
+      await start(user);
 
-    await user.keyboard("1{Backspace}");
-    expect(dot1).toHaveAttribute("aria-pressed", "false");
+      await user.click(dotButton(dotEntry, 1));
+      await user.click(dotButton(dotEntry, 4));
+      await user.click(screen.getByRole("button", { name: "Check" }));
+
+      expect(status()).toHaveTextContent(
+        "Not quite. Dot 1 makes a in English. You raised dots 1 and 4."
+      );
+      expect(screen.getByText("Answer")).toBeInTheDocument();
+      expect(saved().points).toBe(0);
+      // The cell is frozen: no dot buttons, and keys do nothing.
+      expect(screen.queryByRole("button", { name: /^Dot 1/ })).not.toBeInTheDocument();
+      await user.keyboard("2");
+      expect(status()).toHaveTextContent("You raised dots 1 and 4.");
+
+      await user.click(screen.getByRole("button", { name: "Next question" }));
+      expect(prompt()).toHaveFocus();
+      expect(screen.queryByText("Answer")).not.toBeInTheDocument();
+    });
+
+    test("clicks: a right answer, b with dots 1 and 2", async () => {
+      const { user } = setupMode();
+      await start(user);
+      await user.keyboard("1{Enter}{Enter}");
+      expect(prompt()).toHaveAccessibleName("Write the letter b in braille");
+
+      await user.click(dotButton(dotEntry, 2));
+      await user.click(dotButton(dotEntry, 1));
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
+      expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "true");
+      await user.click(screen.getByRole("button", { name: "Check" }));
+      expect(status()).toHaveTextContent(
+        "Correct, plus 10 points. Dots 1 and 2 make b in English."
+      );
+      expect(saved().points).toBe(20);
+    });
+
+    test("Clear and Backspace empty the cell before checking", async () => {
+      const { user } = setupMode();
+      await start(user);
+      const dot1 = dotButton(dotEntry, 1);
+
+      await user.keyboard("12");
+      await user.click(screen.getByRole("button", { name: "Clear" }));
+      expect(dot1).toHaveAttribute("aria-pressed", "false");
+
+      await user.keyboard("1{Backspace}");
+      expect(dot1).toHaveAttribute("aria-pressed", "false");
+    });
+
+    test("chords do nothing outside the chord area", async () => {
+      const { user } = setupMode();
+      await start(user);
+      await user.keyboard("f");
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "false");
+    });
   });
 
   test("checking an empty cell asks for a dot instead of marking it wrong", async () => {
@@ -241,8 +310,8 @@ describe("letter to dots", () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
-  test("a chord typed in the braille keyboard answers, and focus returns there", async () => {
-    const { user } = setup();
+  test("Tap the cell: a chord typed in the braille keyboard answers, and focus returns there", async () => {
+    const { user } = setup(0, undefined, { dotEntry: "cell" });
     await start(user);
     const pad = screen.getByRole("application", { name: "Braille keyboard" });
 
@@ -264,17 +333,63 @@ describe("letter to dots", () => {
     expect(status()).toHaveTextContent(
       "Correct, plus 10 points. Dots 1 and 2 make b in English."
     );
-    expect(points()).toHaveTextContent("20");
+    expect(saved().points).toBe(20);
   });
 
-  test("chords do nothing outside the braille keyboard", async () => {
-    const { user } = setup();
+  test("Brailler keys: a chord typed in the keys answers, and focus returns there", async () => {
+    const { user } = setup(0, undefined, { dotEntry: "keys" });
     await start(user);
-    await user.keyboard("f");
-    expect(screen.getByRole("button", { name: "Dot 1" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
+    const keys = screen.getByRole("application", { name: "Brailler keys" });
+
+    // The keys area is the first Tab stop after the heading.
+    await user.tab();
+    expect(keys).toHaveFocus();
+    await user.keyboard("{f>}{/f}{Enter}");
+    expect(status()).toHaveTextContent("Correct, plus 10 points.");
+    expect(screen.getByRole("button", { name: "Next question" })).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+    const nextKeys = screen.getByRole("application", { name: "Brailler keys" });
+    expect(nextKeys).toHaveFocus();
+    expect(nextKeys).toHaveAccessibleDescription(
+      /^Write the letter b in braille On a keyboard, while the brailler keys have focus/
     );
+
+    await user.keyboard("{f>}{d>}{/d}{/f}{Enter}");
+    expect(status()).toHaveTextContent(
+      "Correct, plus 10 points. Dots 1 and 2 make b in English."
+    );
+    expect(saved().points).toBe(20);
+  });
+
+  test("Brailler keys: Tab, Space and Enter on the keys, then Check", async () => {
+    const { user } = setup(0, undefined, { dotEntry: "keys" });
+    await start(user);
+    await user.tab(); // the keys area
+    await user.tab(); // dot 3, the first key in Perkins order
+    expect(dotButton("keys", 3)).toHaveFocus();
+    await user.tab();
+    await user.tab();
+    expect(dotButton("keys", 1)).toHaveFocus();
+    // On a single key Enter toggles it, once, and does not check.
+    await user.keyboard("{Enter}");
+    expect(dotButton("keys", 1)).toHaveAttribute("aria-pressed", "true");
+    expect(status()).toHaveTextContent("");
+    await user.keyboard(" ");
+    expect(dotButton("keys", 1)).toHaveAttribute("aria-pressed", "false");
+    await user.keyboard(" ");
+    expect(dotButton("keys", 1)).toHaveAttribute("aria-pressed", "true");
+
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Check" })).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(status()).toHaveTextContent("Correct, plus 10 points.");
+    // Answered from the Check button, so the next question focuses the prompt.
+    await user.keyboard("{Enter}");
+    expect(prompt()).toHaveFocus();
   });
 });
 
@@ -324,7 +439,7 @@ describe("dots to letter", () => {
       "right"
     );
     expect(screen.getByRole("button", { name: "Next question" })).toHaveFocus();
-    expect(points()).toHaveTextContent("10");
+    expect(saved().points).toBe(10);
   });
 
   test("keyboard: a wrong answer names the right letter and the chosen one", async () => {
@@ -348,7 +463,7 @@ describe("dots to letter", () => {
       "data-mark",
       "right"
     );
-    expect(points()).toHaveTextContent("0");
+    expect(saved().points).toBe(0);
 
     await user.keyboard("{Enter}");
     expect(prompt()).toHaveFocus();
@@ -359,7 +474,7 @@ describe("dots to letter", () => {
 test("mixes both kinds of question", async () => {
   let value = 0;
   const user = userEvent.setup();
-  render(<Practice random={() => value} now={() => DAY} />);
+  render(practice(() => value, () => DAY));
   await start(user);
 
   expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
@@ -380,8 +495,7 @@ test("never ends an announcement sentence on a single letter", async () => {
 
 describe("Greek", () => {
   test("choices are marked as Greek and named for screen readers", async () => {
-    const { user } = setup(0.5);
-    await user.click(screen.getByRole("radio", { name: "Greek" }));
+    const { user } = setup(0.5, undefined, { language: "greek" });
     expect(screenHeading()).toHaveAccessibleName("Greek lessons");
     await start(user, "Start Alpha to zeta");
 
@@ -398,8 +512,7 @@ describe("Greek", () => {
   });
 
   test("letter to dots names the Greek letter", async () => {
-    const { user } = setup();
-    await user.click(screen.getByRole("radio", { name: "Greek" }));
+    const { user } = setup(0, undefined, { language: "greek" });
     await start(user, "Start Alpha to zeta");
     expect(prompt()).toHaveAccessibleName("Write the letter alpha in braille");
     expect(within(prompt()).getByText("α")).toHaveAttribute("lang", "el");
@@ -557,31 +670,28 @@ describe("going back and replaying", () => {
   });
 });
 
-test("each course keeps its own lesson progress", async () => {
+test("each course keeps its own lesson progress", () => {
   save({ completedLessons: { english: ["a-e"] } });
-  const { user } = setup();
+  const { switchTo } = setup();
   expect(screen.getByText("1 of 5 lessons done.")).toBeInTheDocument();
 
-  const greek = screen.getByRole("radio", { name: "Greek" });
-  await user.click(greek);
-  expect(greek).toHaveFocus();
+  switchTo({ language: "greek" });
   expect(screenHeading()).toHaveAccessibleName("Greek lessons");
   expect(screen.getByText("0 of 6 lessons done.")).toBeInTheDocument();
   expect(startButton("Start Alpha to zeta")).not.toHaveAttribute("aria-disabled");
   expect(startButton("Start Eta to mu")).toHaveAttribute("aria-disabled", "true");
-  expect(localStorage.getItem("braille-buddy:practice-language")).toBe("greek");
 
-  await user.click(screen.getByRole("radio", { name: "English" }));
+  switchTo({ language: "english" });
   expect(screen.getByText("1 of 5 lessons done.")).toBeInTheDocument();
 });
 
-test("remembers the chosen course", async () => {
-  const { user, unmount } = setup();
-  await user.click(screen.getByRole("radio", { name: "Greek" }));
-  unmount();
-  setup();
-  expect(screen.getByRole("radio", { name: "Greek" })).toBeChecked();
-  expect(screenHeading()).toHaveAccessibleName("Greek lessons");
+test("the lesson list names its course and offers to change it", async () => {
+  const { user, onChangeCourse } = setup();
+  // The course is chosen in Settings, not here.
+  expect(screen.queryByRole("radio")).not.toBeInTheDocument();
+  expect(screenHeading()).toHaveAccessibleName("English lessons");
+  await user.click(screen.getByRole("button", { name: "Change course" }));
+  expect(onChangeCourse).toHaveBeenCalledTimes(1);
 });
 
 test("keeps points and streak across a remount", async () => {
@@ -623,10 +733,11 @@ test("loads progress saved before lessons existed", async () => {
 
   await start(user, "Continue Letters a to e");
   await user.keyboard("1{Enter}");
+  // Totals are shown on the lesson list, not announced.
+  expect(status()).not.toHaveTextContent(/50|4 days/);
+  await user.click(screen.getByRole("button", { name: "Back to lessons" }));
   expect(points()).toHaveTextContent("50");
   expect(streak()).toHaveTextContent("4 days");
-  // Totals are shown, not announced.
-  expect(status()).not.toHaveTextContent(/50|4 days/);
 });
 
 test("still works when storage throws", async () => {
@@ -642,11 +753,10 @@ test("still works when storage throws", async () => {
   await start(user);
   await user.keyboard("1{Enter}");
   expect(status()).toHaveTextContent("Correct, plus 10 points.");
-  expect(points()).toHaveTextContent("10");
 
   await user.click(screen.getByRole("button", { name: "Back to lessons" }));
-  await user.click(screen.getByRole("radio", { name: "Greek" }));
-  expect(screenHeading()).toHaveAccessibleName("Greek lessons");
+  expect(screenHeading()).toHaveAccessibleName("English lessons");
+  expect(points()).toHaveTextContent("10");
 });
 
 test("passes its random source to the review picker", async () => {
