@@ -251,6 +251,19 @@ describe("letter to dots", () => {
   describe.each(["keys", "cell"] as const)("with %s", (dotEntry) => {
     const setupMode = () => setup(0, undefined, { dotEntry });
 
+    test("keyboard works from the first moment, with focus on the heading", async () => {
+      const { user } = setupMode();
+      await start(user);
+      expect(screenHeading()).toHaveFocus();
+
+      await user.keyboard("{f>}{/f}");
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
+      await user.keyboard("{Control>}2{/Control}");
+      expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "false");
+      await user.keyboard("{Enter}");
+      expect(status()).toHaveTextContent("Correct, plus 10 points.");
+    });
+
     test("keyboard: number keys raise dots, Enter checks and Enter moves on", async () => {
       const { user } = setupMode();
       await start(user);
@@ -325,13 +338,6 @@ describe("letter to dots", () => {
       await user.keyboard("1{Backspace}");
       expect(dot1).toHaveAttribute("aria-pressed", "false");
     });
-
-    test("chords do nothing outside the chord area", async () => {
-      const { user } = setupMode();
-      await start(user);
-      await user.keyboard("f");
-      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "false");
-    });
   });
 
   test("checking an empty cell asks for a dot instead of marking it wrong", async () => {
@@ -387,7 +393,7 @@ describe("letter to dots", () => {
     const nextKeys = screen.getByRole("application", { name: "Brailler keys" });
     expect(nextKeys).toHaveFocus();
     expect(nextKeys).toHaveAccessibleDescription(
-      /^Write the letter b in braille On a keyboard, while the brailler keys have focus/
+      /^Write the letter b in braille On a keyboard, hold/
     );
 
     await user.keyboard("{f>}{d>}{/d}{/f}{Enter}");

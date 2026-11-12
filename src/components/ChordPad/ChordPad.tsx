@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { CHORD_KEYS } from "../../hooks/useBrailleKeys";
 
 type ChordPadProps = {
-  /** Pass the same ref to useBrailleKeys as `chordArea`. */
+  /** For moving focus back to the pad. */
   ref?: React.Ref<HTMLDivElement>;
   /** Mention Enter in the instructions (practice mode). */
   canSubmit?: boolean;

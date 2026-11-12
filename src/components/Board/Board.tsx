@@ -91,12 +91,12 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
 
   const clearCell = React.useCallback(() => setPositions(CLEAR_CELL), []);
 
-  const padRef = React.useRef<HTMLDivElement>(null);
+  // Listens on the document while Explore is open, so the keys work without
+  // clicking into the pad first.
   useBrailleKeys({
     onToggleDot: toggleDot,
     onChord: setPositions,
     onClear: clearCell,
-    chordArea: padRef,
   });
 
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -153,7 +153,7 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
               <kbd>1</kbd> to <kbd>6</kbd>, or type a whole letter as a chord in
               the braille keyboard below.
             </p>
-            <ChordPad ref={padRef} />
+            <ChordPad />
           </>
         )}
       </div>
@@ -161,7 +161,6 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
       <div className={withKeys ? "action base brailler-base" : "action"}>
         {withKeys && (
           <BraillerKeys
-            ref={padRef}
             positions={positions}
             onToggleDot={toggleDot}
             onChord={setPositions}

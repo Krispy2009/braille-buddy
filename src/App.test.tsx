@@ -378,3 +378,54 @@ describe('Home and the screens it opens', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });
+
+describe.each(['keys', 'cell'] as const)('Explore keyboard with %s', (dotEntry) => {
+  beforeEach(() => chooseEntry(dotEntry));
+  const dotsRaised = 'Dots 1, 4, 5 raised. d in English. delta in Greek.';
+
+  test('chords and number keys work as soon as the screen opens, with no click', async () => {
+    const user = await renderExplore();
+    // Focus is on the heading, not in the pad.
+    expect(document.body).toContainElement(document.activeElement as HTMLElement);
+    expect(screen.getByRole('application')).not.toContainElement(
+      document.activeElement as HTMLElement
+    );
+
+    await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+    expect(screen.getByRole('status')).toHaveTextContent(dotsRaised);
+    await user.keyboard('{Backspace}');
+    expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+    await user.keyboard('2');
+    expect(dotButton(dotEntry, 2)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('handles a chord once when focus is inside the pad', async () => {
+    const user = await renderExplore();
+    await user.click(screen.getByRole('application'));
+    await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+    expect(screen.getByRole('status')).toHaveTextContent(dotsRaised);
+  });
+
+  test('ignores the keys with Ctrl held', async () => {
+    const user = await renderExplore();
+    await user.keyboard('{Control>}{f>}{j>}{/j}{/f}1{/Control}');
+    expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+  });
+
+  test('stops listening when Explore closes', async () => {
+    const user = await renderExplore();
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    await user.keyboard('1');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+test('Explore ignores the keys while typing in a field', async () => {
+  const user = await renderExplore();
+  const field = document.createElement('input');
+  document.body.append(field);
+  field.focus();
+  await user.keyboard('{f>}{j>}{/j}{/f}12');
+  expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+  field.remove();
+});

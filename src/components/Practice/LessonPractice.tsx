@@ -209,7 +209,6 @@ export const LessonPractice = ({
     onChord: (cell) => writing && setPositions(cell),
     onClear: () => writing && setPositions(CLEAR_CELL),
     onSubmit: () => (asking ? check() : goNext()),
-    chordArea: padRef,
   });
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
