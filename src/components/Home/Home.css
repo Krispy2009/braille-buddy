@@ -1,0 +1,217 @@
+.home {
+  gap: 0.875rem;
+  padding-bottom: 0;
+}
+
+.home-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.625rem;
+}
+
+/* The wordmark: the name in spaced capitals. Written normally in the markup,
+   so screen readers say "Braille Buddy", not the letters. */
+.wordmark {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.home-stats {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.home-headline {
+  margin: 0.25rem 0 0;
+  font-size: 2.875rem;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+/* A fanned stack of letter cards; the front one is the next card. */
+.deck {
+  position: relative;
+  align-self: center;
+  width: 18rem;
+  max-width: 100%;
+  height: 18.75rem;
+  margin-top: 0.25rem;
+}
+
+.deck-card {
+  position: absolute;
+  width: 13.125rem;
+  height: 16.875rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--bg);
+}
+
+.deck-back-1 {
+  left: 2.25rem;
+  top: 1rem;
+  transform: rotate(8deg);
+}
+
+.deck-back-2 {
+  left: 1rem;
+  top: 0.625rem;
+  transform: rotate(-5deg);
+}
+
+.deck-front {
+  left: 1.375rem;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 13.75rem;
+  height: 17.5rem;
+  padding: 1.125rem 1.25rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 8px 10px 0 var(--line);
+}
+
+.deck-card-top,
+.deck-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.deck-card-middle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.deck-letter {
+  font-size: 6.5rem;
+  font-weight: 900;
+  line-height: 0.8;
+}
+
+/* The letter's own dots, embossed out of the card. */
+.deck-dots {
+  display: grid;
+  grid-template-rows: repeat(3, 1.375rem);
+  grid-template-columns: repeat(2, 1.375rem);
+  grid-auto-flow: column;
+  gap: 0.625rem 0.75rem;
+}
+
+.deck-dot {
+  place-self: center;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--on-accent);
+}
+
+.deck-dot.raised {
+  width: 1.375rem;
+  height: 1.375rem;
+  background: var(--accent);
+  box-shadow: -2px -2px 3px color-mix(in srgb, var(--hi) 55%, transparent),
+    3px 3px 4px var(--shade);
+}
+
+/* No soft shadows in High vis, so the raised dots take the card's ink. */
+[data-theme="high-visibility"] .deck-dot.raised {
+  background: var(--on-accent);
+}
+
+.home-today {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.home-explore {
+  align-self: flex-start;
+  margin-left: -1rem;
+  margin-top: -0.25rem;
+}
+
+/* The black base, as on the brailler: a row of keys showing the next
+   letter, then the actions. */
+.home-base {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: auto calc(-1 * var(--gutter)) 0;
+  padding: 1.125rem 1.125rem 1.5rem;
+  border-radius: 1.75rem 1.75rem 0 0;
+}
+
+.home-keys {
+  display: flex;
+  justify-content: center;
+  gap: 0.4375rem;
+}
+
+.home-key {
+  width: 2.375rem;
+  height: 1.375rem;
+  border-radius: 0.5rem;
+  background: var(--key);
+  box-shadow: inset -2px -3px 0 var(--key-edge);
+}
+
+.home-key:nth-child(3) {
+  margin-right: 1rem;
+}
+
+.home-key.pressed {
+  background: var(--accent);
+  box-shadow: none;
+  transform: translateY(3px);
+}
+
+[data-theme="high-visibility"] .home-key.pressed {
+  outline: 2px solid var(--on-base);
+}
+
+.home-actions {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.home-actions .key-button {
+  flex: 1;
+  min-height: 3.625rem;
+}
+
+.site-footer {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 1.5rem var(--gutter) 2rem;
+  font-size: 0.875rem;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--text);
+}
+
+.about {
+  margin: 0 0 0.5rem;
+}

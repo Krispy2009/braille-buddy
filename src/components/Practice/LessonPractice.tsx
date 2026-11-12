@@ -1,6 +1,7 @@
 import React from "react";
 import type { Course, Lesson } from "../../courses";
 import {
+  cellForLetter,
   CellType,
   CLEAR_CELL,
   DotKey,
@@ -15,13 +16,14 @@ import {
   lessonStates,
   metLetters,
 } from "../../game/lessons";
-import { Progress, recordAnswer } from "../../game/progress";
+import { currentStreak, Progress, recordAnswer } from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
 import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
 import { Cell } from "../Cell/Cell";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
+import { CloseIcon } from "../Icons/Icons";
 import { Choices } from "./Choices";
 import { Letter } from "./Letter";
 import {
@@ -42,6 +44,7 @@ type LessonPracticeProps = {
   /** Leave out to practise every letter met so far. */
   lesson?: Lesson;
   dotEntry: DotEntry;
+  showKeyLetters: boolean;
   progress: Progress;
   onProgress: (next: Progress) => void;
   onBack: () => void;
@@ -92,6 +95,7 @@ export const LessonPractice = ({
   course,
   lesson,
   dotEntry,
+  showKeyLetters,
   progress,
   onProgress,
   onBack,
@@ -209,69 +213,88 @@ export const LessonPractice = ({
   });
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
+  const total = source.letters.length;
+  const right = answer?.correct === true;
+  const wrong = answer !== null && !answer.correct;
+  const answerDots = answerCell(question.item);
+
+  // The action area is one element throughout, so the live region inside it
+  // is never remounted: while writing it is the brailler base (or a plain
+  // row), once answered it becomes the feedback sheet.
+  const actionClass = answer
+    ? `action sheet ${right ? "sheet-right" : "sheet-wrong base"}`
+    : withKeys
+      ? "action base brailler-base"
+      : "action";
+
+  // On the black base the main button is a key; elsewhere it is black.
+  const mainButton = wrong ? "key-button" : "primary-button";
 
   return (
-    <div className="practice">
-      <div className="practice-bar">
-        <button type="button" className="clear-button" onClick={onBack}>
-          Back to lessons
+    <div className="screen lesson">
+      <header className="frame">
+        <button
+          type="button"
+          className="round-button"
+          aria-label="Back to lessons"
+          onClick={onBack}
+        >
+          <CloseIcon />
         </button>
-      </div>
+        <div
+          className="progress-track"
+          role="progressbar"
+          aria-label="Letters learnt"
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-valuenow={learnt}
+          aria-valuetext={`${learnt} of ${total} letters learnt`}
+        >
+          <span
+            className="progress-fill"
+            style={{ width: `${total ? (learnt / total) * 100 : 0}%` }}
+          />
+        </div>
+        <span className="progress-count" aria-hidden="true">
+          {learnt}/{total}
+        </span>
+      </header>
 
       {/* A plain div, not a labelled section: a region named after the heading
           would have its name read twice when focus lands on the heading. */}
-      <div className="lesson-practice">
-        <h2
-          ref={headingRef}
-          tabIndex={-1}
-          className="lesson-heading"
-        >
-          <span className="lesson-course">
+      <div className="prompt-block">
+        <h2 ref={headingRef} tabIndex={-1} className="eyebrow lesson-heading">
+          <span>
             {course.name}
             <span className="sr-only">:</span>
           </span>{" "}
+          <span aria-hidden="true">· </span>
           {title}
         </h2>
-        {/* Shown, not announced: the result already says how the answer
-            went, and a lesson finishing gets its own sentence. */}
-        <p className="lesson-learnt">
-          {learnt} of {source.letters.length} letters learnt
-        </p>
-
-        <h3 id={promptId} ref={promptRef} tabIndex={-1} className="prompt">
+        <h3 id={promptId} ref={promptRef} tabIndex={-1} className="task prompt">
           {question.kind === "dots" ? (
             <>
               Write the {[...letter].length > 1 ? "letters" : "letter"}{" "}
-              <Letter letter={letter} language={language} className="target" />{" "}
+              <Letter letter={letter} language={language} className="letter-chip" />{" "}
               in braille
             </>
           ) : (
-            <>Which letter has {dotsInWords(answerCell(question.item))}?</>
+            <>Which letter has {dotsInWords(answerDots)}?</>
           )}
         </h3>
+      </div>
 
-        <div className="plate">
-          {writing && !withKeys ? (
-            <Cell positions={positions} onClick={toggleDot} describedBy={promptId} />
-          ) : (
-            <Cell
-              positions={
-                question.kind === "dots" ? positions : answerCell(question.item)
-              }
-            />
-          )}
-        </div>
-
-        {withKeys && (
-          <BraillerKeys
-            ref={padRef}
-            positions={positions}
-            onToggleDot={toggleDot}
-            onChord={setPositions}
-            describedBy={`${promptId} ${keysHelpId}`}
+      <div className="hero">
+        {writing && !withKeys ? (
+          <Cell positions={positions} onClick={toggleDot} describedBy={promptId} />
+        ) : (
+          <Cell
+            positions={question.kind === "dots" ? positions : answerDots}
+            // Only the cell being tapped is large; after the answer it makes
+            // room for the feedback sheet.
+            size={question.kind === "dots" && asking && !withKeys ? undefined : "medium"}
           />
         )}
-
         {question.kind === "letter" && (
           <Choices
             choices={question.choices}
@@ -282,69 +305,124 @@ export const LessonPractice = ({
             onChoose={choose}
           />
         )}
+        {writing && !withKeys && (
+          <ChordPad ref={padRef} canSubmit describedBy={promptId} />
+        )}
+        {withKeys && (
+          <>
+            <p className="eyebrow keys-hint" aria-hidden="true">
+              tap keys one by one or together
+            </p>
+            <BraillerKeysHelp id={keysHelpId} canSubmit />
+          </>
+        )}
+      </div>
 
+      <div className={actionClass}>
+        {withKeys && (
+          <BraillerKeys
+            ref={padRef}
+            positions={positions}
+            onToggleDot={toggleDot}
+            onChord={setPositions}
+            describedBy={`${promptId} ${keysHelpId}`}
+            showLetters={showKeyLetters}
+          />
+        )}
+        {/* Shown, not announced: the result in words follows. */}
+        {answer && (
+          <div className="sheet-head" aria-hidden="true">
+            {right ? (
+              <span className="stamp">
+                {answer.kind === "dots" ? "Pressed it" : "Got it"}
+              </span>
+            ) : (
+              <span className="cross">
+                <CloseIcon />
+              </span>
+            )}
+          </div>
+        )}
         <p role="status" className="feedback">
           {status}
         </p>
-
-        {answer ? (
-          <>
-            {answer.kind === "dots" && !answer.correct && (
-              <div className="answer-card" aria-hidden="true">
-                <span className="answer-label">Answer</span>
-                <span className="letter" lang={LANGUAGE_TAGS[language]}>
-                  {letter}
-                </span>
-                <div className="plate small">
-                  <Cell positions={answerCell(question.item)} size="small" />
-                </div>
-              </div>
-            )}
-            {finished && (
-              <div className="actions lesson-finished">
-                {nextLesson && (
-                  <button
-                    ref={finishRef}
-                    type="button"
-                    className="primary-button"
-                    onClick={() => onStartLesson(nextLesson)}
-                  >
-                    Next lesson
-                  </button>
+        {answer && !answer.correct && (
+          <div className="compare" aria-hidden="true">
+            <div className="compare-side">
+              <span className="compare-label">
+                {answer.kind === "dots" ? (
+                  "You pressed"
+                ) : (
+                  <>
+                    You chose{" "}
+                    <span lang={LANGUAGE_TAGS[language]}>{answer.choice}</span>
+                  </>
                 )}
-                <button
-                  ref={nextLesson ? undefined : finishRef}
-                  type="button"
-                  className={nextLesson ? "clear-button" : "primary-button"}
-                  onClick={onBack}
-                >
-                  Back to lessons
-                </button>
-              </div>
+              </span>
+              <Cell
+                positions={
+                  answer.kind === "dots"
+                    ? answer.cell
+                    : (cellForLetter(answer.choice, language) ?? CLEAR_CELL)
+                }
+                size="small"
+              />
+            </div>
+            <div className="compare-side">
+              <span className="compare-label">
+                Answer <span lang={LANGUAGE_TAGS[language]}>{letter}</span>
+              </span>
+              <Cell positions={answerDots} size="small" />
+            </div>
+          </div>
+        )}
+        {finished && (
+          <p className="eyebrow totals">
+            Lesson done · {progress.points} pts · day {currentStreak(progress, now())}
+          </p>
+        )}
+        {finished && nextLesson && (
+          <button
+            ref={finishRef}
+            type="button"
+            className={mainButton}
+            onClick={() => onStartLesson(nextLesson)}
+          >
+            Next lesson
+          </button>
+        )}
+        {answer ? (
+          <div className={finished ? "sheet-links" : "sheet-next"}>
+            {finished && (
+              <button
+                ref={nextLesson ? undefined : finishRef}
+                type="button"
+                className={nextLesson ? "quiet-button" : mainButton}
+                onClick={onBack}
+              >
+                Back to lessons
+              </button>
             )}
             <button
               ref={nextRef}
               type="button"
-              className={finished ? "clear-button next-button" : "primary-button next-button"}
+              className={finished ? "quiet-button" : mainButton}
               onClick={goNext}
             >
               {finished ? "Keep practising" : "Next question"}
             </button>
-          </>
+          </div>
         ) : (
           question.kind === "dots" && (
             <>
-              <div className="actions">
-                <button type="button" className="primary-button" onClick={check}>
-                  Check
-                </button>
-                <ClearButton onClick={() => setPositions(CLEAR_CELL)} />
-              </div>
-              {withKeys ? (
-                <BraillerKeysHelp id={keysHelpId} canSubmit />
-              ) : (
-                <ChordPad ref={padRef} canSubmit describedBy={promptId} />
-              )}
+              <button
+                type="button"
+                className={withKeys ? "key-button" : "primary-button"}
+                onClick={check}
+              >
+                Press it
+              </button>
+              <ClearButton onClick={() => setPositions(CLEAR_CELL)} />
             </>
           )
         )}

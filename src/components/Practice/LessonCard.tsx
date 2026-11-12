@@ -47,7 +47,7 @@ export const LessonCard = ({
         </h3>
         {/* The state in words, so it never rests on the border style alone.
             Hidden here because the button's description already says it. */}
-        <span className="chip lesson-state" aria-hidden="true">
+        <span className="lesson-state" aria-hidden="true">
           {STATE_LABELS[state]}
         </span>
       </div>
@@ -75,7 +75,7 @@ export const LessonCard = ({
         data-return={lesson.id}
         id={buttonId}
         type="button"
-        className={state === "open" ? "primary-button" : "clear-button"}
+        className={state === "open" ? "primary-button" : "outline-button"}
         aria-labelledby={`${buttonId} ${titleId}`}
         aria-describedby={detailsId}
         aria-disabled={locked || undefined}
