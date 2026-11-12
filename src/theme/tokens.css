@@ -1,10 +1,12 @@
 /* Press design tokens. The only place colours are defined: components and
    index.css use these names, never raw values. Keyed on the data-theme
    values the theme switcher and the pre-paint script in index.html set:
-   light = Paper, dark = Ink, high-visibility = High vis. */
+   light = Paper, dark = Ink, high-visibility = High vis. The selectors
+   match any element, not only the root, so a small preview (the theme
+   cards in Settings) can show another theme inside the current one. */
 
 :root,
-:root[data-theme="light"] {
+[data-theme="light"] {
   color-scheme: light;
   --bg: #eceae4;
   --surface: #eceae4;
@@ -27,7 +29,7 @@
     monospace;
 }
 
-:root[data-theme="dark"] {
+[data-theme="dark"] {
   color-scheme: dark;
   --bg: #17171a;
   --surface: #1f1f23;
@@ -46,7 +48,7 @@
 
 /* Black on signal yellow, like tactile signage: flat, no soft shadows,
    thicker lines. */
-:root[data-theme="high-visibility"] {
+[data-theme="high-visibility"] {
   color-scheme: light;
   --bg: #ffd60a;
   --surface: #ffd60a;
