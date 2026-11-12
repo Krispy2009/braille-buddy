@@ -2,6 +2,7 @@ import React from "react";
 import { CellType, CLEAR_CELL, DotKey } from "../../game/braille";
 import { CHORD_KEYS } from "../../hooks/useBrailleKeys";
 import { isTouchOnly } from "../ChordPad/ChordPad";
+import "./BraillerKeys.css";
 
 type BraillerKeysProps = {
   /** Pass the same ref to useBrailleKeys as `chordArea`. */
@@ -13,6 +14,9 @@ type BraillerKeysProps = {
   onChord: (cell: CellType) => void;
   /** Ids of text read when the keys take focus: the question, then the help. */
   describedBy?: string;
+  /** Print the keyboard letter under each number (a Comfort setting). The
+      letter stays in the key's name either way. */
+  showLetters?: boolean;
 };
 
 const KEY_FOR_DOT = Object.fromEntries(
@@ -53,6 +57,7 @@ export const BraillerKeys = ({
   onToggleDot,
   onChord,
   describedBy,
+  showLetters = true,
 }: BraillerKeysProps) => {
   const touches = React.useRef(new Map<number, DotKey>());
   const chord = React.useRef({ dots: new Set<DotKey>(), multi: false, aborted: false });
@@ -98,7 +103,7 @@ export const BraillerKeys = ({
   return (
     <div
       ref={ref}
-      className="brailler-keys"
+      className={showLetters ? "brailler-keys" : "brailler-keys no-letters"}
       role="application"
       aria-label="Brailler keys"
       aria-describedby={describedBy}

@@ -11,47 +11,44 @@ type DotProps = {
   onClick?: (dot: keyof CellType) => void;
 };
 
+/* Raised: an orange dot standing on the plate, solid rim, hard shadow.
+   Flat: a dimple pressed into the plate, dashed rim. Shape and rim tell
+   them apart as well as colour. Sizes come from the cell (Cell.css). */
 const DotButton = styled.button<{ $on: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--dot-size, 4.5rem);
-  height: var(--dot-size, 4.5rem);
-  border-radius: 50%;
+  width: var(--dot-size, 5rem);
+  height: var(--dot-size, 5rem);
   padding: 0;
-  font: inherit;
-  font-family: var(--font-mono);
-  font-size: var(--dot-font-size, 1.1rem);
-  font-weight: var(--label-weight);
+  border-radius: 50%;
+  font-family: var(--font-ui);
+  font-size: var(--dot-font-size, 1.5rem);
+  font-weight: 900;
+  line-height: 1;
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 100ms ease, box-shadow 100ms ease;
 
   &:is(span) {
     cursor: default;
   }
 
-  /* Off: a flat mark pressed into the plate. On: a raised dot. Colors
-     come from the theme tokens (theme/tokens.css, mapped in index.css). */
-  color: ${({ $on }) => ($on ? "var(--dot-on-fg)" : "var(--dot-off-fg)")};
-  background: ${({ $on }) => ($on ? "var(--dot-on-bg)" : "var(--dot-off-bg)")};
-  border: 3px
-    ${({ $on }) => ($on ? "solid" : "var(--dot-off-border-style, solid)")}
-    ${({ $on }) => ($on ? "var(--dot-on-border)" : "var(--dot-off-border)")};
+  border: var(--line-width) ${({ $on }) => ($on ? "solid" : "dashed")} var(--line);
+  color: ${({ $on }) => ($on ? "var(--on-accent)" : "var(--text-soft)")};
+  background: ${({ $on }) => ($on ? "var(--accent)" : "var(--surface)")};
   box-shadow: ${({ $on }) =>
-    $on ? "var(--dot-on-shadow)" : "var(--dot-off-shadow)"};
-  transform: ${({ $on }) => ($on ? "translateY(var(--dot-lift))" : "none")};
+    $on
+      ? "var(--dot-lift-x, 4px) var(--dot-lift-y, 5px) 0 var(--line)"
+      : "inset 4px 4px 8px var(--shade), inset -4px -4px 8px var(--hi)"};
 
-  &:focus-visible {
-    outline: 3px solid var(--plate-focus);
-    outline-offset: 4px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+  &:is(button):active {
+    transform: translate(2px, 3px);
   }
 
   @media (forced-colors: active) {
-    border: 2px solid ButtonText;
+    border: 2px ${({ $on }) => ($on ? "solid" : "dashed")} ButtonText;
     background: ${({ $on }) => ($on ? "Highlight" : "ButtonFace")};
     color: ${({ $on }) => ($on ? "HighlightText" : "ButtonText")};
     forced-color-adjust: none;

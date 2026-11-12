@@ -1,0 +1,130 @@
+/* Six keys on the black base, in Perkins order: 3 2 1, a gap, 4 5 6.
+   A pressed key turns orange and sinks 5px into the base, so pressed and
+   not pressed differ in depth and shadow as well as colour. */
+.brailler-keys {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.5rem, 4vw, 1rem);
+  padding: 0.25rem;
+  border-radius: 1rem;
+  outline-offset: 2px;
+}
+
+/* Chord typing works while focus is anywhere in here, so show that. */
+.brailler-keys:has(:focus-visible) {
+  outline: 2px dashed var(--on-base);
+}
+
+.brailler-hand {
+  display: flex;
+  gap: clamp(0.25rem, 1.5vw, 0.375rem);
+}
+
+.brailler-key {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  /* Three keys a hand still fit a 320px screen with bigger text. */
+  width: clamp(44px, 13.4vw, 3.25rem);
+  height: 4.625rem;
+  padding: 0;
+  border: var(--line-width) solid var(--on-base);
+  border-radius: 0.875rem;
+  background: var(--key);
+  color: var(--text);
+  box-shadow: inset -3px -4px 0 var(--key-edge), 0 5px 0 var(--key-edge);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+  /* No double-tap zoom delay, no text selection or callout on a long press;
+     panning and pinch zoom still work. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* The pressed style is the feedback; Android's tap flash would cover it. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brailler-key[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+  transform: translateY(5px);
+}
+
+.brailler-key-dot {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.brailler-key-letter {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.no-letters .brailler-key-letter {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .brailler-key {
+    forced-color-adjust: none;
+    color: ButtonText;
+    background: ButtonFace;
+    border-color: ButtonText;
+  }
+
+  .brailler-key[aria-pressed="true"] {
+    color: HighlightText;
+    background: Highlight;
+  }
+
+  .brailler-keys:has(:focus-visible) {
+    outline-color: Highlight;
+  }
+}
+
+/* The instructions: always read by screen readers, and on screen only while
+   keyboard focus is in the keys or in the help itself, so the base stays
+   uncluttered for touch. A short typed hint next to the cell stands in for
+   them. :focus-visible, not :focus-within, so a tap or click never shows
+   them: the keys would jump under the finger before it lifts. */
+.brailler-help {
+  text-align: center;
+}
+
+.brailler-help:not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+body:has(.brailler-keys:focus-visible, .brailler-keys :focus-visible) .brailler-help {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Revealed for keyboard users: only the keyboard part, not the touch tip. */
+body:has(.brailler-keys:focus-visible, .brailler-keys :focus-visible)
+  .brailler-help
+  > .help:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}

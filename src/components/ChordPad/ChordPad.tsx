@@ -13,62 +13,73 @@ type ChordPadProps = {
 
 const Pad = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
-  max-width: 22rem;
-  padding: 0.9rem 1rem;
-  border: 2px dashed var(--line);
+  justify-content: center;
+  gap: 0.25rem 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.9rem;
+  border: 2px dashed transparent;
   border-radius: 0.75rem;
-  background: var(--tile);
-  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-soft);
   cursor: pointer;
 
   &[data-active="true"] {
+    border-color: var(--line);
     border-style: solid;
-    border-color: var(--focus);
+    color: var(--text);
     cursor: default;
   }
 
   &:focus-visible,
   &:focus {
     outline: 3px solid var(--focus);
-    outline-offset: 3px;
+    outline-offset: 2px;
   }
 
   @media (forced-colors: active) {
     border-color: ButtonText;
+  }
+`;
 
-    &[data-active="true"] {
-      border-color: Highlight;
-    }
+const Wrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  /* The full instructions take room only while the pad has focus. */
+  &:not(:focus-within) .chord-pad-help {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 `;
 
 const Keys = styled.span`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem;
+  display: inline-flex;
+  gap: 0.45rem;
 
-  & > span:nth-child(3) {
-    margin-right: 1rem;
+  & > span:nth-child(3)::after {
+    content: "·";
+    margin-left: 0.45rem;
   }
 `;
 
-const KeyCap = styled.span`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
+const KeyCap = styled.kbd`
+  border: 0;
+  padding: 0;
+  font-size: 1em;
 `;
 
-// Keyboard order, so dot 1 sits under the left index finger as on a Perkins.
-const KEYS = ["KeyS", "KeyD", "KeyF", "KeyJ", "KeyK", "KeyL"].map((code) => ({
-  label: code.slice(3),
-  dot: CHORD_KEYS[code].slice(3),
-}));
+// Read as the dots go: F D S are dots 1 2 3, J K L are dots 4 5 6.
+const KEYS = Object.keys(CHORD_KEYS).map((code) => code.slice(3));
 
 // Phones and tablets without a mouse or trackpad. A blind player may still
 // pair a Bluetooth keyboard, which no media query reveals, so the pad is
@@ -94,7 +105,7 @@ export const ChordPad = ({
   const [open, setOpen] = React.useState(false);
 
   const pad = (
-    <div className="chord-pad">
+    <Wrap className="chord-pad">
       <Pad
         ref={ref}
         tabIndex={0}
@@ -106,22 +117,20 @@ export const ChordPad = ({
         onBlur={() => setActive(false)}
       >
         <span aria-hidden="true">
-          {active
-            ? "Chord typing is on"
-            : "Select here or Tab here to type chords"}
+          {active ? "Chord typing is on:" : "Keyboard works too:"}
         </span>
         <Keys aria-hidden="true">
-          {KEYS.map(({ label, dot }) => (
-            <KeyCap key={label}>
-              <kbd>{label}</kbd>
-              {dot}
-            </KeyCap>
+          {KEYS.map((label) => (
+            <span key={label}>
+              <KeyCap>{label}</KeyCap>
+            </span>
           ))}
         </Keys>
       </Pad>
-      {/* Outside the application so browse mode can read it too. Escape is
-          left out on purpose: NVDA takes it to leave focus mode. */}
-      <p id={helpId} className="help">
+      {/* Outside the application so browse mode can read it too, and shown
+          on screen while the pad has focus. Escape is left out on purpose:
+          NVDA takes it to leave focus mode. */}
+      <p id={helpId} className="help chord-pad-help">
         Hold <kbd>F</kbd> <kbd>D</kbd> <kbd>S</kbd> for dots 1 2 3 and{" "}
         <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> for dots 4 5 6 together, like a
         Perkins brailler, then let go to write the letter. Keys{" "}
@@ -135,7 +144,7 @@ export const ChordPad = ({
         )}{" "}
         Press <kbd>Tab</kbd> to leave.
       </p>
-    </div>
+    </Wrap>
   );
 
   if (!collapsible) {
