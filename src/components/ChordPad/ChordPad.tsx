@@ -72,7 +72,7 @@ const KEYS = ["KeyS", "KeyD", "KeyF", "KeyJ", "KeyK", "KeyL"].map((code) => ({
 // Phones and tablets without a mouse or trackpad. A blind player may still
 // pair a Bluetooth keyboard, which no media query reveals, so the pad is
 // collapsed there rather than removed.
-const isTouchOnly = (): boolean =>
+export const isTouchOnly = (): boolean =>
   !!window.matchMedia?.("(pointer: coarse)").matches &&
   !window.matchMedia("(any-pointer: fine)").matches;
 

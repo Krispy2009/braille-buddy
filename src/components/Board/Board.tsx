@@ -1,4 +1,5 @@
 import React from "react";
+import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
 import { Cell } from "../Cell/Cell";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
@@ -11,6 +12,7 @@ import {
   raisedDots,
   spokenLetter,
 } from "../../game/braille";
+import type { DotEntry } from "../../game/settings";
 
 type Reading = { course: Course; letter?: string };
 
@@ -63,7 +65,7 @@ const Result = ({ label, lang, letter, spoken }: ResultProps) => (
   </div>
 );
 
-export const Board = () => {
+export const Board = ({ dotEntry }: { dotEntry: DotEntry }) => {
   const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
 
   // One result per course, so a new course file shows up here on its own.
@@ -87,16 +89,33 @@ export const Board = () => {
   });
 
   const helpId = React.useId();
+  const withKeys = dotEntry === "keys";
 
   return (
     <div className="board">
       <div className="plate">
-        <Cell
+        {withKeys ? (
+          // Read-only: the keys below are the buttons, and the status
+          // region says the dots in words.
+          <Cell positions={positions} />
+        ) : (
+          <Cell
+            positions={positions}
+            onClick={toggleDot}
+            describedBy={helpId}
+          />
+        )}
+      </div>
+
+      {withKeys && (
+        <BraillerKeys
+          ref={padRef}
           positions={positions}
-          onClick={toggleDot}
+          onToggleDot={toggleDot}
+          onChord={setPositions}
           describedBy={helpId}
         />
-      </div>
+      )}
 
       <dl className="results" aria-label="Translation">
         {readings.map(({ course, letter }) => {
@@ -115,13 +134,19 @@ export const Board = () => {
 
       <ClearButton onClick={clearCell} />
 
-      <p id={helpId} className="help">
-        Select a dot to raise or lower it. On a keyboard, press <kbd>1</kbd>{" "}
-        to <kbd>6</kbd>, or type a whole letter as a chord in the braille
-        keyboard below.
-      </p>
+      {withKeys ? (
+        <BraillerKeysHelp id={helpId} />
+      ) : (
+        <>
+          <p id={helpId} className="help">
+            Select a dot to raise or lower it. On a keyboard, press{" "}
+            <kbd>1</kbd> to <kbd>6</kbd>, or type a whole letter as a chord in
+            the braille keyboard below.
+          </p>
 
-      <ChordPad ref={padRef} />
+          <ChordPad ref={padRef} />
+        </>
+      )}
 
       <p className="sr-only" role="status">
         {describeCell(positions, readings)}

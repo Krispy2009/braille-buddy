@@ -1,3 +1,4 @@
+import type React from "react";
 import { Language, LANGUAGE_LABELS, LANGUAGES } from "../../game/braille";
 
 const STORAGE_KEY = "braille-buddy:practice-language";
@@ -25,14 +26,16 @@ export const saveLanguage = (language: Language) => {
 type LanguagePickerProps = {
   language: Language;
   onChange: (language: Language) => void;
+  /** On the fieldset, so Settings can move focus to the chosen course. */
+  ref?: React.Ref<HTMLFieldSetElement>;
 };
 
-/** One radio per course in src/courses. */
-export const LanguagePicker = ({ language, onChange }: LanguagePickerProps) => (
-  <fieldset className="segmented">
-    <legend className="sr-only">Course</legend>
+/** One radio per course in src/courses. Lives on the Settings screen. */
+export const LanguagePicker = ({ language, onChange, ref }: LanguagePickerProps) => (
+  <fieldset ref={ref} className="setting">
+    <legend className="setting-legend">Course</legend>
     {LANGUAGES.map((option) => (
-      <label key={option}>
+      <label key={option} className="setting-option">
         <input
           type="radio"
           name="practice-language"
@@ -40,7 +43,7 @@ export const LanguagePicker = ({ language, onChange }: LanguagePickerProps) => (
           checked={language === option}
           onChange={() => onChange(option)}
         />
-        {LANGUAGE_LABELS[option]}
+        <span className="setting-name">{LANGUAGE_LABELS[option]}</span>
       </label>
     ))}
   </fieldset>

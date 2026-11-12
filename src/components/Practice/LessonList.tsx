@@ -10,7 +10,7 @@ export const EVERYTHING = "(everything)";
 type LessonListProps = {
   course: Course;
   progress: Progress;
-  /** The course radios and the score, shown above the list. */
+  /** The way to change course and the score, shown above the list. */
   bar: React.ReactNode;
   /**
    * The lesson id (or EVERYTHING) the player just came back from. Its button

@@ -645,3 +645,227 @@ button[aria-disabled="true"] {
     outline: 2px solid Highlight;
   }
 }
+
+/* Dot entry and Settings (issue #45). Plain on purpose, so a redesign can
+   restyle it: only the theme variables, no new colors. Pressed keys and
+   chosen options differ in shape (a filled disc, a thicker border), not only
+   in color. */
+.brailler-keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+  max-width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.25rem;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+}
+
+/* Chord typing works while focus is anywhere in here, so show that. */
+.brailler-keys:has(:focus-visible) {
+  border-color: var(--focus);
+}
+
+.brailler-hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.brailler-key {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 52px;
+  min-height: 52px;
+  /* Three keys a hand still fit a 320px screen with 200% text. */
+  width: max(52px, min(3.25rem, 20vw));
+  padding: 0.4rem 0.2rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--tile);
+  border: 2px solid var(--ink);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  /* No double-tap zoom delay, no text selection or callout on a long press;
+     panning and pinch zoom still work. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* The pressed style is the feedback; Android's tap flash would cover it. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brailler-key[aria-pressed="true"] {
+  color: var(--page);
+  background: var(--ink);
+}
+
+/* Off: an empty ring. On: a filled disc. */
+.brailler-key-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brailler-key[aria-pressed="true"] .brailler-key-dot {
+  color: var(--ink);
+  background: var(--page);
+  border-color: var(--page);
+}
+
+.brailler-key-letter {
+  font-size: 0.85rem;
+  font-weight: var(--label-weight);
+  line-height: 1.2;
+}
+
+.brailler-help {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brailler-help .chord-pad-disclosure {
+  margin-top: 0.75rem;
+}
+
+/* The cell's dots show their state themselves, so no tap flash over them. */
+.cell button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Three tabs fit side by side on a 320px screen. */
+.mode-tabs [role="tab"] {
+  min-width: min(7rem, 27vw);
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: min(100%, 26rem);
+  text-align: start;
+}
+
+.settings-heading {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: var(--heading-weight);
+  text-align: center;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.5rem min(1rem, 4vw) 1rem;
+  background: var(--tile);
+  border: var(--line-width) solid var(--line);
+  border-radius: 1rem;
+}
+
+.setting-legend {
+  padding: 0 0.4rem;
+  font-size: 1.1rem;
+  font-weight: var(--heading-weight);
+}
+
+.setting-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  overflow-wrap: break-word;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.setting-option:has(input:checked) {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.setting-option input {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.setting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.setting-name {
+  font-weight: var(--label-weight);
+}
+
+.setting-hint {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+:root[data-theme="high-visibility"] .setting-hint {
+  font-weight: 600;
+}
+
+@media (forced-colors: active) {
+  .brailler-key {
+    forced-color-adjust: none;
+    color: ButtonText;
+    background: ButtonFace;
+    border-color: ButtonText;
+  }
+
+  .brailler-key[aria-pressed="true"] {
+    color: HighlightText;
+    background: Highlight;
+  }
+
+  .brailler-key:focus-visible {
+    outline-color: CanvasText;
+  }
+
+  .brailler-key[aria-pressed="true"] .brailler-key-dot {
+    color: Highlight;
+    background: HighlightText;
+    border-color: HighlightText;
+  }
+
+  .brailler-keys:has(:focus-visible) {
+    border-color: Highlight;
+  }
+
+  .setting,
+  .setting-option {
+    border-color: CanvasText;
+  }
+
+  .setting-option:has(input:checked) {
+    border-color: Highlight;
+    box-shadow: 0 0 0 2px Highlight;
+  }
+}
