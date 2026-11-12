@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { COURSES } from './courses';
+import { dayKey } from './game/progress';
 import type { DotEntry } from './game/settings';
 
 // Each test starts as a new player: Tap the cell, English, no progress.
@@ -13,6 +14,14 @@ const chooseEntry = (dotEntry: DotEntry) =>
     JSON.stringify({ version: 1, dotEntry })
   );
 
+/** Opens Explore from Home, as a player would. */
+const renderExplore = async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Explore the cell' }));
+  return user;
+};
+
 const KEY_LETTERS = ['F', 'D', 'S', 'J', 'K', 'L'];
 /** The button that raises a dot: a brailler key, or a dot of the cell. */
 const dotButton = (dotEntry: DotEntry, dot: number) =>
@@ -20,9 +29,9 @@ const dotButton = (dotEntry: DotEntry, dot: number) =>
     name: dotEntry === 'keys' ? `Dot ${dot}, key ${KEY_LETTERS[dot - 1]}` : `Dot ${dot}`,
   });
 
-test('Brailler keys mode has the keys and a read-only cell', () => {
+test('Brailler keys mode has the keys and a read-only cell', async () => {
   chooseEntry('keys');
-  render(<App />);
+  await renderExplore();
   expect(
     screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })
   ).toBeInTheDocument();
@@ -35,8 +44,8 @@ test('Brailler keys mode has the keys and a read-only cell', () => {
   expect(document.querySelector('.cell')).toHaveAttribute('aria-hidden', 'true');
 });
 
-test('a new player gets the tappable braille cell', () => {
-  render(<App />);
+test('a new player gets the tappable braille cell', async () => {
+  await renderExplore();
   expect(
     screen.getByRole('group', { name: /braille cell/i })
   ).toBeInTheDocument();
@@ -48,8 +57,7 @@ describe.each(['keys', 'cell'] as const)('Explore with %s', (dotEntry) => {
   beforeEach(() => chooseEntry(dotEntry));
 
   test('translates clicked dots to English and Greek letters', async () => {
-    const user = userEvent.setup();
-    render(<App />);
+    const user = await renderExplore();
 
     await user.click(dotButton(dotEntry, 1));
     await user.click(dotButton(dotEntry, 4));
@@ -63,8 +71,7 @@ describe.each(['keys', 'cell'] as const)('Explore with %s', (dotEntry) => {
   });
 
   test('dots are toggle buttons that expose their pressed state', async () => {
-    const user = userEvent.setup();
-    render(<App />);
+    const user = await renderExplore();
 
     const dot1 = dotButton(dotEntry, 1);
     expect(dot1).toHaveAttribute('aria-pressed', 'false');
@@ -76,8 +83,7 @@ describe.each(['keys', 'cell'] as const)('Explore with %s', (dotEntry) => {
 });
 
 test('keyboard toggles dots and Escape clears the cell', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('1');
   expect(screen.getByText('a')).toBeInTheDocument();
@@ -88,8 +94,7 @@ test('keyboard toggles dots and Escape clears the cell', async () => {
 });
 
 test('Backspace and the clear button reset the cell', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('1');
   expect(screen.getByText('a')).toBeInTheDocument();
@@ -98,13 +103,12 @@ test('Backspace and the clear button reset the cell', async () => {
 
   await user.keyboard('1');
   expect(screen.getByText('a')).toBeInTheDocument();
-  await user.click(screen.getByRole('button', { name: 'Clear' }));
+  await user.click(screen.getByRole('button', { name: 'Clear dots' }));
   expect(screen.queryByText('a')).not.toBeInTheDocument();
 });
 
 test('announces the result in a status region', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   const status = screen.getByRole('status');
   expect(status).toHaveTextContent('Cell is empty.');
@@ -117,16 +121,14 @@ test('announces the result in a status region', async () => {
 });
 
 test('marks the Greek result as Greek text', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('1');
   expect(screen.getByText('α').closest('[lang]')).toHaveAttribute('lang', 'el');
 });
 
 test('ignores number keys pressed with a modifier', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('{Control>}1{/Control}');
   expect(dotButton('cell', 1)).toHaveAttribute(
@@ -135,12 +137,17 @@ test('ignores number keys pressed with a modifier', async () => {
   );
 });
 
-test('switches theme from the theme radios and remembers the choice', async () => {
+test('switches theme from the theme cards in Settings and remembers the choice', async () => {
   const user = userEvent.setup();
   render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Settings' }));
 
-  const group = screen.getByRole('group', { name: 'Color theme' });
-  expect(group).toBeInTheDocument();
+  const group = screen.getByRole('group', { name: 'Theme' });
+  expect(within(group).getAllByRole('radio').map((radio) => radio.getAttribute('value'))).toEqual([
+    'light',
+    'dark',
+    'high-visibility',
+  ]);
 
   await user.click(screen.getByRole('radio', { name: 'Ink' }));
   expect(document.documentElement.dataset.theme).toBe('dark');
@@ -152,8 +159,7 @@ test('switches theme from the theme radios and remembers the choice', async () =
 });
 
 test('announces Greek letters and diphthongs by name', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('146');
   expect(screen.getByRole('status')).toHaveTextContent(
@@ -164,8 +170,7 @@ test('announces Greek letters and diphthongs by name', async () => {
 });
 
 test('shows one result for every course, in Explore and in the status', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   const results = screen.getByLabelText('Translation');
   expect(
@@ -179,8 +184,7 @@ test('shows one result for every course, in Explore and in the status', async ()
 });
 
 test('never ends an announcement sentence on a single letter', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.keyboard('2456');
   const text = screen.getByRole('status').textContent ?? '';
@@ -208,8 +212,7 @@ test('footer says honestly what the app can and cannot teach', () => {
 
 test('types a whole letter as a chord in the brailler keys', async () => {
   chooseEntry('keys');
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.click(dotButton('keys', 1));
   await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
@@ -221,8 +224,7 @@ test('types a whole letter as a chord in the brailler keys', async () => {
 });
 
 test('types a whole letter as a chord in the braille keyboard', async () => {
-  const user = userEvent.setup();
-  render(<App />);
+  const user = await renderExplore();
 
   await user.click(screen.getByRole('application', { name: 'Braille keyboard' }));
   await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
@@ -236,73 +238,194 @@ test('types a whole letter as a chord in the braille keyboard', async () => {
   );
 });
 
-describe('mode tabs', () => {
-  test('switch between Explore and Practice', async () => {
+describe('Home and the screens it opens', () => {
+  const today = () => dayKey(new Date());
+  const saveProgress = (data: object) =>
+    localStorage.setItem(
+      'braille-buddy:progress',
+      JSON.stringify({
+        version: 1,
+        points: 0,
+        streak: 0,
+        bestStreak: 0,
+        lastPlayed: null,
+        letters: {},
+        completedLessons: {},
+        ...data,
+      })
+    );
+
+  test('a new player sees the deck: the next card, the day, the points and one action', () => {
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })).toBeInTheDocument();
+    expect(screen.getByText('day 0 · 0 pts')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Daily streak 0 days, 0 points')).toBeInTheDocument();
+    expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Card 1: a, dot 1.' })).toBeInTheDocument();
+    expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
+      'Five new cards to press today: a, b, c, d, e.'
+    );
+    expect(screen.getByRole('button', { name: 'Press new cards' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lessons' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Explore the cell' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+    // No tab row, no settings and no live region on Home.
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  test('shows the saved streak and points, and the next lesson after a finished one', () => {
+    saveProgress({
+      points: 120,
+      streak: 4,
+      bestStreak: 4,
+      lastPlayed: today(),
+      completedLessons: { english: ['a-e'] },
+      letters: {
+        'english:f': { correct: 2, wrong: 0, box: 2 },
+        'english:g': { correct: 0, wrong: 1, box: 0 },
+      },
+    });
+    render(<App />);
+    expect(screen.getByText('day 4 · 120 pts')).toBeInTheDocument();
+    expect(screen.getByText('Daily streak 4 days, 120 points')).toBeInTheDocument();
+    expect(screen.getByText('English · 1 of 26 letters learnt')).toBeInTheDocument();
+    // f is learnt, so the next card is g, seen once already.
+    expect(screen.getByRole('img', { name: 'Card 7: g, dots 1, 2, 4 and 5.' })).toHaveTextContent(
+      'practise'
+    );
+    expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
+      'Four new cards to press today: g, h, i, j.'
+    );
+  });
+
+  test('Press new cards opens the next lesson; the way back passes the lesson list', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
     const user = userEvent.setup();
     render(<App />);
-
-    const explore = screen.getByRole('tab', { name: 'Explore' });
-    const practice = screen.getByRole('tab', { name: 'Practice' });
-    expect(screen.getByRole('tablist', { name: 'Mode' })).toBeInTheDocument();
-    expect(explore).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tabpanel', { name: 'Explore' })).toBeInTheDocument();
-
-    await user.click(practice);
-    expect(practice).toHaveAttribute('aria-selected', 'true');
-    expect(explore).toHaveAttribute('aria-selected', 'false');
-    const panel = screen.getByRole('tabpanel', { name: 'Practice' });
-    expect(
-      within(panel).getByRole('heading', { level: 2, name: 'English lessons' })
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('tabpanel', { name: 'Explore' })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Start Letters a to e' }));
-    expect(panel).toHaveTextContent(/write the letter|which letter has/i);
-    // Only one live region on the page at a time.
+    await user.click(screen.getByRole('button', { name: 'Press new cards' }));
+    const heading = screen.getByRole('heading', { level: 2, name: 'English: Letters a to e' });
+    expect(heading).toHaveFocus();
+    expect(screen.getByRole('heading', { level: 3 })).toHaveAccessibleName(
+      'Write the letter a in braille'
+    );
+    // The name stays the page's first heading, out of sight.
+    expect(screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })).toHaveClass('sr-only');
+    // Points, streak and settings stay off the question screen.
+    expect(screen.queryByText(/pts/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
     expect(screen.getAllByRole('status')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: 'Back to lessons' }));
+    expect(screen.getByRole('button', { name: 'Start Letters a to e' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    expect(screen.getByRole('button', { name: 'Lessons' })).toHaveFocus();
+    vi.restoreAllMocks();
   });
 
-  test('arrow keys, Home and End move between tabs with one tab stop', async () => {
+  test('Lessons opens the lesson list with focus on its heading', async () => {
     const user = userEvent.setup();
     render(<App />);
-
-    const explore = screen.getByRole('tab', { name: 'Explore' });
-    const practice = screen.getByRole('tab', { name: 'Practice' });
-    const settings = screen.getByRole('tab', { name: 'Settings' });
-    expect(explore).toHaveAttribute('tabindex', '0');
-    expect(practice).toHaveAttribute('tabindex', '-1');
-    expect(settings).toHaveAttribute('tabindex', '-1');
-
-    await user.click(explore);
-    await user.keyboard('{ArrowRight}');
-    expect(practice).toHaveFocus();
-    expect(practice).toHaveAttribute('aria-selected', 'true');
-
-    await user.keyboard('{ArrowRight}');
-    expect(settings).toHaveFocus();
-    await user.keyboard('{ArrowRight}');
-    expect(explore).toHaveFocus();
-    await user.keyboard('{End}');
-    expect(settings).toHaveFocus();
-    await user.keyboard('{Home}');
-    expect(explore).toHaveAttribute('aria-selected', 'true');
-
-    await user.keyboard('{ArrowLeft}');
-    expect(settings).toHaveFocus();
-    await user.keyboard('{ArrowLeft}');
-    await user.tab();
-    expect(screen.getByRole('tabpanel', { name: 'Practice' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Lessons' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'English lessons' })).toHaveFocus();
+    expect(screen.getByText('Total points')).toBeInTheDocument();
   });
 
-  test('Enter on a tab does not answer the practice question', async () => {
+  test('when every lesson is done, Home offers to mix them all', async () => {
+    saveProgress({ completedLessons: { english: ['a-e', 'f-j', 'k-o', 'p-t', 'u-z'] } });
     const user = userEvent.setup();
     render(<App />);
-
-    const practice = screen.getByRole('tab', { name: 'Practice' });
-    await user.click(practice);
-    await user.click(screen.getByRole('button', { name: 'Start Letters a to e' }));
-    await user.click(practice);
-    await user.keyboard('{Enter}');
-    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(screen.getByText(/Every card in English is pressed/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Practise everything' }));
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'English: Everything so far' })
+    ).toHaveFocus();
   });
+
+  test('Greek cards are marked as Greek and named for screen readers', () => {
+    localStorage.setItem('braille-buddy:practice-language', 'greek');
+    render(<App />);
+    expect(screen.getByRole('img', { name: 'Card 1: alpha, dot 1.' })).toBeInTheDocument();
+    const today = screen.getByText(/new cards to press today/);
+    expect(within(today).getByText('β')).toHaveAttribute('lang', 'el');
+    expect(today).toHaveTextContent(/alpha/);
+  });
+
+  test('Explore opens with focus on its heading and goes back to Home', async () => {
+    const user = await renderExplore();
+    expect(screen.getByRole('heading', { level: 2, name: 'Raise dots, see the letter' })).toHaveFocus();
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    expect(screen.getByRole('button', { name: 'Explore the cell' })).toHaveFocus();
+  });
+
+  test('the gear opens Settings and Back returns to it', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Settings' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus();
+  });
+
+  test('number keys do nothing on Home', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.keyboard('1{Enter}');
+    expect(screen.getByRole('button', { name: 'Press new cards' })).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe.each(['keys', 'cell'] as const)('Explore keyboard with %s', (dotEntry) => {
+  beforeEach(() => chooseEntry(dotEntry));
+  const dotsRaised = 'Dots 1, 4, 5 raised. d in English. delta in Greek.';
+
+  test('chords and number keys work as soon as the screen opens, with no click', async () => {
+    const user = await renderExplore();
+    // Focus is on the heading, not in the pad.
+    expect(document.body).toContainElement(document.activeElement as HTMLElement);
+    expect(screen.getByRole('application')).not.toContainElement(
+      document.activeElement as HTMLElement
+    );
+
+    await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+    expect(screen.getByRole('status')).toHaveTextContent(dotsRaised);
+    await user.keyboard('{Backspace}');
+    expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+    await user.keyboard('2');
+    expect(dotButton(dotEntry, 2)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('handles a chord once when focus is inside the pad', async () => {
+    const user = await renderExplore();
+    await user.click(screen.getByRole('application'));
+    await user.keyboard('{f>}{j>}{k>}{/k}{/j}{/f}');
+    expect(screen.getByRole('status')).toHaveTextContent(dotsRaised);
+  });
+
+  test('ignores the keys with Ctrl held', async () => {
+    const user = await renderExplore();
+    await user.keyboard('{Control>}{f>}{j>}{/j}{/f}1{/Control}');
+    expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+  });
+
+  test('stops listening when Explore closes', async () => {
+    const user = await renderExplore();
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    await user.keyboard('1');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+test('Explore ignores the keys while typing in a field', async () => {
+  const user = await renderExplore();
+  const field = document.createElement('input');
+  document.body.append(field);
+  field.focus();
+  await user.keyboard('{f>}{j>}{/j}{/f}12');
+  expect(screen.getByRole('status')).toHaveTextContent('Cell is empty.');
+  field.remove();
 });

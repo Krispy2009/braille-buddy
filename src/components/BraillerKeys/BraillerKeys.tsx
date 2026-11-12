@@ -2,9 +2,10 @@ import React from "react";
 import { CellType, CLEAR_CELL, DotKey } from "../../game/braille";
 import { CHORD_KEYS } from "../../hooks/useBrailleKeys";
 import { isTouchOnly } from "../ChordPad/ChordPad";
+import "./BraillerKeys.css";
 
 type BraillerKeysProps = {
-  /** Pass the same ref to useBrailleKeys as `chordArea`. */
+  /** For moving focus back to the keys. */
   ref?: React.Ref<HTMLDivElement>;
   positions: CellType;
   /** One key selected: a tap, a click, Space or Enter on a key. */
@@ -13,6 +14,9 @@ type BraillerKeysProps = {
   onChord: (cell: CellType) => void;
   /** Ids of text read when the keys take focus: the question, then the help. */
   describedBy?: string;
+  /** Print the keyboard letter under each number (a Comfort setting). The
+      letter stays in the key's name either way. */
+  showLetters?: boolean;
 };
 
 const KEY_FOR_DOT = Object.fromEntries(
@@ -53,6 +57,7 @@ export const BraillerKeys = ({
   onToggleDot,
   onChord,
   describedBy,
+  showLetters = true,
 }: BraillerKeysProps) => {
   const touches = React.useRef(new Map<number, DotKey>());
   const chord = React.useRef({ dots: new Set<DotKey>(), multi: false, aborted: false });
@@ -98,7 +103,7 @@ export const BraillerKeys = ({
   return (
     <div
       ref={ref}
-      className="brailler-keys"
+      className={showLetters ? "brailler-keys" : "brailler-keys no-letters"}
       role="application"
       aria-label="Brailler keys"
       aria-describedby={describedBy}
@@ -149,7 +154,7 @@ export const BraillerKeysHelp = ({ id, canSubmit = false }: BraillerKeysHelpProp
   const [collapsible] = React.useState(isTouchOnly);
   const keyboard = (
     <p id={id} className="help">
-      On a keyboard, while the brailler keys have focus, hold <kbd>F</kbd>{" "}
+      On a keyboard, hold <kbd>F</kbd>{" "}
       <kbd>D</kbd> <kbd>S</kbd> for dots 1 2 3 and <kbd>J</kbd> <kbd>K</kbd>{" "}
       <kbd>L</kbd> for dots 4 5 6 together, then let go to write the letter.
       Keys <kbd>1</kbd> to <kbd>6</kbd> raise or lower one dot.{" "}

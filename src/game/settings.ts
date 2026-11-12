@@ -9,17 +9,40 @@ export type DotEntry = (typeof DOT_ENTRIES)[number];
  */
 export type Settings = {
   dotEntry: DotEntry;
+  /** Print F D S J K L under the numbers on the brailler keys. */
+  keyLetters: boolean;
+  /** No sinking keys, sliding cards or other movement. */
+  lessMotion: boolean;
+  /** Scales the whole interface up by a quarter. */
+  biggerText: boolean;
 };
 
 const VERSION = 1;
 const STORAGE_KEY = "braille-buddy:settings";
 
+// Until the player chooses, Less motion follows the device's own setting.
+const prefersReducedMotion = (): boolean => {
+  try {
+    return !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+};
+
 export const defaultSettings = (): Settings => ({
   dotEntry: "cell",
+  keyLetters: true,
+  lessMotion: prefersReducedMotion(),
+  biggerText: false,
 });
+
+const isBoolean = (value: unknown) => typeof value === "boolean";
 
 const VALIDATORS: { [K in keyof Settings]: (value: unknown) => boolean } = {
   dotEntry: (value) => DOT_ENTRIES.includes(value as DotEntry),
+  keyLetters: isBoolean,
+  lessMotion: isBoolean,
+  biggerText: isBoolean,
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

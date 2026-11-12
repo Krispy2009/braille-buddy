@@ -6,10 +6,10 @@
 
 ## What it does
 
-Two modes:
+Home shows your next card, your daily streak and points, with one button to press new cards. From there:
 
 - **Explore:** a six-dot braille cell you can click or type on. Raise dots and the matching English and Greek letters appear straight away.
-- **Practice:** pick a course (English or Greek) and work through its lessons, a handful of letters at a time. Either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Get every letter in a lesson right twice in a row and the next lesson opens. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
+- **Lessons:** pick a course (English or Greek) in Settings and work through its lessons, a handful of letters at a time. Either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Get every letter in a lesson right twice in a row and the next lesson opens. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
 
 - **English:** all 26 letters
 - **Greek:** the 24 letters, plus 8 common letter pairs (ου, αι, ει, οι, ευ, αυ, υι, ηυ)
@@ -24,7 +24,7 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 - **Dots are toggle buttons** that expose their pressed state
 - **Results are announced** in a status region, and practice moves focus to the next step so you never lose your place. Greek letters are announced by name ("epsilon iota"), so they make sense even when no Greek voice is installed
 - **Announcements are worded** so screen readers pause between sentences instead of running them together
-- **Three themes:** light, dark and high-visibility. It follows your system's colour scheme and contrast setting, and remembers your choice
+- **Settings** (the gear on Home): enter dots by tapping one big cell or on six brailler keys, three themes (Paper, Ink and High vis, following your system's colour scheme and contrast setting until you choose), and comfort switches for key letters, less motion (following your system's reduced motion setting) and bigger text
 - **Greek text is marked up** with its language
 
 Braille Buddy teaches the dot patterns. Reading braille by touch takes practice on real embossed braille.

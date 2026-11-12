@@ -1,4 +1,4 @@
-import { defaultSettings, loadSettings, saveSettings } from "./settings";
+import { defaultSettings, loadSettings, saveSettings, Settings } from "./settings";
 
 const KEY = "braille-buddy:settings";
 
@@ -12,31 +12,72 @@ const memoryStorage = (initial?: string) => {
   };
 };
 
+const DEFAULTS: Settings = {
+  dotEntry: "cell",
+  keyLetters: true,
+  lessMotion: false,
+  biggerText: false,
+};
+
+const KEYS: Settings = { ...DEFAULTS, dotEntry: "keys" };
+
 beforeEach(() => localStorage.clear());
 
+afterEach(() => {
+  // @ts-expect-error removing the stub again
+  delete window.matchMedia;
+});
+
 test("a new player taps the cell; the brailler keys are opt-in", () => {
-  expect(defaultSettings()).toEqual({ dotEntry: "cell" });
-  expect(loadSettings(memoryStorage())).toEqual({ dotEntry: "cell" });
-  expect(loadSettings()).toEqual({ dotEntry: "cell" });
+  expect(defaultSettings()).toEqual(DEFAULTS);
+  expect(loadSettings(memoryStorage())).toEqual(DEFAULTS);
+  expect(loadSettings()).toEqual(DEFAULTS);
+});
+
+test("Less motion starts from the device's reduced motion setting", () => {
+  window.matchMedia = (query: string) =>
+    ({ matches: query === "(prefers-reduced-motion: reduce)" }) as MediaQueryList;
+  expect(defaultSettings().lessMotion).toBe(true);
+  expect(loadSettings(memoryStorage())).toEqual({ ...DEFAULTS, lessMotion: true });
+  // A choice the player saved wins over the device.
+  const saved = JSON.stringify({ version: 1, dotEntry: "cell", lessMotion: false });
+  expect(loadSettings(memoryStorage(saved)).lessMotion).toBe(false);
+});
+
+test("settings saved before the comfort switches existed keep their entry mode", () => {
+  const raw = JSON.stringify({ version: 1, dotEntry: "keys" });
+  expect(loadSettings(memoryStorage(raw))).toEqual(KEYS);
+});
+
+test("saves and loads the comfort switches", () => {
+  const storage = memoryStorage();
+  const comfy: Settings = { dotEntry: "cell", keyLetters: false, lessMotion: true, biggerText: true };
+  saveSettings(comfy, storage);
+  expect(loadSettings(storage)).toEqual(comfy);
+});
+
+test("a bad comfort value falls back to its default alone", () => {
+  const raw = JSON.stringify({
+    version: 1,
+    dotEntry: "keys",
+    keyLetters: "no",
+    lessMotion: 1,
+    biggerText: true,
+  });
+  expect(loadSettings(memoryStorage(raw))).toEqual({ ...KEYS, biggerText: true });
 });
 
 test("saves and loads under a versioned key", () => {
   const storage = memoryStorage();
-  expect(saveSettings({ dotEntry: "keys" }, storage)).toBe(true);
-  expect(JSON.parse(storage.data.get(KEY) ?? "")).toEqual({
-    version: 1,
-    dotEntry: "keys",
-  });
-  expect(loadSettings(storage)).toEqual({ dotEntry: "keys" });
+  expect(saveSettings(KEYS, storage)).toBe(true);
+  expect(JSON.parse(storage.data.get(KEY) ?? "")).toEqual({ version: 1, ...KEYS });
+  expect(loadSettings(storage)).toEqual(KEYS);
 });
 
 test("uses localStorage by default", () => {
-  saveSettings({ dotEntry: "keys" });
-  expect(JSON.parse(localStorage.getItem(KEY) ?? "")).toEqual({
-    version: 1,
-    dotEntry: "keys",
-  });
-  expect(loadSettings()).toEqual({ dotEntry: "keys" });
+  saveSettings(KEYS);
+  expect(JSON.parse(localStorage.getItem(KEY) ?? "")).toEqual({ version: 1, ...KEYS });
+  expect(loadSettings()).toEqual(KEYS);
 });
 
 test.each([
@@ -53,7 +94,7 @@ test.each([
 
 test("ignores fields it does not know", () => {
   const raw = JSON.stringify({ version: 1, dotEntry: "keys", sparkle: true });
-  expect(loadSettings(memoryStorage(raw))).toEqual({ dotEntry: "keys" });
+  expect(loadSettings(memoryStorage(raw))).toEqual(KEYS);
 });
 
 test("tolerates storage that throws", () => {
@@ -66,11 +107,11 @@ test("tolerates storage that throws", () => {
     },
   };
   expect(loadSettings(throwing)).toEqual(defaultSettings());
-  expect(saveSettings({ dotEntry: "keys" }, throwing)).toBe(false);
+  expect(saveSettings(KEYS, throwing)).toBe(false);
 });
 
 test("returns a fresh object each time", () => {
   const first = loadSettings(memoryStorage());
   first.dotEntry = "keys";
-  expect(loadSettings(memoryStorage())).toEqual({ dotEntry: "cell" });
+  expect(loadSettings(memoryStorage())).toEqual(DEFAULTS);
 });

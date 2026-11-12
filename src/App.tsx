@@ -1,36 +1,48 @@
 import React from "react";
-import "./App.css";
 import { Board } from "./components/Board/Board";
-import {
-  Mode,
-  ModeTabs,
-  MODES,
-  panelId,
-  tabId,
-} from "./components/ModeTabs/ModeTabs";
+import { Home, HomeFocus } from "./components/Home/Home";
 import { loadLanguage, saveLanguage } from "./components/Practice/LanguagePicker";
-import { Practice } from "./components/Practice/Practice";
+import { CHANGE_COURSE } from "./components/Practice/LessonList";
+import { Practice, PracticeView } from "./components/Practice/Practice";
 import { Settings, SettingsFocus } from "./components/Settings/Settings";
-import { ThemeSwitcher } from "./components/ThemeSwitcher/ThemeSwitcher";
+import { getCourse } from "./courses";
 import type { Language } from "./game/braille";
+import { loadProgress, Progress, saveProgress } from "./game/progress";
 import {
   loadSettings,
   saveSettings,
   Settings as SettingsType,
 } from "./game/settings";
 
-const INTROS: Record<Mode, string> = {
-  explore: "Raise dots to see which letter they make.",
-  practice: "Learn the letters one lesson at a time, earn points and keep a daily streak.",
-  settings: "Choose how you enter dots and which course you learn.",
-};
+/**
+ * Which screen is open. Plain state, no router: Home is the hub, and every
+ * other screen has one way back to where it was opened from.
+ */
+type View =
+  | { screen: "home"; focus?: HomeFocus }
+  | { screen: "explore" }
+  | { screen: "practice"; start: PracticeView }
+  | { screen: "settings"; focus?: SettingsFocus; back: View };
+
+const now = () => new Date();
 
 function App() {
-  const [mode, setMode] = React.useState<Mode>("explore");
-  // Kept here, above all three screens, so a change shows everywhere at once.
+  const [view, setView] = React.useState<View>({ screen: "home" });
+  // Kept here, above every screen, so a change shows everywhere at once.
   const [settings, setSettings] = React.useState(loadSettings);
   const [language, setLanguage] = React.useState<Language>(loadLanguage);
-  const [settingsFocus, setSettingsFocus] = React.useState<SettingsFocus>();
+  const [progress, setProgress] = React.useState<Progress>(() => loadProgress());
+
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.motion = settings.lessMotion ? "less" : "full";
+    root.dataset.text = settings.biggerText ? "bigger" : "normal";
+  }, [settings.lessMotion, settings.biggerText]);
+
+  // A new screen starts at the top, as a new page would.
+  React.useEffect(() => {
+    window.scrollTo?.(0, 0);
+  }, [view.screen]);
 
   const changeSettings = (next: SettingsType) => {
     setSettings(next);
@@ -42,72 +54,98 @@ function App() {
     saveLanguage(next);
   };
 
-  const changeMode = (next: Mode) => {
-    setSettingsFocus(undefined);
-    setMode(next);
+  const changeProgress = (next: Progress) => {
+    setProgress(next);
+    saveProgress(next);
   };
 
-  const panels: Record<Mode, React.ReactNode> = {
-    explore: <Board dotEntry={settings.dotEntry} />,
-    practice: (
-      <Practice
-        language={language}
-        dotEntry={settings.dotEntry}
-        onChangeCourse={() => {
-          setSettingsFocus("course");
-          setMode("settings");
-        }}
-      />
-    ),
-    settings: (
-      <Settings
-        settings={settings}
-        onChange={changeSettings}
-        language={language}
-        onLanguageChange={changeLanguage}
-        focus={settingsFocus}
-      />
-    ),
-  };
+  const course = getCourse(language);
+  const home = (focus: HomeFocus) => setView({ screen: "home", focus });
 
+  let screen: React.ReactNode;
+  switch (view.screen) {
+    case "home":
+      screen = (
+        <Home
+          course={course}
+          progress={progress}
+          now={now}
+          focus={view.focus}
+          onStart={(lessonId) =>
+            setView({
+              screen: "practice",
+              start: lessonId ? { screen: "lesson", lessonId } : { screen: "everything" },
+            })
+          }
+          onLessons={() => setView({ screen: "practice", start: { screen: "lessons" } })}
+          onExplore={() => setView({ screen: "explore" })}
+          onSettings={() => setView({ screen: "settings", back: { screen: "home", focus: "settings" } })}
+        />
+      );
+      break;
+    case "explore":
+      screen = (
+        <Board
+          dotEntry={settings.dotEntry}
+          showKeyLetters={settings.keyLetters}
+          onHome={() => home("explore")}
+        />
+      );
+      break;
+    case "practice":
+      screen = (
+        <Practice
+          language={language}
+          dotEntry={settings.dotEntry}
+          showKeyLetters={settings.keyLetters}
+          progress={progress}
+          onProgress={changeProgress}
+          start={view.start}
+          onHome={() => home("lessons")}
+          onChangeCourse={() =>
+            setView({
+              screen: "settings",
+              focus: "course",
+              back: { screen: "practice", start: { screen: "lessons", returnTo: CHANGE_COURSE } },
+            })
+          }
+        />
+      );
+      break;
+    case "settings":
+      screen = (
+        <Settings
+          settings={settings}
+          onChange={changeSettings}
+          language={language}
+          onLanguageChange={changeLanguage}
+          focus={view.focus}
+          onBack={() => setView(view.back)}
+        />
+      );
+      break;
+  }
+
+  const onHome = view.screen === "home";
   return (
     <>
-      <main className="App">
-        <ThemeSwitcher />
-        <h1>Braille Buddy</h1>
-        <ModeTabs mode={mode} onChange={changeMode} />
-        {MODES.map((option) => (
-          // Only the open panel is rendered, so there is only ever one set
-          // of key listeners and one live region on the page.
-          <div
-            key={option}
-            id={panelId(option)}
-            role="tabpanel"
-            aria-labelledby={tabId(option)}
-            hidden={mode !== option}
-            // The panel starts with text, so it takes focus itself (as in
-            // the APG tabs example) and Tab from the tabs lands on it.
-            tabIndex={0}
-            className="mode-panel"
-          >
-            {mode === option && (
-              <>
-                <p className="intro">{INTROS[option]}</p>
-                {panels[option]}
-              </>
-            )}
-          </div>
-        ))}
+      <main>
+        {/* Home shows the name as its wordmark; elsewhere it is still the
+            page's first heading for screen reader users. */}
+        {!onHome && <h1 className="sr-only">Braille Buddy</h1>}
+        {screen}
       </main>
-      <footer className="site-footer">
-        <p className="about">
-          Braille Buddy teaches the dot patterns. Reading braille by touch takes
-          practice on real embossed braille.
-        </p>
-        made with <span aria-hidden="true">❤️</span>
-        <span className="sr-only">love</span> by{" "}
-        <a href="https://kristi.cy">kristi.cy</a>
-      </footer>
+      {onHome && (
+        <footer className="site-footer">
+          <p className="about">
+            Braille Buddy teaches the dot patterns. Reading braille by touch
+            takes practice on real embossed braille.
+          </p>
+          made with <span aria-hidden="true">❤️</span>
+          <span className="sr-only">love</span> by{" "}
+          <a href="https://kristi.cy">kristi.cy</a>
+        </footer>
+      )}
     </>
   );
 }

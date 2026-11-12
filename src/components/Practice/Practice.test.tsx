@@ -1,6 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import React from "react";
 import type { Language } from "../../game/braille";
+import { loadProgress, saveProgress } from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
 import { Practice } from "./Practice";
 
@@ -11,30 +13,61 @@ const STORAGE_KEY = "braille-buddy:progress";
 
 type Options = { language?: Language; dotEntry?: DotEntry };
 
-// The course and the entry mode come from Settings, which lives in App.
+// The course and the entry mode come from Settings, and progress from App,
+// which loads and saves it as this harness does.
+type HarnessProps = {
+  random: () => number;
+  now: () => Date;
+  options: Options;
+  onChangeCourse: () => void;
+  onHome: () => void;
+};
+
+const Harness = ({ random, now, options, onChangeCourse, onHome }: HarnessProps) => {
+  const { language = "english", dotEntry = "cell" } = options;
+  const [progress, setProgress] = React.useState(() => loadProgress());
+  return (
+    <Practice
+      language={language}
+      dotEntry={dotEntry}
+      progress={progress}
+      onProgress={(next) => {
+        setProgress(next);
+        saveProgress(next);
+      }}
+      onChangeCourse={onChangeCourse}
+      onHome={onHome}
+      random={random}
+      now={now}
+    />
+  );
+};
+
 const practice = (
   random: () => number,
   now: () => Date,
-  { language = "english", dotEntry = "cell" }: Options = {},
-  onChangeCourse = () => {}
+  options: Options = {},
+  onChangeCourse = () => {},
+  onHome = () => {}
 ) => (
-  <Practice
-    language={language}
-    dotEntry={dotEntry}
-    onChangeCourse={onChangeCourse}
+  <Harness
     random={random}
     now={now}
+    options={options}
+    onChangeCourse={onChangeCourse}
+    onHome={onHome}
   />
 );
 
 const setup = (value = 0, now = () => DAY, options: Options = {}) => {
   const random = vi.fn(() => value);
   const onChangeCourse = vi.fn();
+  const onHome = vi.fn();
   const user = userEvent.setup();
-  const view = render(practice(random, now, options, onChangeCourse));
+  const view = render(practice(random, now, options, onChangeCourse, onHome));
   const switchTo = (next: Options) =>
-    view.rerender(practice(random, now, { ...options, ...next }, onChangeCourse));
-  return { user, random, onChangeCourse, switchTo, ...view };
+    view.rerender(practice(random, now, { ...options, ...next }, onChangeCourse, onHome));
+  return { user, random, onChangeCourse, onHome, switchTo, ...view };
 };
 
 const startButton = (name: string) => screen.getByRole("button", { name });
@@ -46,6 +79,8 @@ const start = async (
 const status = () => screen.getByRole("status");
 const screenHeading = () => screen.getByRole("heading", { level: 2 });
 const prompt = () => screen.getByRole("heading", { level: 3 });
+/** How many of the lesson's letters are learnt, shown as a progress bar. */
+const learnt = () => screen.getByRole("progressbar", { name: "Letters learnt" });
 const term = (name: string) => screen.getByText(name).nextElementSibling;
 const points = () => term("Total points");
 const englishPoints = () => term("English points");
@@ -188,7 +223,7 @@ describe("letter to dots", () => {
 
     expect(screenHeading()).toHaveAccessibleName("English: Letters a to e");
     expect(screenHeading()).toHaveFocus();
-    expect(screen.getByText("0 of 5 letters learnt")).toBeInTheDocument();
+    expect(learnt()).toHaveAttribute("aria-valuetext", "0 of 5 letters learnt");
     expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
     // A new player taps the cell's dots.
     expect(
@@ -215,6 +250,19 @@ describe("letter to dots", () => {
 
   describe.each(["keys", "cell"] as const)("with %s", (dotEntry) => {
     const setupMode = () => setup(0, undefined, { dotEntry });
+
+    test("keyboard works from the first moment, with focus on the heading", async () => {
+      const { user } = setupMode();
+      await start(user);
+      expect(screenHeading()).toHaveFocus();
+
+      await user.keyboard("{f>}{/f}");
+      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
+      await user.keyboard("{Control>}2{/Control}");
+      expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "false");
+      await user.keyboard("{Enter}");
+      expect(status()).toHaveTextContent("Correct, plus 10 points.");
+    });
 
     test("keyboard: number keys raise dots, Enter checks and Enter moves on", async () => {
       const { user } = setupMode();
@@ -244,7 +292,7 @@ describe("letter to dots", () => {
 
       await user.click(dotButton(dotEntry, 1));
       await user.click(dotButton(dotEntry, 4));
-      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(screen.getByRole("button", { name: "Press it" }));
 
       expect(status()).toHaveTextContent(
         "Not quite. Dot 1 makes a in English. You raised dots 1 and 4."
@@ -271,7 +319,7 @@ describe("letter to dots", () => {
       await user.click(dotButton(dotEntry, 1));
       expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
       expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "true");
-      await user.click(screen.getByRole("button", { name: "Check" }));
+      await user.click(screen.getByRole("button", { name: "Press it" }));
       expect(status()).toHaveTextContent(
         "Correct, plus 10 points. Dots 1 and 2 make b in English."
       );
@@ -284,29 +332,22 @@ describe("letter to dots", () => {
       const dot1 = dotButton(dotEntry, 1);
 
       await user.keyboard("12");
-      await user.click(screen.getByRole("button", { name: "Clear" }));
+      await user.click(screen.getByRole("button", { name: "Clear dots" }));
       expect(dot1).toHaveAttribute("aria-pressed", "false");
 
       await user.keyboard("1{Backspace}");
       expect(dot1).toHaveAttribute("aria-pressed", "false");
-    });
-
-    test("chords do nothing outside the chord area", async () => {
-      const { user } = setupMode();
-      await start(user);
-      await user.keyboard("f");
-      expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "false");
     });
   });
 
   test("checking an empty cell asks for a dot instead of marking it wrong", async () => {
     const { user } = setup();
     await start(user);
-    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(screen.getByRole("button", { name: "Press it" }));
     expect(status()).toHaveTextContent(
       "Raise at least one dot, then check your answer."
     );
-    expect(screen.getByRole("button", { name: "Check" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Press it" })).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
@@ -352,7 +393,7 @@ describe("letter to dots", () => {
     const nextKeys = screen.getByRole("application", { name: "Brailler keys" });
     expect(nextKeys).toHaveFocus();
     expect(nextKeys).toHaveAccessibleDescription(
-      /^Write the letter b in braille On a keyboard, while the brailler keys have focus/
+      /^Write the letter b in braille On a keyboard, hold/
     );
 
     await user.keyboard("{f>}{d>}{/d}{/f}{Enter}");
@@ -384,7 +425,7 @@ describe("letter to dots", () => {
     await user.tab();
     await user.tab();
     await user.tab();
-    expect(screen.getByRole("button", { name: "Check" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Press it" })).toHaveFocus();
     await user.keyboard("{Enter}");
     expect(status()).toHaveTextContent("Correct, plus 10 points.");
     // Answered from the Check button, so the next question focuses the prompt.
@@ -518,7 +559,7 @@ describe("Greek", () => {
     expect(within(prompt()).getByText("α")).toHaveAttribute("lang", "el");
 
     await user.keyboard("2");
-    await user.click(screen.getByRole("button", { name: "Check" }));
+    await user.click(screen.getByRole("button", { name: "Press it" }));
     expect(status()).toHaveTextContent(
       "Not quite. Dot 1 makes alpha in Greek. You raised dot 2."
     );
@@ -537,7 +578,7 @@ describe("finishing a lesson", () => {
     nearlyDone();
     const { user, unmount } = setup(0.5);
     await start(user, "Continue Letters a to e");
-    expect(screen.getByText("4 of 5 letters learnt")).toBeInTheDocument();
+    expect(learnt()).toHaveAttribute("aria-valuetext", "4 of 5 letters learnt");
 
     await user.click(screen.getByRole("button", { name: "e" }));
     expect(status()).toHaveTextContent(
@@ -545,7 +586,7 @@ describe("finishing a lesson", () => {
         "You have finished the lesson Letters a to e, and Letters f to j is now open."
     );
     expect(status().textContent).not.toMatch(/(^|\s)\p{L}\./u);
-    expect(screen.getByText("5 of 5 letters learnt")).toBeInTheDocument();
+    expect(learnt()).toHaveAttribute("aria-valuetext", "5 of 5 letters learnt");
     expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
     expect(screen.getAllByRole("button", { name: "Back to lessons" })).toHaveLength(2);
     expect(screen.getByRole("button", { name: "Keep practising" })).toBeInTheDocument();
@@ -587,7 +628,7 @@ describe("finishing a lesson", () => {
     expect(screenHeading()).toHaveAccessibleName("English: Letters f to j");
     expect(screenHeading()).toHaveFocus();
     expect(status()).toHaveTextContent("");
-    expect(screen.getByText("0 of 5 letters learnt")).toBeInTheDocument();
+    expect(learnt()).toHaveAttribute("aria-valuetext", "0 of 5 letters learnt");
   });
 
   test("Back to lessons puts focus on the lesson just finished", async () => {
@@ -659,7 +700,7 @@ describe("going back and replaying", () => {
     await user.click(everything);
     expect(screenHeading()).toHaveAccessibleName("English: Everything so far");
     expect(screenHeading()).toHaveFocus();
-    expect(screen.getByText("0 of 10 letters learnt")).toBeInTheDocument();
+    expect(learnt()).toHaveAttribute("aria-valuetext", "0 of 10 letters learnt");
     // random() = 0.99 picks the last letter met: j, dots 2, 4 and 5.
     expect(prompt()).toHaveAccessibleName("Which letter has dots 2, 4 and 5?");
 

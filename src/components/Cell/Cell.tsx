@@ -1,4 +1,5 @@
 import { Dot, CellType } from "../Dot/Dot";
+import "./Cell.css";
 
 type CellProps = {
   positions: CellType;
@@ -7,11 +8,13 @@ type CellProps = {
   onClick?: (dot: keyof CellType) => void;
   /** Space separated ids of the help or question text for the dots. */
   describedBy?: string;
-  size?: "small";
+  /** Large by default: the hero of a screen. */
+  size?: "medium" | "small";
 };
 
 const DOTS = ["dot1", "dot2", "dot3", "dot4", "dot5", "dot6"] as const;
 
+/** The braille cell: a raised plate with six dots, 1 to 3 down the left. */
 export const Cell = ({ positions, onClick, describedBy, size }: CellProps) => {
   const className = size ? `cell ${size}` : "cell";
   if (!onClick) {

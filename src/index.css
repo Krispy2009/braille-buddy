@@ -1,62 +1,22 @@
 @import "./theme/fonts.css";
 @import "./theme/tokens.css";
 
-/* Legacy names used by App.css and the components, mapped onto the Press
-   tokens in theme/tokens.css. New code should use the tokens directly. */
+/* The Press look, shared by every screen: raised grey paper, bold ink type,
+   orange raised dots and a black brailler base. Colours come only from the
+   tokens in theme/tokens.css. Component styles live next to each component. */
+
 :root {
-  --page: var(--bg);
-  --ink: var(--text);
-  --muted: var(--text-soft);
-  --tile: var(--surface);
-  /* --line and --line-width are tokens already. */
-  --empty: var(--text-soft);
+  /* What a focus ring is drawn in. Dark surfaces (the brailler base) set it
+     to their own text colour. */
   --focus: var(--text);
-
-  /* The plate is the black brailler base the dots sit on. */
-  --plate: var(--base);
-  --plate-border: transparent;
-  --plate-shadow: 0 6px 0 var(--shade);
-  --plate-focus: var(--accent);
-
-  /* Off: a flat mark pressed into the base, outlined with a dashed rim.
-     On: an orange dot embossed above it. */
-  --dot-off-bg: color-mix(in srgb, var(--on-base) 8%, var(--base));
-  --dot-off-fg: var(--on-base);
-  --dot-off-border: color-mix(in srgb, var(--on-base) 60%, var(--base));
-  --dot-off-border-style: dashed;
-  --dot-off-shadow: inset 0 3px 0 var(--shade);
-  --dot-on-bg: var(--accent);
-  --dot-on-fg: var(--on-accent);
-  --dot-on-border: var(--accent);
-  --dot-on-shadow: inset 0 3px 0 color-mix(in srgb, var(--hi) 45%, transparent),
-    0 4px 0 color-mix(in srgb, var(--accent) 55%, var(--base));
-  --dot-lift: -3px;
-
-  --heading-weight: 900;
-  --label-weight: 700;
-
-  --sans: var(--font-ui);
-  --serif: var(--font-ui);
+  --radius: 1rem;
+  --gutter: 1.375rem;
+  --mono: var(--font-mono);
 }
 
-:root[data-theme="dark"] {
-  --plate-border: var(--key);
-}
-
-/* Black base, yellow dots: the accent is black here, so the raised dot
-   takes the on-base colour instead. Flat, solid lines. */
-:root[data-theme="high-visibility"] {
-  --plate-border: var(--base);
-  --plate-shadow: none;
-  --plate-focus: var(--on-base);
-  --dot-off-bg: var(--base);
-  --dot-off-border: var(--on-base);
-  --dot-off-shadow: none;
-  --dot-on-bg: var(--on-base);
-  --dot-on-fg: var(--base);
-  --dot-on-border: var(--on-base);
-  --dot-on-shadow: none;
-  --dot-lift: 0px;
+/* Comfort settings, set on <html> by App. */
+:root[data-text="bigger"] {
+  font-size: 125%;
 }
 
 *,
@@ -71,14 +31,31 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 :focus-visible {
   outline: 3px solid var(--focus);
   outline-offset: 3px;
+}
+
+/* Headings that take focus when a screen opens show no ring for it: the
+   focus is for screen readers, not a control to act on. */
+[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .sr-only {
@@ -93,12 +70,233 @@ body {
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition: none !important;
-    animation: none !important;
+/* Less motion: nothing slides, sinks or fades. */
+:root[data-motion="less"] *,
+:root[data-motion="less"] *::before,
+:root[data-motion="less"] *::after {
+  scroll-behavior: auto !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Buttons don't dip when pressed either (a pressed brailler key still shows
+   as sunk: that is its state, not an animation). */
+:root[data-motion="less"] button:active:not([aria-pressed="true"]) {
+  transform: none !important;
+}
+
+/* ---- Screens ------------------------------------------------------------
+   One centred column. Lessons stay phone-width on a desktop too. */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 30rem;
+  /* Fills a phone, but stops growing on a tall window so the action at the
+     bottom is never a screen away from what it belongs to. */
+  min-height: min(100vh, 56rem);
+  min-height: min(100dvh, 56rem);
+  margin: 0 auto;
+  padding: var(--gutter) var(--gutter) 1.5rem;
+}
+
+/* Frame: the way out on the left, then progress. Nothing else. */
+.frame {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+}
+
+.frame-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.round-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: var(--line-width) solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+}
+
+.round-button svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+/* Prompt: a small typed label for context, then the task in bold. */
+.eyebrow {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.task {
+  margin: 0.375rem 0 0;
+  font-size: 1.875rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* A letter set in type: an orange card with a hard shadow. */
+.letter-chip {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 0.3em;
+  border: var(--line-width) solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 3px 3px 0 var(--line);
+  text-align: center;
+  line-height: 1.15;
+}
+
+[data-theme="high-visibility"] .letter-chip {
+  box-shadow: none;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+
+/* The one solid action at the bottom of a screen. */
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3.75rem;
+  padding: 0.5rem 1.25rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--base);
+  color: var(--on-base);
+  box-shadow: 0 5px 0 var(--accent);
+  font-size: 1.1875rem;
+  font-weight: 900;
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+
+.primary-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--accent);
+}
+
+/* The same action on the black base: a key-coloured button. */
+.key-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.5rem 1.25rem;
+  border: var(--line-width) solid var(--key);
+  border-radius: 0.875rem;
+  background: var(--key);
+  color: var(--text);
+  box-shadow: inset -3px -4px 0 var(--key-edge);
+  font-size: 1.125rem;
+  font-weight: 900;
+  transition: transform 90ms ease;
+}
+
+.key-button:active {
+  transform: translateY(3px);
+}
+
+/* A bordered button for a second choice, such as Lessons on the base. */
+.outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  padding: 0.25rem 1rem;
+  border: var(--line-width) solid currentColor;
+  border-radius: 0.875rem;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Anything else is quiet: underlined text. */
+.quiet-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* Locked lessons keep a focusable button, marked aria-disabled. */
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ---- The black brailler base -------------------------------------------- */
+
+.base {
+  --focus: var(--on-base);
+  background: var(--base);
+  color: var(--on-base);
+}
+
+/* Ink's base is barely darker than its page, so give it an edge. */
+[data-theme="dark"] .base {
+  box-shadow: inset 0 2px 0 var(--key);
+}
+
+.help {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--text-soft);
+}
+
+kbd {
+  padding: 0 0.3em;
+  border: 1px solid currentColor;
+  border-radius: 0.3rem;
+  font-family: var(--mono);
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.chord-pad-disclosure summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (forced-colors: active) {
+  .primary-button,
+  .key-button,
+  .outline-button,
+  .round-button {
+    border: 2px solid ButtonText;
   }
 }

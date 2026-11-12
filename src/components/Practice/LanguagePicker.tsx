@@ -1,5 +1,5 @@
 import type React from "react";
-import { Language, LANGUAGE_LABELS, LANGUAGES } from "../../game/braille";
+import { Language, LANGUAGE_LABELS, LANGUAGE_TAGS, LANGUAGES } from "../../game/braille";
 
 const STORAGE_KEY = "braille-buddy:practice-language";
 
@@ -30,21 +30,51 @@ type LanguagePickerProps = {
   ref?: React.Ref<HTMLFieldSetElement>;
 };
 
-/** One radio per course in src/courses. Lives on the Settings screen. */
+/** "Ελληνικά" for Greek: each course in its own language, from the browser. */
+const nativeName = (language: Language): string | undefined => {
+  try {
+    const tag = LANGUAGE_TAGS[language];
+    const name = new Intl.DisplayNames([tag], { type: "language" }).of(tag);
+    return name && name.charAt(0).toLocaleUpperCase(tag) + name.slice(1);
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * One radio per course in src/courses, each shown in its own language. The
+ * radio's name stays in English ("Greek"): a screen reader without a Greek
+ * voice would spell "Ελληνικά" out as symbols.
+ */
 export const LanguagePicker = ({ language, onChange, ref }: LanguagePickerProps) => (
   <fieldset ref={ref} className="setting">
     <legend className="setting-legend">Course</legend>
-    {LANGUAGES.map((option) => (
-      <label key={option} className="setting-option">
-        <input
-          type="radio"
-          name="practice-language"
-          value={option}
-          checked={language === option}
-          onChange={() => onChange(option)}
-        />
-        <span className="setting-name">{LANGUAGE_LABELS[option]}</span>
-      </label>
-    ))}
+    <div className="course-options">
+      {LANGUAGES.map((option) => {
+        const name = LANGUAGE_LABELS[option];
+        const native = nativeName(option);
+        return (
+          <label key={option} className="course-option">
+            <input
+              type="radio"
+              name="practice-language"
+              value={option}
+              checked={language === option}
+              onChange={() => onChange(option)}
+            />
+            {native && native !== name ? (
+              <>
+                <span lang={LANGUAGE_TAGS[option]} aria-hidden="true">
+                  {native}
+                </span>
+                <span className="sr-only">{name}</span>
+              </>
+            ) : (
+              <span>{name}</span>
+            )}
+          </label>
+        );
+      })}
+    </div>
   </fieldset>
 );

@@ -1,0 +1,49 @@
+/* The plate: a sheet of surface embossed out of the page. Sizes shrink
+   with the viewport, but a tappable dot never goes below 44px. */
+.cell {
+  --dot-size: clamp(44px, 21vw, 5.125rem);
+  --dot-font-size: 1.5rem;
+  display: inline-grid;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  gap: clamp(0.75rem, 4vw, 1.25rem) clamp(1.25rem, 9vw, 2.625rem);
+  padding: clamp(1.25rem, 6vw, 1.75rem) clamp(1.5rem, 10vw, 2.625rem);
+  border: var(--line-width) solid var(--line);
+  border-radius: 1.875rem;
+  background: var(--surface);
+  box-shadow: -8px -8px 16px var(--hi), 8px 8px 18px var(--shade);
+}
+
+.cell.medium {
+  --dot-size: 3rem;
+  --dot-font-size: 1.125rem;
+  --dot-lift-x: 3px;
+  --dot-lift-y: 4px;
+  gap: 0.625rem 1.125rem;
+  padding: 1rem 1.375rem;
+  border-radius: 1.25rem;
+}
+
+.cell.small {
+  --dot-size: 1.625rem;
+  --dot-font-size: 0.75rem;
+  --dot-lift-x: 2px;
+  --dot-lift-y: 2px;
+  gap: 0.3rem 0.45rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.75rem;
+  box-shadow: none;
+}
+
+@media (forced-colors: active) {
+  .cell {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* High vis is flat: a raised dot is solid black with no shadow, a flat one
+   keeps its dashed rim. */
+[data-theme="high-visibility"] .cell {
+  --dot-lift-x: 0px;
+  --dot-lift-y: 0px;
+}

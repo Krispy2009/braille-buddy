@@ -6,7 +6,8 @@ type ScoreProps = {
 };
 
 // Not a live region: the points gained are already part of each result, and
-// repeating the totals after every answer would only add noise.
+// repeating the totals after every answer would only add noise. Shown on the
+// lesson list, never next to a question.
 export const Score = ({ points, streak, course }: ScoreProps) => (
   <dl className="score">
     <div>

@@ -1,0 +1,388 @@
+/* ---- Lesson list ---------------------------------------------------------- */
+
+.prompt-block {
+  margin-top: 1.5rem;
+}
+
+.lessons {
+  gap: 1rem;
+}
+
+.lessons .prompt-block {
+  margin-top: 0.5rem;
+}
+
+.practice-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.practice-bar .quiet-button {
+  padding: 0;
+}
+
+/* Points and streak, typed small: totals, not a scoreboard. */
+.score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--text-soft);
+}
+
+.score div {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.score dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lesson-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.875rem 1rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* The next lesson is the orange card, lifted. */
+.lesson-card[data-state="open"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 4px 5px 0 var(--line);
+}
+
+.lesson-card[data-state="locked"] {
+  border-style: dashed;
+  color: var(--text-soft);
+}
+
+.lesson-card-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.lesson-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+
+.lesson-state {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.lesson-letters {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.lesson-details {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.lesson-card button {
+  grid-column: 1 / -1;
+  min-height: 3rem;
+}
+
+.lesson-card[data-state="locked"] button {
+  border-style: dashed;
+}
+
+.everything-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px dotted var(--key-edge);
+}
+
+.everything-card p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+/* ---- A question ------------------------------------------------------------ */
+
+.progress-track {
+  flex: 1;
+  height: 0.625rem;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 2px 2px 3px var(--shade), inset -2px -2px 3px var(--hi);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--text);
+  transition: width 300ms ease;
+}
+
+[data-theme="high-visibility"] .progress-track {
+  border: 2px solid var(--line);
+}
+
+.progress-count {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.lesson-heading {
+  margin: 0;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+
+.keys-hint {
+  text-align: center;
+}
+
+/* Letter cards to pick from. Right turns orange and lifts; wrong turns
+   black; each also gets a mark, so colour is never the only sign. */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.5rem;
+  padding: 0.25rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: -3px -3px 6px var(--hi), 3px 3px 6px var(--shade);
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  transition: transform 90ms ease;
+}
+
+.choice:not(:disabled):active {
+  transform: translate(2px, 3px);
+}
+
+.choice:disabled {
+  cursor: default;
+}
+
+.choice[data-mark="right"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 3px 4px 0 var(--line);
+}
+
+.choice[data-mark="wrong"] {
+  background: var(--base);
+  color: var(--on-base);
+  box-shadow: none;
+}
+
+.choice-mark {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.35rem;
+  font-size: 0.875rem;
+}
+
+/* The bottom of the screen: the action, the brailler base or the feedback
+   sheet. It bleeds to the edges of the column. */
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.action .primary-button,
+.action .key-button {
+  width: 100%;
+}
+
+.feedback {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.feedback:empty {
+  display: block;
+  height: 0;
+}
+
+.brailler-base,
+.sheet {
+  margin: auto calc(-1 * var(--gutter)) -1.5rem;
+  padding: 1.375rem 0.875rem 1.5rem;
+  border-radius: 1.75rem 1.75rem 0 0;
+}
+
+.brailler-base {
+  gap: 1rem;
+}
+
+.brailler-base .quiet-button {
+  margin-top: -0.375rem;
+}
+
+.sheet {
+  align-items: stretch;
+  padding-inline: var(--gutter);
+}
+
+.sheet-right {
+  border: var(--line-width) solid var(--line);
+  border-bottom: 0;
+  background: var(--surface);
+  box-shadow: 0 -8px 18px var(--shade);
+}
+
+.sheet .feedback {
+  text-align: start;
+  font-size: 1.0625rem;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* A rubber stamp, slightly crooked. */
+.stamp {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border: 3px solid currentColor;
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+}
+
+.cross {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.cross svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Wrong answers: the dots pressed next to the right ones. */
+.compare {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.compare-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+}
+
+.compare-label {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.sheet-next {
+  display: flex;
+}
+
+.sheet-next > button {
+  flex: 1;
+}
+
+/* After a finished lesson: the way on, then two quiet ways out. */
+.sheet-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 0.5rem;
+}
+
+.sheet-links > .primary-button,
+.sheet-links > .key-button {
+  flex: 1 1 100%;
+}
+
+.sheet-wrong .eyebrow {
+  color: var(--on-base);
+}
+
+.sheet .quiet-button {
+  align-self: center;
+}
+
+@media (forced-colors: active) {
+  .lesson-card,
+  .choice,
+  .sheet {
+    border: 1px solid CanvasText;
+  }
+
+  .lesson-card[data-state="open"],
+  .choice[data-mark="right"] {
+    border-width: 3px;
+  }
+}

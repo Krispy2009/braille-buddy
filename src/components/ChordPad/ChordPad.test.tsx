@@ -86,13 +86,13 @@ test("number keys work inside and outside the pad", async () => {
 test("shows when chord typing is on", async () => {
   const { user, pad } = setup();
   expect(pad).toHaveAttribute("data-active", "false");
-  expect(screen.getByText(/tab here to type chords/i)).toBeInTheDocument();
+  expect(screen.getByText("Keyboard works too:")).toBeInTheDocument();
 
   await user.tab();
   await user.tab();
   expect(pad).toHaveFocus();
   expect(pad).toHaveAttribute("data-active", "true");
-  expect(screen.getByText("Chord typing is on")).toBeInTheDocument();
+  expect(screen.getByText("Chord typing is on:")).toBeInTheDocument();
 });
 
 test("does not trap the keyboard", async () => {
@@ -107,12 +107,12 @@ test("does not trap the keyboard", async () => {
   expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
 });
 
-test("shows the Perkins key layout", () => {
+test("shows the chord keys in dot order, F D S then J K L", () => {
   const { pad } = setup();
   const keys = Array.from(pad.querySelectorAll("kbd")).map(
     (kbd) => kbd.textContent
   );
-  expect(keys).toEqual(["S", "D", "F", "J", "K", "L"]);
+  expect(keys).toEqual(["F", "D", "S", "J", "K", "L"]);
 });
 
 describe("on a touch-only device", () => {
