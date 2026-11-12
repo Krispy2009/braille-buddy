@@ -142,13 +142,13 @@ test('switches theme from the theme radios and remembers the choice', async () =
   const group = screen.getByRole('group', { name: 'Color theme' });
   expect(group).toBeInTheDocument();
 
-  await user.click(screen.getByRole('radio', { name: 'Dark' }));
+  await user.click(screen.getByRole('radio', { name: 'Ink' }));
   expect(document.documentElement.dataset.theme).toBe('dark');
   expect(localStorage.getItem('theme')).toBe('dark');
 
-  await user.click(screen.getByRole('radio', { name: 'High visibility' }));
+  await user.click(screen.getByRole('radio', { name: 'High vis' }));
   expect(document.documentElement.dataset.theme).toBe('high-visibility');
-  expect(screen.getByRole('radio', { name: 'High visibility' })).toBeChecked();
+  expect(screen.getByRole('radio', { name: 'High vis' })).toBeChecked();
 });
 
 test('announces Greek letters and diphthongs by name', async () => {

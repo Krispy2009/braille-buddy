@@ -1,0 +1,65 @@
+/* Press design tokens. The only place colours are defined: components and
+   index.css use these names, never raw values. Keyed on the data-theme
+   values the theme switcher and the pre-paint script in index.html set:
+   light = Paper, dark = Ink, high-visibility = High vis. */
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #eceae4;
+  --surface: #eceae4;
+  --text: #1a1a1a;
+  --text-soft: #5a5650;
+  --line: #1a1a1a;
+  --accent: #ff5a1f;
+  --on-accent: #1a1a1a;
+  --base: #1a1a1a;
+  --on-base: #eceae4;
+  --key: #eceae4;
+  --key-edge: #a8a49a;
+  --hi: #ffffff;
+  --shade: rgba(0, 0, 0, 0.18);
+  --line-width: 2px;
+
+  --font-ui: "Commissioner", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-mono: "Fira Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #17171a;
+  --surface: #1f1f23;
+  --text: #eceae4;
+  --text-soft: #a9a49a;
+  --line: #eceae4;
+  --accent: #ff7a45;
+  --on-accent: #17171a;
+  --base: #000000;
+  --on-base: #eceae4;
+  --key: #2a2a2e;
+  --key-edge: #0a0a0a;
+  --hi: rgba(255, 255, 255, 0.06);
+  --shade: rgba(0, 0, 0, 0.6);
+}
+
+/* Black on signal yellow, like tactile signage: flat, no soft shadows,
+   thicker lines. */
+:root[data-theme="high-visibility"] {
+  color-scheme: light;
+  --bg: #ffd60a;
+  --surface: #ffd60a;
+  --text: #000000;
+  --text-soft: #000000;
+  --line: #000000;
+  --accent: #000000;
+  --on-accent: #ffd60a;
+  --base: #000000;
+  --on-base: #ffd60a;
+  --key: #ffd60a;
+  --key-edge: #000000;
+  --hi: transparent;
+  --shade: transparent;
+  --line-width: 3px;
+}

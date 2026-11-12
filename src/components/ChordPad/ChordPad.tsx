@@ -32,7 +32,7 @@ const Pad = styled.div`
 
   &:focus-visible,
   &:focus {
-    outline: 3px solid var(--plate-focus);
+    outline: 3px solid var(--focus);
     outline-offset: 3px;
   }
 
@@ -60,6 +60,7 @@ const KeyCap = styled.span`
   display: flex;
   flex-direction: column;
   align-items: center;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
 `;
 
