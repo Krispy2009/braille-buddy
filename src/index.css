@@ -93,8 +93,10 @@ button {
   flex-direction: column;
   width: 100%;
   max-width: 30rem;
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* Fills a phone, but stops growing on a tall window so the action at the
+     bottom is never a screen away from what it belongs to. */
+  min-height: min(100vh, 56rem);
+  min-height: min(100dvh, 56rem);
   margin: 0 auto;
   padding: var(--gutter) var(--gutter) 1.5rem;
 }
