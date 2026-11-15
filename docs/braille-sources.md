@@ -1,8 +1,27 @@
 # Braille data: source check
 
-Checked on 11 November 2026 against `src/courses/greek.json` (24 letters + 8 letter pairs) and `src/courses/english.json` (26 letters). No file under `src/` was changed.
+First checked on 11 November 2026 against `src/courses/greek.json` (24 letters + 8 letter pairs) and `src/courses/english.json` (26 letters). Rechecked on 15 November 2026 for issue #31 (Greek, see "Update 15 November 2026" just below) and extended for issue #41 (numbers and punctuation, see "Numbers and punctuation").
 
-## Bottom line
+## Update 15 November 2026 (issue #31)
+
+**Verdict: no change to `greek.json`. ηυ stays dots 1256.**
+
+What I read today, all through a web fetch tool that converts a page or PDF to text and answers questions about it (so "read" below means I saw the tool's extraction and its verbatim quotes, not the PDF rendered on screen):
+
+- **Kouroupetroglou, Georgios. "The Greek Braille System".** University of Athens (each page footer reads "Georgios Kouroupetroglou, University of Athens"). Read as the text version on Yumpu: https://www.yumpu.com/en/document/view/38381616/the-greek-braille-system (uploaded by access.uoa.gr on 21.04.2015 according to Yumpu; the document itself shows no date). A search result for the original at access.uoa.gr gives the title as "Georgios Kouroupetroglou, The Greek braille system, Athens, 2009"; I could not open that copy (the site's robots.txt refuses fetch tools), so the year 2009 is from the search listing only. The document has no introduction and does not mention KEAT or the Ministry of Education. Kouroupetroglou is the first author of "Ελληνικό σύστημα Braille" (with Phlorias), the reference the Wikipedia article cites, so I treat this as an **authoritative expert reference**, the closest to primary I could read, but **not** an official KEAT or Ministry publication.
+  - It is a table, one row per sign, with the dot numbers written as numbers (not pictures), the Greek name and the Unicode name.
+  - All 24 letters match our file (α 1, β 12, γ 1245, δ 145, ε 15, ζ 1356, η 345, θ 1456, ι 24, κ 13, λ 123, μ 134, ν 1345, ξ 1346, ο 135, π 1234, ρ 1235, σ and ς 234, τ 2345, υ 13456, φ 124, χ 125, ψ 12346, ω 245). Capital prefix 46.
+  - All 8 pairs match: αι 126, αυ 16, ει 146, ευ 156, οι 246, ου 136, υι 12456, **ηυ 1256**.
+  - The ηυ rows, quoted as extracted: "Ηυ | 1256 ήτα ύψιλον GREEK SMALL LETTER ETA GREEK SMALL LETTER UPSILON", then the accented form "5,1256 ήτα ύψιλον τονούμενο", the capital "46,1256" and capital accented "46,5,1256". ηυ is listed exactly like the other seven pairs, with no note that it is rare or optional.
+- **Pharmabraille, "Greece Braille Codes"**, https://www.pharmabraille.com/braille-codes/greece-braille-codes/ (last updated January 2016; secondary, written for braille on medicine packaging). Same 24 letters and 8 pairs, ηυ 1256. Its references are Kouroupetroglou and Phlôrias, "Ελληνικο συστημα Braille", and World Braille Usage 3rd ed.
+- **Duxbury Systems, "Worldwide Braille Codebooks"**, https://duxburysystems.org/codes/index_fcode.htm. An index only. Under Greece it links World Braille Usage 2013 at PDF page 199, "Greek Braille System" from Professor Georgios Kouroupetroglou, and a "Simplified Greek Braille" PDF. **Both Duxbury-hosted Greek PDFs failed to download** (the site returned an error to the fetch tool), so I read neither.
+- **World Braille Usage, 3rd ed. (2013)**, tried again in two copies: govinfo.gov (as on 11 November) and https://www.duxburysystems.org/codes/wbu_2013.pdf. Both times the tool's text of the PDF stops at about 72,900 characters, partway through the Denmark entry (book page 31), and reading from a later offset returns nothing. **I still have not read the Greek chapter (p. 183).**
+
+ηυ verdict: two independent agreeing sources from 11 November (Wikipedia, liblouis `el.ctb`) plus, today, the University of Athens table by Kouroupetroglou and the Pharmabraille page all give ηυ = 1256, and none gives a different cell. The dots are settled as far as I can take them. What remains open is only the *status* question from 11 November: two Greek teaching texts list seven (or five) single-cell diphthongs and leave ηυ out. The Kouroupetroglou table lists it like any other pair, which is evidence it belongs to the code, but it does not say how often it is taught. Keep teaching it; a check with KEAT or the Cyprus School for the Blind is still worth doing (Open questions, item 2).
+
+Not done: no direct access to any KEAT, Greek Ministry of Education or ICEB document on Greek; the sandbox's network proxy refused direct downloads from govinfo.gov, perkins.org, iceb.org, duxburysystems.org and the Greek government sites, so everything above came through the fetch tool.
+
+## Bottom line (11 November 2026)
 
 - Every one of the 24 Greek letters and 26 English letters in our files agrees with every source that gave dots.
 - All 8 Greek letter pairs agree with the two sources that gave dots for them (Wikipedia, and the liblouis `el.ctb` table).
@@ -126,13 +145,13 @@ Full titles, publishers, years and URLs are given only for what I retrieved.
 ## Discrepancies and doubts
 
 - **No discrepancy in dots was found** for any letter or pair in either file.
-- **Doubt about ηυ.** Dots match secondary sources, but it is absent from two Greek educational lists of the diphthong signs (Papadimitriou and Argyropoulos 2020; Katsoulis TOC) while present in Grekas 2020. It may be rare, optional or older. Note also that ηυ is a genuinely uncommon pair in Modern Greek text (as in ηύρα). Recommend a native or school check before teaching it as standard.
+- **Doubt about ηυ** (dots settled on 15 November 2026: the Kouroupetroglou table gives 1256 too; the status doubt below stays). Dots match secondary sources, but it is absent from two Greek educational lists of the diphthong signs (Papadimitriou and Argyropoulos 2020; Katsoulis TOC) while present in Grekas 2020. It may be rare, optional or older. Note also that ηυ is a genuinely uncommon pair in Modern Greek text (as in ηύρα). Recommend a native or school check before teaching it as standard.
 - **Doubt about status of all pairs.** I found no text saying whether the pair signs are compulsory or optional in current Greek or Cypriot braille. They are listed as part of the Greek code in 2020 educational sources, which is good evidence they are current.
 - **Cyprus.** I found no Cyprus-specific source. The World Braille Usage Cyprus entry reportedly just refers to the Greek chapter, which suggests Cyprus uses the same alphabet, but I only saw that cross-reference, not the chapter.
 
 ## Open questions and future work
 
-1. Read the Greek chapter (p. 183) of *World Braille Usage* 3rd ed. from the Perkins page (https://www.perkins.org/resource/world-braille-usage/) or the Library of Congress copy; it should settle the letters, the pairs and ηυ in one go. This is the single most valuable check.
+1. (Still open on 15 November 2026: two more copies tried, both cut off at Denmark.) Read the Greek chapter (p. 183) of *World Braille Usage* 3rd ed. from the Perkins page (https://www.perkins.org/resource/world-braille-usage/) or the Library of Congress copy; it should settle the letters, the pairs and ηυ in one go. This is the single most valuable check.
 2. Ask the Cyprus School for the Blind or KEAT whether (a) ηυ is taught as standard, (b) the pair signs are compulsory, (c) there are any pairs not in our list, (d) the Cyprus alphabet is identical.
 3. Get a blind Greek-reading teacher or learner to review the whole table before release.
 4. Features a learner will need that the data does not have (note only, not added):
