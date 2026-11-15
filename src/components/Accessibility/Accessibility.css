@@ -1,0 +1,71 @@
+.accessibility {
+  gap: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+.accessibility section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.accessibility h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.accessibility p,
+.accessibility li {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.accessibility ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.accessibility a {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.accessibility a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.a11y-table-wrap {
+  overflow-x: auto;
+}
+
+.accessibility table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.accessibility th,
+.accessibility td {
+  padding: 0.5rem 0.625rem;
+  border-bottom: 2px dotted var(--key-edge);
+  text-align: left;
+  vertical-align: top;
+}
+
+.accessibility thead th {
+  border-bottom: var(--line-width) solid var(--line);
+  font-weight: 900;
+}
+
+.accessibility tbody th {
+  font-weight: 700;
+}
+
+.a11y-note {
+  color: var(--text-soft);
+}

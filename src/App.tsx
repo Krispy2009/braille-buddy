@@ -1,4 +1,5 @@
 import React from "react";
+import { Accessibility } from "./components/Accessibility/Accessibility";
 import { Board } from "./components/Board/Board";
 import { Home, HomeFocus } from "./components/Home/Home";
 import { loadLanguage, saveLanguage } from "./components/Practice/LanguagePicker";
@@ -22,7 +23,8 @@ type View =
   | { screen: "home"; focus?: HomeFocus }
   | { screen: "explore" }
   | { screen: "practice"; start: PracticeView }
-  | { screen: "settings"; focus?: SettingsFocus; back: View };
+  | { screen: "settings"; focus?: SettingsFocus; back: View }
+  | { screen: "accessibility"; back: View };
 
 const now = () => new Date();
 
@@ -122,9 +124,13 @@ function App() {
           language={language}
           onLanguageChange={changeLanguage}
           focus={view.focus}
+          onAccessibility={() => setView({ screen: "accessibility", back: view })}
           onBack={() => setView(view.back)}
         />
       );
+      break;
+    case "accessibility":
+      screen = <Accessibility onBack={() => setView(view.back)} />;
       break;
   }
 
@@ -139,6 +145,15 @@ function App() {
       </main>
       {onHome && (
         <footer className="site-footer">
+          <p className="about">
+            <button
+              type="button"
+              className="quiet-button"
+              onClick={() => setView({ screen: "accessibility", back: view })}
+            >
+              Accessibility
+            </button>
+          </p>
           made with <span aria-hidden="true">❤️</span>
           <span className="sr-only">love</span> by{" "}
           <a href="https://kristi.cy">kristi.cy</a>

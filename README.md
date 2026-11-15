@@ -27,7 +27,9 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 - **Results are announced** in a status region, and practice moves focus to the next step so you never lose your place. Greek letters are announced by name ("epsilon iota"), so they make sense even when no Greek voice is installed
 - **Announcements are worded** so screen readers pause between sentences instead of running them together
 - **Settings** (the gear on Home): enter dots by tapping one big cell or on six brailler keys, three themes (Paper, Ink and High vis, following your system's colour scheme and contrast setting until you choose), and comfort switches for key letters, less motion (following your system's reduced motion setting) and bigger text
+- **Keyboard shortcuts can be turned off** in Settings (WCAG 2.1.4), for screen reader and voice control users whom single-character keys clash with
 - **Greek text is marked up** with its language
+- **An Accessibility page** (Settings, or the link at the foot of Home) states the WCAG 2.2 AA goal, what is built in, known gaps, and a screen reader test table, which is honestly all "Not tested yet" for now. Its content lives in `src/components/Accessibility/content.ts`
 
 ## Install it and play offline
 

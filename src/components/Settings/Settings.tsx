@@ -49,6 +49,8 @@ type SettingsProps = {
   onChange: (next: SettingsType) => void;
   language: Language;
   onLanguageChange: (language: Language) => void;
+  /** Opens the Accessibility page. */
+  onAccessibility: () => void;
   /** Where focus goes when the screen opens, such as from "Change course". */
   focus?: SettingsFocus;
   /** Back to the screen Settings was opened from. */
@@ -66,6 +68,7 @@ export const Settings = ({
   onChange,
   language,
   onLanguageChange,
+  onAccessibility,
   focus,
   onBack,
 }: SettingsProps) => {
@@ -167,6 +170,10 @@ export const Settings = ({
       </fieldset>
 
       <LanguagePicker ref={courseRef} language={language} onChange={onLanguageChange} />
+
+      <button type="button" className="quiet-button settings-link" onClick={onAccessibility}>
+        Accessibility
+      </button>
     </div>
   );
 };
