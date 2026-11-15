@@ -223,3 +223,59 @@
   min-height: 2.75rem;
   color: var(--text);
 }
+
+/* Today's daily puzzle: a lifted card with its own way in. Done or not is
+   said in words with a mark, and the border changes shape too. */
+.daily-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.125rem 1.125rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 4px 5px 0 var(--accent);
+}
+
+[data-theme="high-visibility"] .daily-card {
+  box-shadow: none;
+}
+
+.daily-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+
+.daily-card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.daily-card-state {
+  padding: 0 0.5rem;
+  border: 2px dashed var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.daily-card-state[data-done="true"] {
+  border-style: solid;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.daily-card-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-soft);
+}
+
+.daily-card-button {
+  min-height: 3rem;
+}

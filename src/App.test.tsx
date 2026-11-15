@@ -2,6 +2,8 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { COURSES } from './courses';
+import { cellsToGuess, puzzleForDay, wordCells } from './daily/daily';
+import { saveDaily } from './daily/storage';
 import { dayKey } from './game/progress';
 import type { DotEntry } from './game/settings';
 
@@ -377,6 +379,54 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Settings' })).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Back' }));
     expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus();
+  });
+
+  test('the Daily puzzle card opens the puzzle, and Back returns to the card', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const card = screen.getByRole('region', { name: 'Daily puzzle' });
+    expect(card).toHaveTextContent('Not done yet');
+    await user.click(within(card).getByRole('button', { name: "Play today's puzzle" }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Daily puzzle' })).toHaveFocus();
+    expect(screen.getByRole('heading', { level: 3, name: 'Read it' })).toBeInTheDocument();
+    expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('button', { name: "Play today's puzzle" })).toHaveFocus();
+  });
+
+  test('the card says when today is done, with the result', async () => {
+    const puzzle = puzzleForDay('english', today())!;
+    saveDaily(today(), 'english', {
+      read: [puzzle.read],
+      write: ['100000 100000 100000', cellsToGuess(wordCells(puzzle.write, 'english'))],
+      rewarded: true,
+    });
+    const user = userEvent.setup();
+    render(<App />);
+    const card = screen.getByRole('region', { name: 'Daily puzzle' });
+    expect(card).toHaveTextContent('Done today');
+    expect(card).toHaveTextContent('Read it in 1 try, Write it in 2 tries.');
+    await user.click(within(card).getByRole('button', { name: "See today's result" }));
+    expect(screen.getByRole('heading', { level: 3, name: "Today's result" })).toBeInTheDocument();
+  });
+
+  test('a finished daily puzzle shows in the streak and points on Home', async () => {
+    const puzzle = puzzleForDay('english', today())!;
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: "Play today's puzzle" }));
+    await user.type(screen.getByRole('textbox', { name: 'Type the word in print' }), puzzle.read);
+    await user.click(screen.getByRole('button', { name: 'Check' }));
+    await user.click(screen.getByRole('button', { name: 'Go on to Write it' }));
+    for (const cell of wordCells(puzzle.write, 'english')) {
+      await user.keyboard(Object.entries(cell).filter(([, on]) => on).map(([dot]) => dot.slice(3)).join(''));
+      await user.keyboard('{Enter}');
+    }
+    await user.click(screen.getByRole('button', { name: "See today's result" }));
+    await user.click(screen.getByRole('button', { name: 'Back to Home' }));
+    expect(screen.getByText('Daily streak 1 day, 50 points')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Daily puzzle' })).toHaveTextContent('Done today');
+    expect(JSON.parse(localStorage.getItem('braille-buddy:progress')!)).toMatchObject({ points: 50, streak: 1 });
   });
 
   test('number keys do nothing on Home', async () => {

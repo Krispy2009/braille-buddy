@@ -1,12 +1,14 @@
 import React from "react";
 import { Accessibility } from "./components/Accessibility/Accessibility";
 import { Board } from "./components/Board/Board";
+import { Daily } from "./components/Daily/Daily";
 import { Home, HomeFocus } from "./components/Home/Home";
 import { loadLanguage, saveLanguage } from "./components/Practice/LanguagePicker";
 import { CHANGE_COURSE } from "./components/Practice/LessonList";
 import { Practice, PracticeView } from "./components/Practice/Practice";
 import { Settings, SettingsFocus } from "./components/Settings/Settings";
 import { getCourse } from "./courses";
+import { dailyStatus } from "./daily/storage";
 import type { Language } from "./game/braille";
 import { loadProgress, Progress, saveProgress } from "./game/progress";
 import {
@@ -22,6 +24,7 @@ import {
 type View =
   | { screen: "home"; focus?: HomeFocus }
   | { screen: "explore" }
+  | { screen: "daily" }
   | { screen: "practice"; start: PracticeView }
   | { screen: "settings"; focus?: SettingsFocus; back: View }
   | { screen: "accessibility"; back: View };
@@ -73,6 +76,8 @@ function App() {
           progress={progress}
           now={now}
           focus={view.focus}
+          daily={dailyStatus(course.id, now())}
+          onDaily={() => setView({ screen: "daily" })}
           onStart={(lessonId) =>
             setView({
               screen: "practice",
@@ -92,6 +97,20 @@ function App() {
           showKeyLetters={settings.keyLetters}
           keyShortcuts={settings.keyShortcuts}
           onHome={() => home("explore")}
+        />
+      );
+      break;
+    case "daily":
+      screen = (
+        <Daily
+          course={course}
+          dotEntry={settings.dotEntry}
+          showKeyLetters={settings.keyLetters}
+          keyShortcuts={settings.keyShortcuts}
+          progress={progress}
+          onProgress={changeProgress}
+          onBack={() => home("daily")}
+          now={now}
         />
       );
       break;
