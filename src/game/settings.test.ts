@@ -17,6 +17,7 @@ const DEFAULTS: Settings = {
   keyLetters: true,
   lessMotion: false,
   biggerText: false,
+  keyShortcuts: true,
 };
 
 const KEYS: Settings = { ...DEFAULTS, dotEntry: "keys" };
@@ -51,7 +52,7 @@ test("settings saved before the comfort switches existed keep their entry mode",
 
 test("saves and loads the comfort switches", () => {
   const storage = memoryStorage();
-  const comfy: Settings = { dotEntry: "cell", keyLetters: false, lessMotion: true, biggerText: true };
+  const comfy: Settings = { dotEntry: "cell", keyLetters: false, lessMotion: true, biggerText: true, keyShortcuts: false };
   saveSettings(comfy, storage);
   expect(loadSettings(storage)).toEqual(comfy);
 });
@@ -114,4 +115,12 @@ test("returns a fresh object each time", () => {
   const first = loadSettings(memoryStorage());
   first.dotEntry = "keys";
   expect(loadSettings(memoryStorage())).toEqual(DEFAULTS);
+});
+
+test("keyShortcuts defaults to on and a bad value falls back to it", () => {
+  expect(defaultSettings().keyShortcuts).toBe(true);
+  const bad = JSON.stringify({ version: 1, dotEntry: "keys", keyShortcuts: "no" });
+  expect(loadSettings(memoryStorage(bad))).toEqual(KEYS);
+  const off = JSON.stringify({ version: 1, keyShortcuts: false });
+  expect(loadSettings(memoryStorage(off)).keyShortcuts).toBe(false);
 });

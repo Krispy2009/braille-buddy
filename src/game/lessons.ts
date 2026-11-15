@@ -1,4 +1,4 @@
-import type { Course, Lesson } from "../courses";
+import { entryKind, type Course, type Lesson } from "../courses";
 import { itemId, ItemId } from "./braille";
 import { POINTS_PER_CORRECT, Progress } from "./progress";
 
@@ -89,3 +89,22 @@ export const coursePoints = (course: Course, progress: Progress): number =>
         POINTS_PER_CORRECT,
     0
   );
+
+/**
+ * What to call a set of entries in "3 of 5 letters learnt": "letters" when
+ * they are all letters, "numbers" when all numbers, otherwise "signs".
+ */
+export const entriesNoun = (
+  course: Course,
+  letters: readonly string[]
+): "letters" | "numbers" | "signs" => {
+  const kinds = new Set(
+    letters.map((letter) => {
+      const entry = course.letters.find((item) => item.letter === letter);
+      return entry ? entryKind(entry) : "letter";
+    })
+  );
+  if (kinds.size === 0 || (kinds.size === 1 && kinds.has("letter"))) return "letters";
+  if (kinds.size === 1 && kinds.has("number")) return "numbers";
+  return "signs";
+};

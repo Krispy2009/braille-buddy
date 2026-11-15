@@ -240,3 +240,17 @@
     outline: 3px solid Highlight;
   }
 }
+
+.settings-link {
+  align-self: flex-start;
+  padding-left: 0;
+}
+
+.switch-hint {
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.switch-row:has(.switch-hint) {
+  padding: 0.5rem 0;
+}

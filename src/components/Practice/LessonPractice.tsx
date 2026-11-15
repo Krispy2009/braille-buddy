@@ -1,17 +1,34 @@
 import React from "react";
 import type { Course, Lesson } from "../../courses";
 import {
-  cellForLetter,
+  cellsForLetter,
   CellType,
   CLEAR_CELL,
   DotKey,
   itemId,
+  kindOfLetter,
   LANGUAGE_TAGS,
   parseItemId,
   raisedDots,
 } from "../../game/braille";
 import {
+  CellEntry,
+  clearCurrentCell,
+  currentCell,
+  dotsInWords,
+  entryLabel,
+  firstEmptyCell,
+  isLastCell,
+  moveToCell,
+  nextCell,
+  previousCell,
+  setCurrentCell,
+  startEntry,
+  toggleEntryDot,
+} from "../../game/cells";
+import {
   completeLesson,
+  entriesNoun,
   isLetterLearnt,
   lessonStates,
   metLetters,
@@ -21,6 +38,7 @@ import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
 import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
 import { Cell } from "../Cell/Cell";
+import { CellRow } from "../Cell/CellRow";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
 import { CloseIcon } from "../Icons/Icons";
@@ -28,11 +46,11 @@ import { Choices } from "./Choices";
 import { Letter } from "./Letter";
 import {
   Answer,
-  answerCell,
-  dotsInWords,
+  answerCells,
+  choicePrompt,
   Finished,
   finishedText,
-  isRightCell,
+  isRightCells,
   makeQuestion,
   Question,
   QuestionSource,
@@ -45,6 +63,7 @@ type LessonPracticeProps = {
   lesson?: Lesson;
   dotEntry: DotEntry;
   showKeyLetters: boolean;
+  keyShortcuts: boolean;
   progress: Progress;
   onProgress: (next: Progress) => void;
   onBack: () => void;
@@ -96,6 +115,7 @@ export const LessonPractice = ({
   lesson,
   dotEntry,
   showKeyLetters,
+  keyShortcuts,
   progress,
   onProgress,
   onBack,
@@ -108,7 +128,11 @@ export const LessonPractice = ({
   const [question, setQuestion] = React.useState<Question>(() =>
     makeQuestion(source, progress, undefined, random)
   );
-  const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
+  // What the player is writing: one cell for a letter, more for a number
+  // or a two-cell sign.
+  const [entry, setEntry] = React.useState<CellEntry>(() =>
+    startEntry(answerCells(question.item).length)
+  );
   const [answer, setAnswer] = React.useState<Answer | null>(null);
   const [finished, setFinished] = React.useState<Finished | null>(null);
   const [status, setStatus] = React.useState("");
@@ -120,6 +144,7 @@ export const LessonPractice = ({
 
   const promptId = React.useId();
   const keysHelpId = React.useId();
+  const cellLabelId = React.useId();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
   const promptRef = React.useRef<HTMLHeadingElement>(null);
   const nextRef = React.useRef<HTMLButtonElement>(null);
@@ -149,6 +174,11 @@ export const LessonPractice = ({
   const learnt = source.letters.filter((entry) =>
     isLetterLearnt(progress, itemId(language, entry))
   ).length;
+  const noun = entriesNoun(course, source.letters);
+  const answerDots = answerCells(question.item);
+  // Numbers and two-cell signs are written one cell at a time.
+  const multi = answerDots.length > 1;
+  const positions = currentCell(entry);
 
   const finish = (result: Answer) => {
     const answered = recordAnswer(progress, question.item, result.correct, now());
@@ -166,18 +196,52 @@ export const LessonPractice = ({
     setFocusRequest({ target: outcome.finished ? "finish" : "next" });
   };
 
+  // Moving between cells is said in the live region, since focus stays on
+  // the dots: "Cell 2 of 2, no dots raised."
+  const goToCell = (next: CellEntry) => {
+    setEntry(next);
+    const cell = currentCell(next);
+    setStatus(
+      `${entryLabel(next)}, ${
+        raisedDots(cell).length === 0 ? "no dots raised" : `${dotsInWords(cell)} raised`
+      }.`
+    );
+  };
+
   const check = () => {
     if (!writing) return;
-    if (raisedDots(positions).length === 0) {
-      setStatus("Raise at least one dot, then check your answer.");
+    const empty = firstEmptyCell(entry);
+    if (empty >= 0) {
+      if (multi) {
+        setEntry(moveToCell(entry, empty));
+        setStatus(
+          `Raise at least one dot in cell ${empty + 1}, then check your answer.`
+        );
+      } else {
+        setStatus("Raise at least one dot, then check your answer.");
+      }
       return;
     }
     returnToPad.current = !!padRef.current?.contains(document.activeElement);
     finish({
       kind: "dots",
-      correct: isRightCell(question.item, positions),
-      cell: positions,
+      correct: isRightCells(question.item, entry.cells),
+      cells: [...entry.cells],
     });
+  };
+
+  /** Enter and the main button: the next cell, or check on the last one. */
+  const submit = () => {
+    if (!writing) return;
+    if (isLastCell(entry)) {
+      check();
+      return;
+    }
+    if (raisedDots(positions).length === 0) {
+      setStatus(`Raise at least one dot in cell ${entry.current + 1} first.`);
+      return;
+    }
+    goToCell(nextCell(entry));
   };
 
   const choose = (choice: string) => {
@@ -188,7 +252,7 @@ export const LessonPractice = ({
   const goNext = () => {
     const next = makeQuestion(source, progress, question.item, random);
     setQuestion(next);
-    setPositions(CLEAR_CELL);
+    setEntry(startEntry(answerCells(next.item).length));
     setAnswer(null);
     setFinished(null);
     setStatus("");
@@ -200,22 +264,29 @@ export const LessonPractice = ({
 
   const toggleDot = (dot: DotKey) => {
     if (writing) {
-      setPositions((current) => ({ ...current, [dot]: !current[dot] }));
+      setEntry((current) => toggleEntryDot(current, dot));
     }
   };
+
+  const setPositions = (cell: CellType) =>
+    setEntry((current) => setCurrentCell(current, cell));
 
   useBrailleKeys({
     onToggleDot: toggleDot,
     onChord: (cell) => writing && setPositions(cell),
-    onClear: () => writing && setPositions(CLEAR_CELL),
-    onSubmit: () => (asking ? check() : goNext()),
+    onClear: () => writing && setEntry(clearCurrentCell),
+    onSubmit: () => (asking ? submit() : goNext()),
+    keyShortcuts,
   });
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
   const total = source.letters.length;
   const right = answer?.correct === true;
   const wrong = answer !== null && !answer.correct;
-  const answerDots = answerCell(question.item);
+  const kind = kindOfLetter(letter, language);
+  // The cell label is part of what the dots describe, so a screen reader
+  // hears "Cell 1 of 2" with the question.
+  const describedBy = multi ? `${promptId} ${cellLabelId}` : promptId;
 
   // The action area is one element throughout, so the live region inside it
   // is never remounted: while writing it is the brailler base (or a plain
@@ -243,11 +314,11 @@ export const LessonPractice = ({
         <div
           className="progress-track"
           role="progressbar"
-          aria-label="Letters learnt"
+          aria-label={`${noun.charAt(0).toUpperCase()}${noun.slice(1)} learnt`}
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={learnt}
-          aria-valuetext={`${learnt} of ${total} letters learnt`}
+          aria-valuetext={`${learnt} of ${total} ${noun} learnt`}
         >
           <span
             className="progress-fill"
@@ -272,26 +343,50 @@ export const LessonPractice = ({
         </h2>
         <h3 id={promptId} ref={promptRef} tabIndex={-1} className="task prompt">
           {question.kind === "dots" ? (
-            <>
-              Write the {[...letter].length > 1 ? "letters" : "letter"}{" "}
-              <Letter letter={letter} language={language} className="letter-chip" />{" "}
-              in braille
-            </>
+            kind === "letter" ? (
+              <>
+                Write the {[...letter].length > 1 ? "letters" : "letter"}{" "}
+                <Letter letter={letter} language={language} className="letter-chip" />{" "}
+                in braille
+              </>
+            ) : (
+              // Read as "Write number 7 in braille" or "Write the question
+              // mark in braille": the spoken name says what it is.
+              <>
+                Write {kind === "punctuation" && "the "}
+                <Letter letter={letter} language={language} className="letter-chip" />{" "}
+                in braille
+              </>
+            )
           ) : (
-            <>Which letter has {dotsInWords(answerDots)}?</>
+            choicePrompt(question.item)
           )}
         </h3>
       </div>
 
       <div className="hero">
+        {writing && multi && (
+          <>
+            <p id={cellLabelId} className="eyebrow cell-position">
+              {entryLabel(entry)}
+            </p>
+            <CellRow
+              cells={entry.cells}
+              current={entry.current}
+              onSelect={(index) => goToCell(moveToCell(entry, index))}
+              label="Cells of your answer"
+            />
+          </>
+        )}
         {writing && !withKeys ? (
-          <Cell positions={positions} onClick={toggleDot} describedBy={promptId} />
+          <Cell positions={positions} onClick={toggleDot} describedBy={describedBy} />
+        ) : writing ? (
+          <Cell positions={positions} size="medium" />
         ) : (
-          <Cell
-            positions={question.kind === "dots" ? positions : answerDots}
-            // Only the cell being tapped is large; after the answer it makes
-            // room for the feedback sheet.
-            size={question.kind === "dots" && asking && !withKeys ? undefined : "medium"}
+          <CellRow
+            cells={question.kind === "dots" ? entry.cells : answerDots}
+            // After the answer the cells make room for the feedback sheet.
+            size="medium"
           />
         )}
         {question.kind === "letter" && (
@@ -304,15 +399,15 @@ export const LessonPractice = ({
             onChoose={choose}
           />
         )}
-        {writing && !withKeys && (
-          <ChordPad ref={padRef} canSubmit describedBy={promptId} />
+        {writing && !withKeys && keyShortcuts && (
+          <ChordPad ref={padRef} canSubmit describedBy={describedBy} />
         )}
         {withKeys && (
           <>
             <p className="eyebrow keys-hint" aria-hidden="true">
               tap keys one by one or together
             </p>
-            <BraillerKeysHelp id={keysHelpId} canSubmit />
+            <BraillerKeysHelp id={keysHelpId} canSubmit shortcuts={keyShortcuts} />
           </>
         )}
       </div>
@@ -324,8 +419,9 @@ export const LessonPractice = ({
             positions={positions}
             onToggleDot={toggleDot}
             onChord={setPositions}
-            describedBy={`${promptId} ${keysHelpId}`}
+            describedBy={`${describedBy} ${keysHelpId}`}
             showLetters={showKeyLetters}
+            shortcuts={keyShortcuts}
           />
         )}
         {/* Shown, not announced: the result in words follows. */}
@@ -358,11 +454,11 @@ export const LessonPractice = ({
                   </>
                 )}
               </span>
-              <Cell
-                positions={
+              <CellRow
+                cells={
                   answer.kind === "dots"
-                    ? answer.cell
-                    : (cellForLetter(answer.choice, language) ?? CLEAR_CELL)
+                    ? answer.cells
+                    : (cellsForLetter(answer.choice, language) ?? [CLEAR_CELL])
                 }
                 size="small"
               />
@@ -371,7 +467,7 @@ export const LessonPractice = ({
               <span className="compare-label">
                 Answer <span lang={LANGUAGE_TAGS[language]}>{letter}</span>
               </span>
-              <Cell positions={answerDots} size="small" />
+              <CellRow cells={answerDots} size="small" />
             </div>
           </div>
         )}
@@ -417,10 +513,19 @@ export const LessonPractice = ({
               <button
                 type="button"
                 className={withKeys ? "key-button" : "primary-button"}
-                onClick={check}
+                onClick={submit}
               >
-                Press it
+                {isLastCell(entry) ? "Press it" : "Next cell"}
               </button>
+              {multi && entry.current > 0 && (
+                <button
+                  type="button"
+                  className={withKeys ? "quiet-button" : "outline-button"}
+                  onClick={() => goToCell(previousCell(entry))}
+                >
+                  Previous cell
+                </button>
+              )}
               <ClearButton onClick={() => setPositions(CLEAR_CELL)} />
             </>
           )

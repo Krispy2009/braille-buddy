@@ -1,4 +1,4 @@
-import { COURSES, findCourse } from "../courses";
+import { COURSES, CourseLetter, entryCells, EntryKind, entryKind, findCourse } from "../courses";
 
 export type CellType = {
   dot1: boolean;
@@ -61,29 +61,54 @@ export const raisedDots = (cell: CellType): number[] =>
 
 const letters = (language: Language) => findCourse(language)?.letters ?? [];
 
-const sameDots = (dots: number[], cell: CellType): boolean =>
-  dots.join() === raisedDots(cell).join();
+const entryFor = (letter: string, language: Language): CourseLetter | undefined =>
+  letters(language).find((item) => item.letter === letter);
 
+const toCell = (dots: number[]): CellType =>
+  Object.fromEntries(
+    DOT_KEYS.map((dot, index) => [dot, dots.includes(index + 1)])
+  ) as CellType;
+
+/** The one-cell entry with exactly these dots. Multi-cell entries never match. */
 export const letterForCell = (
   cell: CellType,
   language: Language
-): string | undefined =>
-  letters(language).find((entry) => sameDots(entry.dots, cell))?.letter;
+): string | undefined => {
+  const dots = raisedDots(cell).join();
+  return letters(language).find(
+    (entry) => entry.dots !== undefined && entry.dots.join() === dots
+  )?.letter;
+};
 
-/** Every letter (or letter pair) a language teaches, in teaching order. */
+/** Every entry (letter, number or sign) a language teaches, in teaching order. */
 export const lettersIn = (language: Language): string[] =>
   letters(language).map((entry) => entry.letter);
 
+/**
+ * The cell of a one-cell entry. Undefined for an unknown entry and for one
+ * written with several cells, such as a number: use `cellsForLetter` there.
+ */
 export const cellForLetter = (
   letter: string,
   language: Language
 ): CellType | undefined => {
-  const entry = letters(language).find((item) => item.letter === letter);
-  return entry
-    ? (Object.fromEntries(
-        DOT_KEYS.map((dot, index) => [dot, entry.dots.includes(index + 1)])
-      ) as CellType)
-    : undefined;
+  const entry = entryFor(letter, language);
+  return entry?.dots ? toCell(entry.dots) : undefined;
+};
+
+/** Every cell of an entry, in order: [a] for "a", [number sign, g] for "7". */
+export const cellsForLetter = (
+  letter: string,
+  language: Language
+): CellType[] | undefined => {
+  const entry = entryFor(letter, language);
+  return entry ? entryCells(entry).map(toCell) : undefined;
+};
+
+/** "letter", "number" or "punctuation". Unknown entries count as letters. */
+export const kindOfLetter = (letter: string, language: Language): EntryKind => {
+  const entry = entryFor(letter, language);
+  return entry ? entryKind(entry) : "letter";
 };
 
 export const itemId = (language: Language, letter: string): ItemId =>
@@ -102,6 +127,6 @@ export const parseItemId = (
 // Screen readers without a Greek voice spell Greek characters as symbols
 // ("greek letter epsilon") and drop the rest of a letter pair, so courses can
 // give a spoken name: ει is read as "epsilon iota".
-/** How a letter should be announced by a screen reader. */
+/** How a letter, number or sign should be announced by a screen reader. */
 export const spokenLetter = (letter: string, language: Language): string =>
-  letters(language).find((entry) => entry.letter === letter)?.spoken ?? letter;
+  entryFor(letter, language)?.spoken ?? letter;

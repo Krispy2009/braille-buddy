@@ -49,7 +49,8 @@ export const dayKey = (date: Date): string =>
 
 // Counting days through UTC midnights avoids daylight saving shifts, which
 // make local days 23 or 25 hours long.
-const dayNumber = (key: string): number => {
+/** Days since 1970-01-01 for a "YYYY-MM-DD" key, the same at any hour. */
+export const dayNumber = (key: string): number => {
   const [year, month, day] = key.split("-").map(Number);
   return Math.round(Date.UTC(year, month - 1, day) / 86_400_000);
 };
@@ -99,6 +100,27 @@ export const recordAnswer = (
     bestStreak: Math.max(progress.bestStreak, streak),
     lastPlayed: today,
     letters: { ...progress.letters, [item]: stats },
+  };
+};
+
+/**
+ * Finishing the daily puzzle: it counts as playing today, so it keeps the
+ * streak going, and adds its points. Letter stats are left alone. Returns
+ * new Progress (never mutates).
+ */
+export const recordDailyPuzzle = (
+  progress: Progress,
+  points: number,
+  now: Date
+): Progress => {
+  const today = dayKey(now);
+  const streak = nextStreak(progress, today);
+  return {
+    ...progress,
+    points: progress.points + Math.max(0, points),
+    streak,
+    bestStreak: Math.max(progress.bestStreak, streak),
+    lastPlayed: today,
   };
 };
 

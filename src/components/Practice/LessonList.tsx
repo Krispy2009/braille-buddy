@@ -1,6 +1,6 @@
 import React from "react";
 import type { Course, Lesson } from "../../courses";
-import { learntCount, lessonStates, metLetters } from "../../game/lessons";
+import { entriesNoun, learntCount, lessonStates, metLetters } from "../../game/lessons";
 import type { Progress } from "../../game/progress";
 import { BackIcon } from "../Icons/Icons";
 import { LessonCard } from "./LessonCard";
@@ -41,6 +41,7 @@ export const LessonList = ({
   const states = lessonStates(course, progress);
   const doneCount = states.filter((state) => state === "done").length;
   const met = metLetters(course, progress);
+  const metNoun = entriesNoun(course, met);
 
   const headingRef = React.useRef<HTMLHeadingElement>(null);
 
@@ -80,6 +81,7 @@ export const LessonList = ({
             key={lesson.id}
             lesson={lesson}
             language={course.id}
+            noun={entriesNoun(course, lesson.letters)}
             state={states[index]}
             learnt={learntCount(course, lesson, progress)}
             before={course.lessons[index - 1]}
@@ -92,8 +94,8 @@ export const LessonList = ({
         <div className="everything-card">
           <p id={everythingId}>
             {doneCount === course.lessons.length
-              ? `Mix all ${met.length} letters in the course.`
-              : `Mix the ${met.length} letters from your finished lessons and the next one.`}
+              ? `Mix all ${met.length} ${metNoun} in the course.`
+              : `Mix the ${met.length} ${metNoun} from your finished lessons and the next one.`}
           </p>
           <button
             data-return={EVERYTHING}

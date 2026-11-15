@@ -1,8 +1,27 @@
 # Braille data: source check
 
-Checked on 11 November 2026 against `src/courses/greek.json` (24 letters + 8 letter pairs) and `src/courses/english.json` (26 letters). No file under `src/` was changed.
+First checked on 11 November 2026 against `src/courses/greek.json` (24 letters + 8 letter pairs) and `src/courses/english.json` (26 letters). Rechecked on 15 November 2026 for issue #31 (Greek, see "Update 15 November 2026" just below) and extended for issue #41 (numbers and punctuation, see "Numbers and punctuation").
 
-## Bottom line
+## Update 15 November 2026 (issue #31)
+
+**Verdict: no change to `greek.json`. ηυ stays dots 1256.**
+
+What I read today, all through a web fetch tool that converts a page or PDF to text and answers questions about it (so "read" below means I saw the tool's extraction and its verbatim quotes, not the PDF rendered on screen):
+
+- **Kouroupetroglou, Georgios. "The Greek Braille System".** University of Athens (each page footer reads "Georgios Kouroupetroglou, University of Athens"). Read as the text version on Yumpu: https://www.yumpu.com/en/document/view/38381616/the-greek-braille-system (uploaded by access.uoa.gr on 21.04.2015 according to Yumpu; the document itself shows no date). A search result for the original at access.uoa.gr gives the title as "Georgios Kouroupetroglou, The Greek braille system, Athens, 2009"; I could not open that copy (the site's robots.txt refuses fetch tools), so the year 2009 is from the search listing only. The document has no introduction and does not mention KEAT or the Ministry of Education. Kouroupetroglou is the first author of "Ελληνικό σύστημα Braille" (with Phlorias), the reference the Wikipedia article cites, so I treat this as an **authoritative expert reference**, the closest to primary I could read, but **not** an official KEAT or Ministry publication.
+  - It is a table, one row per sign, with the dot numbers written as numbers (not pictures), the Greek name and the Unicode name.
+  - All 24 letters match our file (α 1, β 12, γ 1245, δ 145, ε 15, ζ 1356, η 345, θ 1456, ι 24, κ 13, λ 123, μ 134, ν 1345, ξ 1346, ο 135, π 1234, ρ 1235, σ and ς 234, τ 2345, υ 13456, φ 124, χ 125, ψ 12346, ω 245). Capital prefix 46.
+  - All 8 pairs match: αι 126, αυ 16, ει 146, ευ 156, οι 246, ου 136, υι 12456, **ηυ 1256**.
+  - The ηυ rows, quoted as extracted: "Ηυ | 1256 ήτα ύψιλον GREEK SMALL LETTER ETA GREEK SMALL LETTER UPSILON", then the accented form "5,1256 ήτα ύψιλον τονούμενο", the capital "46,1256" and capital accented "46,5,1256". ηυ is listed exactly like the other seven pairs, with no note that it is rare or optional.
+- **Pharmabraille, "Greece Braille Codes"**, https://www.pharmabraille.com/braille-codes/greece-braille-codes/ (last updated January 2016; secondary, written for braille on medicine packaging). Same 24 letters and 8 pairs, ηυ 1256. Its references are Kouroupetroglou and Phlôrias, "Ελληνικο συστημα Braille", and World Braille Usage 3rd ed.
+- **Duxbury Systems, "Worldwide Braille Codebooks"**, https://duxburysystems.org/codes/index_fcode.htm. An index only. Under Greece it links World Braille Usage 2013 at PDF page 199, "Greek Braille System" from Professor Georgios Kouroupetroglou, and a "Simplified Greek Braille" PDF. **Both Duxbury-hosted Greek PDFs failed to download** (the site returned an error to the fetch tool), so I read neither.
+- **World Braille Usage, 3rd ed. (2013)**, tried again in two copies: govinfo.gov (as on 11 November) and https://www.duxburysystems.org/codes/wbu_2013.pdf. Both times the tool's text of the PDF stops at about 72,900 characters, partway through the Denmark entry (book page 31), and reading from a later offset returns nothing. **I still have not read the Greek chapter (p. 183).**
+
+ηυ verdict: two independent agreeing sources from 11 November (Wikipedia, liblouis `el.ctb`) plus, today, the University of Athens table by Kouroupetroglou and the Pharmabraille page all give ηυ = 1256, and none gives a different cell. The dots are settled as far as I can take them. What remains open is only the *status* question from 11 November: two Greek teaching texts list seven (or five) single-cell diphthongs and leave ηυ out. The Kouroupetroglou table lists it like any other pair, which is evidence it belongs to the code, but it does not say how often it is taught. Keep teaching it; a check with KEAT or the Cyprus School for the Blind is still worth doing (Open questions, item 2).
+
+Not done: no direct access to any KEAT, Greek Ministry of Education or ICEB document on Greek; the sandbox's network proxy refused direct downloads from govinfo.gov, perkins.org, iceb.org, duxburysystems.org and the Greek government sites, so everything above came through the fetch tool.
+
+## Bottom line (11 November 2026)
 
 - Every one of the 24 Greek letters and 26 English letters in our files agrees with every source that gave dots.
 - All 8 Greek letter pairs agree with the two sources that gave dots for them (Wikipedia, and the liblouis `el.ctb` table).
@@ -105,6 +124,61 @@ Sources: **R** = *The Rules of Unified English Braille*, 2nd ed., 2013 (ICEB). *
 
 Caveats: the fetch tool could not show me the UEB alphabet table (section 4.1) itself. The values in column R were derived by the tool from the braille-order description in section 1.1.2 of the Rules, not quoted from a table, and the dots for w were not given. Wikipedia's table states it is derived from cell patterns and Unicode, and cites no specific source for the table. Treat the English letters as correct (this is the universal alphabet and agrees everywhere), but the "confirmed in primary" label is only partial. For the file as written, `english.json` contains the correct 26 cells: 25 matched ICEB-derived values, w matched Wikipedia only.
 
+## Numbers and punctuation (issue #41, 15 November 2026)
+
+Added to both course files as their own lessons after the letters. Read on 15 November 2026 through the same fetch tool as above (its extraction and quotes, not the rendered PDF).
+
+### English (UEB)
+
+Sources:
+- **A** = *UEB Australian Training Manual*, revised September 2016, Braille Australia. https://brailleaustralia.org/wp-content/uploads/2013/10/UEB-Australian-Training-Manual-Revised-September-2016.pdf. Gives dot numbers in words; quoted lines below. Teaching manual from a national braille authority (secondary to the Rules, but explicit).
+- **R** = *The Rules of Unified English Braille*, 2024 edition, ICEB. https://iceb.org/Rules%20of%20Unified%20English%20Braille%202024.pdf. The extracted text shows signs as Unicode braille cells (the dot numbers in column R are my conversion of those cells) and stops in the Foreword, so only the signs listed in the contents were visible: 6.1 numeric indicator with digits, 7.2 dash and hyphen, 7.5 question mark, apostrophe, and the full stop inside 7.3 ellipsis.
+- **U** = *ICEB UBC Symbol List* (27 February 2001), https://iceb.org/symbs.html, the research list that UEB grew from. Gives signs in North American ASCII braille, not dots; the conversion to dots is mine.
+- *The ABCs of UEB* (Risjord, BANA, 2014), https://brailleauthority.org/ueb/abcs/abcs-ueb.html, says comma, exclamation mark, hyphen, colon and semicolon are the same in EBAE and UEB, and shows the dash as `,-` (dot 6, dots 36). No dot numbers otherwise.
+
+| Sign | Our cells | A (quoted) | R | U | Match |
+|---|---|---|---|---|---|
+| number sign | 3456 | "Numeric prefix # dots 3 and 4 5 6" | ⠼ 3456 | `#` | yes |
+| digits 1-0 | 3456 + a-j | (Lesson 1, Numerals) | ⠼⠁ to ⠼⠚: a-j | | yes |
+| full stop . | 256 | "Full stop (.) 4 dots 2 and 5 6" | ⠲ 256 | `4` | yes |
+| comma , | 2 | "Comma (,) 1 dot 2" | not visible | `1` | yes |
+| question mark ? | 236 | "Question Mark (?) 8 dots 2 3 and 6" | ⠦ 236 | `8` | yes |
+| exclamation mark ! | 235 | "Exclamation Mark (!) 6 dots 2 3 and 5" | not visible | `6` | yes |
+| apostrophe ' | 3 | "Apostrophe (') ' dot 3" | ⠄ 3 | `'` | yes |
+| hyphen - | 36 | "Hyphen (-) - dots 3 and 6" | ⠤ 36 | `-` | yes |
+| colon : | 25 | "Colon (:) 3 dots 2 and 5" | not visible | `3` | yes |
+| semicolon ; | 23 | "Semicolon (;) 2 dots 2 3" | not visible | `2` | yes |
+| dash – (two cells) | 6, 36 | "Dash (–) ,- dot 6, dots 3 and 6." | ⠠⠤ 6, 36 | `,-` | yes |
+| opening bracket ( (two cells) | 5, 126 | "Opening round bracket or parenthesis ( "< dot 5, dots 1 2 and 6" | not visible | `"<` | yes |
+| closing bracket ) (two cells) | 5, 345 | "Closing round bracket or parenthesis ) "> dot 5, dots 3 and 4 5" | not visible | `">` | yes |
+
+All the basic marks the issue lists are one cell in UEB. Dash and round brackets are the two-cell UEB signs we teach, so the multi-cell flow is exercised by punctuation as well as by numbers. Not covered: UEB grade 1 indicators, capitals, quotation marks.
+
+### Greek
+
+Source: **K** = Kouroupetroglou, "The Greek Braille System" (University of Athens; Yumpu text, see the 15 November update above). Lines quoted as extracted, in the form "Unicode, print sign, ASCII braille, dots, Greek name, English name". Checked against **P** = Pharmabraille "Greece Braille Codes" (secondary, January 2016).
+
+| Sign | Our cells | K (quoted) | P | Match |
+|---|---|---|---|---|
+| number sign | 3456 | "Prefix for the numbers: # dots (3456)" | 3456 | yes |
+| digits 1-0 | 3456 + the cells of a-j | "0031 1 #∙ 3456,1 ένα" to "0039 9 #i 3456,24 εννέα", "0030 0 #j 3456,245 μηδέν" | same | yes; Greek digits are the same as UEB |
+| full stop . | 256 | "002E . 4 256 τελεία Period (full stop)" | 256 | yes |
+| comma , | 2 | "002C , 1 2 κόμμα comma" | 2 | yes |
+| question mark ; | 26 | "037E ; 5 26 ερωτηματικό Greek question mark" | 26 | yes |
+| exclamation mark ! | 235 | "0021 ! 6 235 θαυμαστικό" | 235 | yes |
+| apostrophe ’ | 3 | "0027 ’ ' 3 απόστροφος apostrophe" | not listed | yes |
+| hyphen - | 36 | "002D - - 36 ενωτικό παύλα hyphen" | 36 | yes |
+| colon : | 25 | "003A : 3 25 άνω και κάτω τελεία colon" | 25 | yes |
+| ano teleia · | 23 | "0387 · 2 23 άνω τελεία Greek semicolon" | 23 | yes |
+| dash — (two cells) | 36, 36 | "002D, 002D -- -- 36,36 κάτω παύλα dash" | not listed | yes (one source) |
+
+Notes:
+- The Greek question mark is the print character ";" (stored as U+003B, which U+037E normalises to) with cell 26. K also lists the English question mark "?" as 236, which we do not teach in the Greek course.
+- The Greek "semicolon" is the ano teleia "·" (23), which is the cell UEB uses for its semicolon.
+- K gives both round brackets the same cell (2356), so print "(" and ")" cannot be told apart from the braille alone. They are left out of the Greek course: the "which sign?" question would have two right answers, and the data test forbids two entries with the same cells.
+- K writes the dash as two hyphen cells (36, 36). Only K gives it; treat it as single-source.
+- The Greek digit cells after the number sign match the Wikipedia statement noted on 11 November ("digits are the same as in English braille") and liblouis `el.ctb` (number sign 3456).
+
 ## Sources
 
 Full titles, publishers, years and URLs are given only for what I retrieved.
@@ -126,20 +200,20 @@ Full titles, publishers, years and URLs are given only for what I retrieved.
 ## Discrepancies and doubts
 
 - **No discrepancy in dots was found** for any letter or pair in either file.
-- **Doubt about ηυ.** Dots match secondary sources, but it is absent from two Greek educational lists of the diphthong signs (Papadimitriou and Argyropoulos 2020; Katsoulis TOC) while present in Grekas 2020. It may be rare, optional or older. Note also that ηυ is a genuinely uncommon pair in Modern Greek text (as in ηύρα). Recommend a native or school check before teaching it as standard.
+- **Doubt about ηυ** (dots settled on 15 November 2026: the Kouroupetroglou table gives 1256 too; the status doubt below stays). Dots match secondary sources, but it is absent from two Greek educational lists of the diphthong signs (Papadimitriou and Argyropoulos 2020; Katsoulis TOC) while present in Grekas 2020. It may be rare, optional or older. Note also that ηυ is a genuinely uncommon pair in Modern Greek text (as in ηύρα). Recommend a native or school check before teaching it as standard.
 - **Doubt about status of all pairs.** I found no text saying whether the pair signs are compulsory or optional in current Greek or Cypriot braille. They are listed as part of the Greek code in 2020 educational sources, which is good evidence they are current.
 - **Cyprus.** I found no Cyprus-specific source. The World Braille Usage Cyprus entry reportedly just refers to the Greek chapter, which suggests Cyprus uses the same alphabet, but I only saw that cross-reference, not the chapter.
 
 ## Open questions and future work
 
-1. Read the Greek chapter (p. 183) of *World Braille Usage* 3rd ed. from the Perkins page (https://www.perkins.org/resource/world-braille-usage/) or the Library of Congress copy; it should settle the letters, the pairs and ηυ in one go. This is the single most valuable check.
+1. (Still open on 15 November 2026: two more copies tried, both cut off at Denmark.) Read the Greek chapter (p. 183) of *World Braille Usage* 3rd ed. from the Perkins page (https://www.perkins.org/resource/world-braille-usage/) or the Library of Congress copy; it should settle the letters, the pairs and ηυ in one go. This is the single most valuable check.
 2. Ask the Cyprus School for the Blind or KEAT whether (a) ηυ is taught as standard, (b) the pair signs are compulsory, (c) there are any pairs not in our list, (d) the Cyprus alphabet is identical.
 3. Get a blind Greek-reading teacher or learner to review the whole table before release.
 4. Features a learner will need that the data does not have (note only, not added):
    - **Accent (tonos):** dot 5 placed before the vowel or pair (Wikipedia, liblouis), after the capital sign. Other accents/breathings exist in liblouis for polytonic Greek (grave 4, circumflex 6); not needed for modern monotonic Greek.
    - **Capital sign:** dots 46 before the letter (Wikipedia, liblouis, Grekas 2020); capital word sign 46-46 (liblouis only).
    - **Final sigma ς:** sources say it uses the same cell as σ (234); nothing extra to teach.
-   - **Numbers:** number sign dots 3456 (liblouis, Grekas 2020), then the digits as in English braille (Wikipedia). Letters a-j serve as digits 1-0.
+   - **Numbers:** number sign dots 3456 (liblouis, Grekas 2020), then the digits as in English braille (Wikipedia). Letters a-j serve as digits 1-0. (Added to the courses on 15 November 2026 and confirmed in the Kouroupetroglou table; see Numbers and punctuation.)
    - **Dialytika (diaeresis):** liblouis says it is not shown in braille; unconfirmed by a primary source.
    - Obsolete letters (stigma, digamma, koppa, sampi): sources disagree on cells (Wikipedia notes World Braille Usage and brl.org assign sampi and stigma oppositely). Out of scope.
 5. English: if exact UEB confirmation matters, read section 4.1 of the 2024 Rules of UEB directly in a PDF viewer and confirm w (2456) from the text.

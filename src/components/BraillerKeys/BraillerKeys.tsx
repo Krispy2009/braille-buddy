@@ -17,6 +17,9 @@ type BraillerKeysProps = {
   /** Print the keyboard letter under each number (a Comfort setting). The
       letter stays in the key's name either way. */
   showLetters?: boolean;
+  /** False when keyboard shortcuts are off: no letters, and the key names
+      say only the dot, since the letter does nothing. */
+  shortcuts?: boolean;
 };
 
 const KEY_FOR_DOT = Object.fromEntries(
@@ -58,6 +61,7 @@ export const BraillerKeys = ({
   onChord,
   describedBy,
   showLetters = true,
+  shortcuts = true,
 }: BraillerKeysProps) => {
   const touches = React.useRef(new Map<number, DotKey>());
   const chord = React.useRef({ dots: new Set<DotKey>(), multi: false, aborted: false });
@@ -103,7 +107,7 @@ export const BraillerKeys = ({
   return (
     <div
       ref={ref}
-      className={showLetters ? "brailler-keys" : "brailler-keys no-letters"}
+      className={showLetters && shortcuts ? "brailler-keys" : "brailler-keys no-letters"}
       role="application"
       aria-label="Brailler keys"
       aria-describedby={describedBy}
@@ -120,7 +124,7 @@ export const BraillerKeys = ({
                 type="button"
                 className="brailler-key"
                 aria-pressed={positions[dot]}
-                aria-label={`Dot ${number}, key ${letter}`}
+                aria-label={shortcuts ? `Dot ${number}, key ${letter}` : `Dot ${number}`}
                 onClick={onClick(dot)}
                 onPointerDown={onPointerDown(dot)}
                 onPointerUp={release(false)}
@@ -142,6 +146,8 @@ type BraillerKeysHelpProps = {
   id: string;
   /** Mention Enter (practice mode). */
   canSubmit?: boolean;
+  /** False when keyboard shortcuts are off. */
+  shortcuts?: boolean;
 };
 
 /**
@@ -150,8 +156,28 @@ type BraillerKeysHelpProps = {
  * keyboard part folds away, as ChordPad does, but stays in reach for a
  * paired Bluetooth keyboard.
  */
-export const BraillerKeysHelp = ({ id, canSubmit = false }: BraillerKeysHelpProps) => {
+export const BraillerKeysHelp = ({
+  id,
+  canSubmit = false,
+  shortcuts = true,
+}: BraillerKeysHelpProps) => {
   const [collapsible] = React.useState(isTouchOnly);
+  if (!shortcuts) {
+    return (
+      <div className="brailler-help">
+        <p className="help">
+          Select a key to raise or lower its dot. On a touch screen you can
+          also press several keys at once and let go to write a whole letter.
+        </p>
+        <p id={id} className="help">
+          On a keyboard, <kbd>Tab</kbd> moves between the keys and{" "}
+          <kbd>Space</kbd> raises or lowers a dot. Letter and number key
+          shortcuts are off in Settings.
+          {canSubmit && " Press the Press it button to check your answer."}
+        </p>
+      </div>
+    );
+  }
   const keyboard = (
     <p id={id} className="help">
       On a keyboard, hold <kbd>F</kbd>{" "}

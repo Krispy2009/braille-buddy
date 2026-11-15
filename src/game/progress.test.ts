@@ -5,6 +5,7 @@ import {
   emptyProgress,
   loadProgress,
   recordAnswer,
+  recordDailyPuzzle,
   saveProgress,
   type Progress,
 } from "./progress";
@@ -358,5 +359,20 @@ describe("saveProgress", () => {
       },
     };
     expect(saveProgress(emptyProgress(), storage)).toBe(false);
+  });
+});
+
+describe("recordDailyPuzzle", () => {
+  test("adds the points and counts today for the streak, leaving letters alone", () => {
+    const before = { ...withDay("2026-11-14", 3), points: 40, letters: { [A]: { correct: 1, wrong: 0, box: 1 } } };
+    const after = recordDailyPuzzle(before, 50, at(2026, 11, 15));
+    expect(after).toEqual({ ...before, points: 90, streak: 4, bestStreak: 4, lastPlayed: "2026-11-15" });
+    expect(before.points).toBe(40);
+  });
+
+  test("starts a streak after a gap, and keeps it on a day already played", () => {
+    expect(recordDailyPuzzle(withDay("2026-11-10", 5), 10, at(2026, 11, 15)).streak).toBe(1);
+    expect(recordDailyPuzzle(withDay("2026-11-15", 2), 10, at(2026, 11, 15, 22)).streak).toBe(2);
+    expect(recordDailyPuzzle(emptyProgress(), 10, at(2026, 11, 15)).streak).toBe(1);
   });
 });

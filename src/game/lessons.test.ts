@@ -26,12 +26,10 @@ const withBoxes = (letters: string[], box: number, base = emptyProgress()): Prog
 });
 
 test("a new player has the first lesson open and the rest locked", () => {
+  // Five letter lessons, two of numbers and two of punctuation.
   expect(lessonStates(english, emptyProgress())).toEqual([
     "open",
-    "locked",
-    "locked",
-    "locked",
-    "locked",
+    ...Array(8).fill("locked"),
   ]);
   expect(metLetters(english, emptyProgress())).toEqual(first.letters);
 });

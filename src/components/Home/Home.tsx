@@ -1,10 +1,11 @@
 import React from "react";
 import type { Course } from "../../courses";
 import {
-  cellForLetter,
+  cellsForLetter,
   CLEAR_CELL,
   DOT_KEYS,
   itemId,
+  kindOfLetter,
   LANGUAGE_TAGS,
   raisedDots,
   spokenLetter,
@@ -13,11 +14,12 @@ import { isLetterLearnt, lessonStates } from "../../game/lessons";
 import { currentStreak, Progress } from "../../game/progress";
 import { GearIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
-import { dotsInWords } from "../Practice/question";
+import { cellsInWords } from "../../game/cells";
+import type { DailyStatus } from "../../daily/storage";
 import "./Home.css";
 
 /** The Home button that opened a screen, focused again on the way back. */
-export type HomeFocus = "settings" | "start" | "lessons" | "explore";
+export type HomeFocus = "settings" | "start" | "lessons" | "explore" | "daily";
 
 type HomeProps = {
   course: Course;
@@ -25,6 +27,9 @@ type HomeProps = {
   now: () => Date;
   /** Focus this button when Home opens (coming back from a screen). */
   focus?: HomeFocus;
+  /** Today's daily puzzle, or undefined when the course has none. */
+  daily?: DailyStatus;
+  onDaily: () => void;
   /** Opens the next lesson, or everything so far when every lesson is done. */
   onStart: (lessonId?: string) => void;
   onLessons: () => void;
@@ -60,6 +65,8 @@ export const Home = ({
   progress,
   now,
   focus,
+  daily,
+  onDaily,
   onStart,
   onLessons,
   onExplore,
@@ -76,13 +83,17 @@ export const Home = ({
 
   const learnt = (letter: string) => isLetterLearnt(progress, itemId(course.id, letter));
   const allLetters = course.lessons.flatMap((lesson) => lesson.letters);
-  const learntTotal = allLetters.filter(learnt).length;
+  // Letters only: numbers and punctuation have lessons of their own.
+  const alphabet = allLetters.filter((entry) => kindOfLetter(entry, course.id) === "letter");
+  const learntTotal = alphabet.filter(learnt).length;
 
   const states = lessonStates(course, progress);
   const lesson = course.lessons[states.indexOf("open")];
   const toLearn = lesson ? lesson.letters.filter((letter) => !learnt(letter)) : [];
   const letter = toLearn[0] ?? lesson?.letters[0] ?? allLetters[0];
-  const cell = cellForLetter(letter, course.id) ?? CLEAR_CELL;
+  // A number is two cells: the card shows its last, the digit, and says all.
+  const cells = cellsForLetter(letter, course.id) ?? [CLEAR_CELL];
+  const cell = cells[cells.length - 1];
   const isNew = !progress.letters[itemId(course.id, letter)];
   const number = String(allLetters.indexOf(letter) + 1).padStart(2, "0");
   const streak = currentStreak(progress, now());
@@ -115,7 +126,12 @@ export const Home = ({
         the page.
       </h2>
       <p className="eyebrow">
-        {course.name} · {learntTotal} of {allLetters.length} letters learnt
+        {course.name} · {learntTotal} of {alphabet.length} letters learnt
+      </p>
+      <p className="home-note">
+        Braille Buddy teaches the dot patterns of braille. Reading by touch
+        takes practice with real embossed braille, ideally with a braille
+        teacher or a local blindness organisation.
       </p>
 
       <div className="deck">
@@ -124,7 +140,7 @@ export const Home = ({
         <div
           className="deck-card deck-front"
           role="img"
-          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${dotsInWords(cell)}.`}
+          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}.`}
         >
           <span className="deck-card-top" aria-hidden="true">
             <span>card {number}</span>
@@ -141,7 +157,7 @@ export const Home = ({
             </span>
           </span>
           <span className="deck-card-bottom" aria-hidden="true">
-            dots {raisedDots(cell).join(" ")}
+            dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
           </span>
         </div>
       </div>
@@ -160,6 +176,36 @@ export const Home = ({
           </>
         )}
       </p>
+      {daily && (
+        <section className="daily-card" aria-labelledby="daily-card-title">
+          <div className="daily-card-head">
+            <h3 id="daily-card-title" className="daily-card-title">
+              Daily puzzle
+            </h3>
+            <span className="daily-card-state" data-done={daily.done}>
+              <span aria-hidden="true">{daily.done ? "✓" : "○"}</span>{" "}
+              {daily.done ? "Done today" : "Not done yet"}
+            </span>
+          </div>
+          <p className="daily-card-text">
+            {daily.done
+              ? `${daily.result}. A new puzzle comes at midnight.`
+              : "Read a word in braille, then write one. The same puzzle for everyone today."}
+          </p>
+          <button
+            type="button"
+            className="outline-button daily-card-button"
+            data-return="daily"
+            onClick={onDaily}
+          >
+            {daily.done
+              ? "See today's result"
+              : daily.started
+                ? "Carry on with today's puzzle"
+                : "Play today's puzzle"}
+          </button>
+        </section>
+      )}
       <button
         type="button"
         className="quiet-button home-explore"

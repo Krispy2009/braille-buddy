@@ -6,6 +6,8 @@
 
 ## What it does
 
+**Braille Buddy teaches the dot patterns of braille. Reading by touch takes practice with real embossed braille, ideally with a braille teacher or a local blindness organisation.**
+
 Home shows your next card, your daily streak and points, with one button to press new cards. From there:
 
 - **Explore:** a six-dot braille cell you can click or type on. Raise dots and the matching English and Greek letters appear straight away.
@@ -25,9 +27,9 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 - **Results are announced** in a status region, and practice moves focus to the next step so you never lose your place. Greek letters are announced by name ("epsilon iota"), so they make sense even when no Greek voice is installed
 - **Announcements are worded** so screen readers pause between sentences instead of running them together
 - **Settings** (the gear on Home): enter dots by tapping one big cell or on six brailler keys, three themes (Paper, Ink and High vis, following your system's colour scheme and contrast setting until you choose), and comfort switches for key letters, less motion (following your system's reduced motion setting) and bigger text
+- **Keyboard shortcuts can be turned off** in Settings (WCAG 2.1.4), for screen reader and voice control users whom single-character keys clash with
 - **Greek text is marked up** with its language
-
-Braille Buddy teaches the dot patterns. Reading braille by touch takes practice on real embossed braille.
+- **An Accessibility page** (Settings, or the link at the foot of Home) states the WCAG 2.2 AA goal, what is built in, known gaps, and a screen reader test table, which is honestly all "Not tested yet" for now. Its content lives in `src/components/Accessibility/content.ts`
 
 ## Install it and play offline
 
@@ -58,6 +60,18 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - `npm test` runs the tests
 - `npm run lint` checks the code with ESLint
 - `npm run build` creates a production build in `build/`
+
+### Editing the daily puzzle words
+
+The daily puzzle's word lists live in `src/daily/words.en.dat` and `words.el.dat`, lightly scrambled (XOR plus base64) so the answers aren't spoiled by reading the repo or the built JavaScript. This is only a guard against casual spoilers, not security; a leaderboard would need the server to hand out the words. Order matters, since it decides each day's word, so only append to the end of a list.
+
+```sh
+npm run words:show -- en > /tmp/en.txt      # print the list, one word per line (en or el)
+# edit /tmp/en.txt, then:
+npm run words:encode -- en /tmp/en.txt      # rewrite src/daily/words.en.dat
+```
+
+Keep the plain text file out of the repo, and update the length and fingerprint in `src/daily/wordCodec.test.ts` when you change a list on purpose.
 
 ## Deploying
 

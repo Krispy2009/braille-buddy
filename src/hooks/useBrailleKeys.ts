@@ -13,6 +13,12 @@ export type BrailleKeysOptions = {
   /** When false, no listeners are attached. Default true. */
   enabled?: boolean;
   /**
+   * When false, the single-character keys (F D S J K L and 1-6) are left
+   * alone everywhere (WCAG 2.1.4). Enter, Escape and Backspace still work.
+   * Default true.
+   */
+  keyShortcuts?: boolean;
+  /**
    * When set, chord keys only work while focus is inside this element (the
    * ChordPad). Single letter shortcuts that work anywhere fail WCAG 2.1.4 and
    * fire when speech input users dictate, so the UI should pass this. When
@@ -82,6 +88,7 @@ export const useBrailleKeys = ({
   onClear,
   onSubmit,
   enabled = true,
+  keyShortcuts = true,
   chordArea,
 }: BrailleKeysOptions): void => {
   // Effect events always see the latest callbacks without being effect
@@ -132,7 +139,7 @@ export const useBrailleKeys = ({
       }
 
       const dot = CHORD_KEYS[event.code];
-      if (dot && inChordArea(target)) {
+      if (keyShortcuts && dot && inChordArea(target)) {
         // Stops Firefox's find-as-you-type and similar letter handling.
         event.preventDefault();
         held.add(event.code);
@@ -188,7 +195,7 @@ export const useBrailleKeys = ({
       ) {
         return;
       }
-      if (/^[1-6]$/.test(event.key)) {
+      if (keyShortcuts && /^[1-6]$/.test(event.key)) {
         toggleDot(`dot${event.key}` as DotKey);
       } else if (event.key === "Escape" || event.key === "Backspace") {
         resetChord();
@@ -215,5 +222,5 @@ export const useBrailleKeys = ({
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [enabled, chordArea]);
+  }, [enabled, keyShortcuts, chordArea]);
 };
