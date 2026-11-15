@@ -51,6 +51,9 @@ type SettingsProps = {
   onLanguageChange: (language: Language) => void;
   /** Opens the Accessibility page. */
   onAccessibility: () => void;
+  onPrivacy: () => void;
+  /** Opens the Account screen; undefined when accounts are off. */
+  onAccount?: () => void;
   /** Where focus goes when the screen opens, such as from "Change course". */
   focus?: SettingsFocus;
   /** Back to the screen Settings was opened from. */
@@ -69,6 +72,8 @@ export const Settings = ({
   language,
   onLanguageChange,
   onAccessibility,
+  onPrivacy,
+  onAccount,
   focus,
   onBack,
 }: SettingsProps) => {
@@ -171,9 +176,19 @@ export const Settings = ({
 
       <LanguagePicker ref={courseRef} language={language} onChange={onLanguageChange} />
 
-      <button type="button" className="quiet-button settings-link" onClick={onAccessibility}>
-        Accessibility
-      </button>
+      <div className="settings-links">
+        {onAccount && (
+          <button type="button" className="quiet-button settings-link" onClick={onAccount}>
+            Account
+          </button>
+        )}
+        <button type="button" className="quiet-button settings-link" onClick={onAccessibility}>
+          Accessibility
+        </button>
+        <button type="button" className="quiet-button settings-link" onClick={onPrivacy}>
+          Privacy
+        </button>
+      </div>
     </div>
   );
 };

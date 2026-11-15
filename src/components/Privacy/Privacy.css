@@ -1,0 +1,32 @@
+/* The Privacy page: plain reading, styled like the Accessibility page. */
+
+.privacy {
+  gap: 1.25rem;
+  padding-bottom: 2rem;
+}
+
+.privacy section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.privacy h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.privacy p,
+.privacy li {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.privacy ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}

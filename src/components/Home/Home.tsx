@@ -12,14 +12,14 @@ import {
 } from "../../game/braille";
 import { isLetterLearnt, lessonStates } from "../../game/lessons";
 import { currentStreak, Progress } from "../../game/progress";
-import { GearIcon } from "../Icons/Icons";
+import { GearIcon, PersonIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
 import { cellsInWords } from "../../game/cells";
 import type { DailyStatus } from "../../daily/storage";
 import "./Home.css";
 
 /** The Home button that opened a screen, focused again on the way back. */
-export type HomeFocus = "settings" | "start" | "lessons" | "explore" | "daily";
+export type HomeFocus = "settings" | "account" | "start" | "lessons" | "explore" | "daily";
 
 type HomeProps = {
   course: Course;
@@ -35,6 +35,9 @@ type HomeProps = {
   onLessons: () => void;
   onExplore: () => void;
   onSettings: () => void;
+  /** Whether a player is signed in; undefined when accounts are off. */
+  account?: "signedIn" | "signedOut";
+  onAccount?: () => void;
 };
 
 const NUMBER_WORDS = [
@@ -71,6 +74,8 @@ export const Home = ({
   onLessons,
   onExplore,
   onSettings,
+  account,
+  onAccount,
 }: HomeProps) => {
   const root = React.useRef<HTMLDivElement>(null);
 
@@ -110,6 +115,18 @@ export const Home = ({
             Daily streak {streak} {streak === 1 ? "day" : "days"}, {progress.points} points
           </span>
         </p>
+        {account && onAccount && (
+          <button
+            type="button"
+            className="round-button home-account"
+            aria-label={account === "signedIn" ? "Account, signed in" : "Account"}
+            data-signed-in={account === "signedIn"}
+            data-return="account"
+            onClick={onAccount}
+          >
+            <PersonIcon />
+          </button>
+        )}
         <button
           type="button"
           className="round-button"

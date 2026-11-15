@@ -35,6 +35,12 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 
 Braille Buddy can be installed from the browser (Install app, or Add to Home Screen on iOS) and works fully offline once it has been opened online once. A hand-written service worker (`src/pwa/sw.js`), generated at build time with the exact file list, caches each deploy as one version. An update is picked up the next time the app is opened online, and an open page is never reloaded.
 
+## Player accounts (optional)
+
+Playing never needs an account. Players who want their progress safe, or on more than one device, can sign in from the person button on Home with an emailed 6-digit code (or the link in the same email, which is awkward for screen reader users and in installed apps, hence the code). Progress stays local-first: the game only reads localStorage, and when signed in it is merged with the account's copy and synced through [Supabase](https://supabase.com) (`src/account/`; the merge rules are documented in `src/account/merge.ts`). Settings, theme and course stay on each device. The Supabase code is a separate chunk, loaded only when the Account screen is opened or a session already exists, so other players never download it. A Privacy page says what is stored, and players can delete their account themselves.
+
+The Supabase URL and publishable key are in `.env` (both public by design); without them, accounts are hidden. The database table, row level security and the delete function are in `supabase/migrations/`, with a test to paste into the SQL editor in `supabase/tests/rls_test.sql`. Setting up the Supabase project is described in [docs/supabase-setup.md](docs/supabase-setup.md).
+
 ## Adding a language
 
 Each language is one file in `src/courses/`: its letters with their dots, an optional spoken name for screen readers, and its lessons. Copy `english.json`, change it, and the new course appears in Explore and Practice with no code changes. `npm test` checks every course file. The sources the current tables were checked against are in [docs/braille-sources.md](docs/braille-sources.md).

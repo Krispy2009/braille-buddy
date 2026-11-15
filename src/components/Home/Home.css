@@ -33,6 +33,18 @@
   white-space: nowrap;
 }
 
+/* Keeps Account and Settings together at the right when the header wraps
+   on a narrow phone. */
+.home-account {
+  margin-left: auto;
+}
+
+/* Signed in: the account button is filled, like a raised dot. */
+.home-account[data-signed-in="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
 .home-note {
   margin: 0.5rem 0 0;
   font-size: 0.9375rem;

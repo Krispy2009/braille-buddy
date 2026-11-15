@@ -1,4 +1,7 @@
 import React from "react";
+import { accountConfig, isAuthCallback } from "./account/config";
+import { useAccount } from "./account/useAccount";
+import { Account } from "./components/Account/Account";
 import { Accessibility } from "./components/Accessibility/Accessibility";
 import { Board } from "./components/Board/Board";
 import { Daily } from "./components/Daily/Daily";
@@ -6,6 +9,7 @@ import { Home, HomeFocus } from "./components/Home/Home";
 import { loadLanguage, saveLanguage } from "./components/Practice/LanguagePicker";
 import { CHANGE_COURSE } from "./components/Practice/LessonList";
 import { Practice, PracticeView } from "./components/Practice/Practice";
+import { Privacy } from "./components/Privacy/Privacy";
 import { Settings, SettingsFocus } from "./components/Settings/Settings";
 import { getCourse } from "./courses";
 import { dailyStatus } from "./daily/storage";
@@ -27,16 +31,28 @@ type View =
   | { screen: "daily" }
   | { screen: "practice"; start: PracticeView }
   | { screen: "settings"; focus?: SettingsFocus; back: View }
-  | { screen: "accessibility"; back: View };
+  | { screen: "accessibility"; back: View }
+  | { screen: "account"; back: View }
+  | { screen: "privacy"; back: View };
 
 const now = () => new Date();
 
+/** Opened from a sign-in email: show the Account screen, to say how it went. */
+const firstView = (): View =>
+  accountConfig() && isAuthCallback(window.location)
+    ? { screen: "account", back: { screen: "home", focus: "account" } }
+    : { screen: "home" };
+
 function App() {
-  const [view, setView] = React.useState<View>({ screen: "home" });
+  const [view, setView] = React.useState<View>(firstView);
   // Kept here, above every screen, so a change shows everywhere at once.
   const [settings, setSettings] = React.useState(loadSettings);
   const [language, setLanguage] = React.useState<Language>(loadLanguage);
   const [progress, setProgress] = React.useState<Progress>(() => loadProgress());
+  // Sync saved merged progress (and maybe the daily puzzle): read it again.
+  const reload = React.useCallback(() => setProgress(loadProgress()), []);
+  const account = useAccount(reload);
+  const accounts = account.state.phase !== "off";
 
   React.useEffect(() => {
     const root = document.documentElement;
@@ -87,6 +103,10 @@ function App() {
           onLessons={() => setView({ screen: "practice", start: { screen: "lessons" } })}
           onExplore={() => setView({ screen: "explore" })}
           onSettings={() => setView({ screen: "settings", back: { screen: "home", focus: "settings" } })}
+          account={
+            accounts ? (account.state.phase === "signedIn" ? "signedIn" : "signedOut") : undefined
+          }
+          onAccount={() => setView({ screen: "account", back: { screen: "home", focus: "account" } })}
         />
       );
       break;
@@ -144,12 +164,27 @@ function App() {
           onLanguageChange={changeLanguage}
           focus={view.focus}
           onAccessibility={() => setView({ screen: "accessibility", back: view })}
+          onPrivacy={() => setView({ screen: "privacy", back: view })}
+          onAccount={accounts ? () => setView({ screen: "account", back: view }) : undefined}
           onBack={() => setView(view.back)}
         />
       );
       break;
     case "accessibility":
       screen = <Accessibility onBack={() => setView(view.back)} />;
+      break;
+    case "account":
+      screen = (
+        <Account
+          state={account.state}
+          actions={account.actions}
+          onPrivacy={() => setView({ screen: "privacy", back: view })}
+          onBack={() => setView(view.back)}
+        />
+      );
+      break;
+    case "privacy":
+      screen = <Privacy accounts={accounts} onBack={() => setView(view.back)} />;
       break;
   }
 
@@ -171,6 +206,13 @@ function App() {
               onClick={() => setView({ screen: "accessibility", back: view })}
             >
               Accessibility
+            </button>
+            <button
+              type="button"
+              className="quiet-button"
+              onClick={() => setView({ screen: "privacy", back: view })}
+            >
+              Privacy
             </button>
           </p>
           made with <span aria-hidden="true">❤️</span>

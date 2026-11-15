@@ -241,8 +241,13 @@
   }
 }
 
+.settings-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .settings-link {
-  align-self: flex-start;
   padding-left: 0;
 }
 
