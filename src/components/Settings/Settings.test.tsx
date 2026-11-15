@@ -44,7 +44,6 @@ test("Settings is its own screen with dot entry, theme, comfort and course", asy
   expect(
     within(entryGroup()).getByRole("radio", { name: "Tap the cell" })
   ).toHaveAccessibleDescription("Tap each dot of one big cell");
-  expect(within(entryGroup()).getByText("Keyboard keys F D S J K L always work.")).toBeVisible();
 
   expect(screen.getByRole("group", { name: "Theme" })).toBeInTheDocument();
 
@@ -167,6 +166,7 @@ test("the comfort switches take effect at once and are saved", async () => {
     keyLetters: false,
     lessMotion: true,
     biggerText: true,
+    keyShortcuts: true,
   });
 
   // The key letters go from the keys, but stay in their names.
@@ -210,4 +210,49 @@ test("settings still change when storage throws", async () => {
   await user.click(screen.getByRole("button", { name: "Home" }));
   await user.click(screen.getByRole("button", { name: "Lessons" }));
   expect(screen.getByRole("heading", { level: 2, name: "Greek lessons" })).toBeInTheDocument();
+});
+
+test("Keyboard shortcuts is on by default, described, and saved when switched off", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await openSettings(user);
+  const toggle = within(screen.getByRole("group", { name: "Keyboard" })).getByRole("switch", {
+    name: /Keyboard shortcuts/,
+  });
+  expect(toggle).toBeChecked();
+  expect(toggle).toHaveAccessibleDescription(
+    "Type dots with F D S J K L and 1 to 6. Turn off if these keys clash with your screen reader."
+  );
+  await user.click(toggle);
+  expect(toggle).not.toBeChecked();
+  expect(saved()).toMatchObject({ keyShortcuts: false });
+});
+
+test("with shortcuts off, F and 1 do nothing on Explore but the brailler keys work", async () => {
+  localStorage.setItem(
+    SETTINGS_KEY,
+    JSON.stringify({ version: 1, dotEntry: "keys", keyShortcuts: false })
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Explore the cell" }));
+  expect(screen.getByRole("application", { name: "Brailler keys" })).toHaveClass("no-letters");
+  const dot1 = screen.getByRole("button", { name: "Dot 1" });
+  await user.keyboard("f1");
+  expect(dot1).toHaveAttribute("aria-pressed", "false");
+  await user.click(dot1);
+  expect(dot1).toHaveAttribute("aria-pressed", "true");
+  dot1.focus();
+  await user.keyboard(" ");
+  expect(dot1).toHaveAttribute("aria-pressed", "false");
+});
+
+test("with shortcuts off, Tap the cell has no keyboard pad and number keys do nothing", async () => {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ version: 1, keyShortcuts: false }));
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Explore the cell" }));
+  expect(screen.queryByRole("application", { name: "Braille keyboard" })).not.toBeInTheDocument();
+  await user.keyboard("1");
+  expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
 });

@@ -24,6 +24,8 @@ type PracticeProps = {
   dotEntry: DotEntry;
   /** Print key letters on the brailler keys. */
   showKeyLetters?: boolean;
+  /** Letter and number keys type dots (Settings > Keyboard). */
+  keyShortcuts?: boolean;
   /** Kept by App, so Home shows the same points and streak. */
   progress: Progress;
   onProgress: (next: Progress) => void;
@@ -44,6 +46,7 @@ export const Practice = ({
   language,
   dotEntry,
   showKeyLetters = true,
+  keyShortcuts = true,
   progress,
   onProgress,
   onChangeCourse,
@@ -101,6 +104,7 @@ export const Practice = ({
       lesson={lesson}
       dotEntry={dotEntry}
       showKeyLetters={showKeyLetters}
+      keyShortcuts={keyShortcuts}
       progress={progress}
       onProgress={onProgress}
       onBack={() => setView({ screen: "lessons", returnTo: key })}

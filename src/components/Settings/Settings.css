@@ -240,3 +240,12 @@
     outline: 3px solid Highlight;
   }
 }
+
+.switch-hint {
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.switch-row:has(.switch-hint) {
+  padding: 0.5rem 0;
+}

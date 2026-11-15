@@ -88,6 +88,7 @@ function App() {
         <Board
           dotEntry={settings.dotEntry}
           showKeyLetters={settings.keyLetters}
+          keyShortcuts={settings.keyShortcuts}
           onHome={() => home("explore")}
         />
       );
@@ -98,6 +99,7 @@ function App() {
           language={language}
           dotEntry={settings.dotEntry}
           showKeyLetters={settings.keyLetters}
+          keyShortcuts={settings.keyShortcuts}
           progress={progress}
           onProgress={changeProgress}
           start={view.start}

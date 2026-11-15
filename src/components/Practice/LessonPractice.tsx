@@ -45,6 +45,7 @@ type LessonPracticeProps = {
   lesson?: Lesson;
   dotEntry: DotEntry;
   showKeyLetters: boolean;
+  keyShortcuts: boolean;
   progress: Progress;
   onProgress: (next: Progress) => void;
   onBack: () => void;
@@ -96,6 +97,7 @@ export const LessonPractice = ({
   lesson,
   dotEntry,
   showKeyLetters,
+  keyShortcuts,
   progress,
   onProgress,
   onBack,
@@ -209,6 +211,7 @@ export const LessonPractice = ({
     onChord: (cell) => writing && setPositions(cell),
     onClear: () => writing && setPositions(CLEAR_CELL),
     onSubmit: () => (asking ? check() : goNext()),
+    keyShortcuts,
   });
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
@@ -304,7 +307,7 @@ export const LessonPractice = ({
             onChoose={choose}
           />
         )}
-        {writing && !withKeys && (
+        {writing && !withKeys && keyShortcuts && (
           <ChordPad ref={padRef} canSubmit describedBy={promptId} />
         )}
         {withKeys && (
@@ -312,7 +315,7 @@ export const LessonPractice = ({
             <p className="eyebrow keys-hint" aria-hidden="true">
               tap keys one by one or together
             </p>
-            <BraillerKeysHelp id={keysHelpId} canSubmit />
+            <BraillerKeysHelp id={keysHelpId} canSubmit shortcuts={keyShortcuts} />
           </>
         )}
       </div>
@@ -326,6 +329,7 @@ export const LessonPractice = ({
             onChord={setPositions}
             describedBy={`${promptId} ${keysHelpId}`}
             showLetters={showKeyLetters}
+            shortcuts={keyShortcuts}
           />
         )}
         {/* Shown, not announced: the result in words follows. */}

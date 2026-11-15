@@ -464,3 +464,28 @@ describe("options", () => {
     expect(onChord).toHaveBeenCalledWith(cellOf(1, 4));
   });
 });
+
+describe("keyShortcuts off", () => {
+  test("chord letters and number keys are ignored, and not prevented", async () => {
+    const { user, onChord, onToggleDot } = setup({ keyShortcuts: false });
+    await user.keyboard("{F>}{J>}{J}{F}");
+    await user.keyboard("3");
+    expect(onChord).not.toHaveBeenCalled();
+    expect(onToggleDot).not.toHaveBeenCalled();
+    const event = new KeyboardEvent("keydown", {
+      code: "KeyF",
+      key: "f",
+      cancelable: true,
+      bubbles: true,
+    });
+    document.body.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test("Backspace and Enter still work", async () => {
+    const { user, onClear, onSubmit } = setup({ keyShortcuts: false });
+    await user.keyboard("{Backspace}{Enter}");
+    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+});

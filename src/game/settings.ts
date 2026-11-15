@@ -15,6 +15,11 @@ export type Settings = {
   lessMotion: boolean;
   /** Scales the whole interface up by a quarter. */
   biggerText: boolean;
+  /**
+   * Single-character keys (F D S J K L and 1 to 6) type dots. Off for
+   * WCAG 2.1.4: they would clash with screen reader and voice shortcuts.
+   */
+  keyShortcuts: boolean;
 };
 
 const VERSION = 1;
@@ -34,6 +39,7 @@ export const defaultSettings = (): Settings => ({
   keyLetters: true,
   lessMotion: prefersReducedMotion(),
   biggerText: false,
+  keyShortcuts: true,
 });
 
 const isBoolean = (value: unknown) => typeof value === "boolean";
@@ -43,6 +49,7 @@ const VALIDATORS: { [K in keyof Settings]: (value: unknown) => boolean } = {
   keyLetters: isBoolean,
   lessMotion: isBoolean,
   biggerText: isBoolean,
+  keyShortcuts: isBoolean,
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

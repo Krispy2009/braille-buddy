@@ -71,12 +71,19 @@ type BoardProps = {
   dotEntry: DotEntry;
   /** Print key letters on the brailler keys. */
   showKeyLetters?: boolean;
+  /** Letter and number keys type dots (Settings > Keyboard). */
+  keyShortcuts?: boolean;
   /** Back to Home. */
   onHome: () => void;
 };
 
 /** Explore: free play with one cell, every course's letter shown at once. */
-export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) => {
+export const Board = ({
+  dotEntry,
+  showKeyLetters = true,
+  keyShortcuts = true,
+  onHome,
+}: BoardProps) => {
   const [positions, setPositions] = React.useState<CellType>(CLEAR_CELL);
 
   // One result per course, so a new course file shows up here on its own.
@@ -97,6 +104,7 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
     onToggleDot: toggleDot,
     onChord: setPositions,
     onClear: clearCell,
+    keyShortcuts,
   });
 
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -145,15 +153,20 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
         </dl>
 
         {withKeys ? (
-          <BraillerKeysHelp id={helpId} />
+          <BraillerKeysHelp id={helpId} shortcuts={keyShortcuts} />
         ) : (
           <>
             <p id={helpId} className="sr-only">
-              Select a dot to raise or lower it. On a keyboard, press{" "}
-              <kbd>1</kbd> to <kbd>6</kbd>, or type a whole letter as a chord in
-              the braille keyboard below.
+              Select a dot to raise or lower it.
+              {keyShortcuts && (
+                <>
+                  {" "}
+                  On a keyboard, press <kbd>1</kbd> to <kbd>6</kbd>, or type a
+                  whole letter as a chord in the braille keyboard below.
+                </>
+              )}
             </p>
-            <ChordPad />
+            {keyShortcuts && <ChordPad />}
           </>
         )}
       </div>
@@ -166,6 +179,7 @@ export const Board = ({ dotEntry, showKeyLetters = true, onHome }: BoardProps) =
             onChord={setPositions}
             describedBy={helpId}
             showLetters={showKeyLetters}
+            shortcuts={keyShortcuts}
           />
         )}
         <ClearButton onClick={clearCell} />

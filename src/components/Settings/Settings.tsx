@@ -123,7 +123,6 @@ export const Settings = ({
             </label>
           );
         })}
-        <p className="eyebrow">Keyboard keys F D S J K L always work.</p>
       </fieldset>
 
       <ThemeSwitcher />
@@ -143,6 +142,28 @@ export const Settings = ({
             />
           </label>
         ))}
+      </fieldset>
+
+      <fieldset className="setting comfort">
+        <legend className="setting-legend">Keyboard</legend>
+        <label className="switch-row">
+          <span className="option-text">
+            <span>Keyboard shortcuts</span>
+            <span id={`${id}-shortcuts-hint`} className="option-hint switch-hint">
+              Type dots with F D S J K L and 1 to 6. Turn off if these keys
+              clash with your screen reader.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            role="switch"
+            checked={settings.keyShortcuts}
+            aria-describedby={`${id}-shortcuts-hint`}
+            onChange={(event) =>
+              onChange({ ...settings, keyShortcuts: event.currentTarget.checked })
+            }
+          />
+        </label>
       </fieldset>
 
       <LanguagePicker ref={courseRef} language={language} onChange={onLanguageChange} />
