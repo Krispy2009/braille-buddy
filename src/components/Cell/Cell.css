@@ -47,3 +47,35 @@
   --dot-lift-x: 0px;
   --dot-lift-y: 0px;
 }
+
+/* Several cells side by side, read left to right: a number sign and its
+   digit, a two-cell sign, or a short word. Wraps on narrow screens. */
+.cell-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* A cell that moves the writing to it. The cell being written sits on a
+   thick underline, so the mark never rests on colour alone. */
+.cell-row-button {
+  padding: 0 0 0.5rem;
+  border: 0;
+  border-bottom: calc(var(--line-width) * 2) solid transparent;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cell-row-button[aria-current="true"] {
+  border-bottom-color: var(--line);
+}
+
+@media (forced-colors: active) {
+  .cell-row-button[aria-current="true"] {
+    border-bottom-color: CanvasText;
+  }
+}

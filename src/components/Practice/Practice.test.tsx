@@ -129,10 +129,10 @@ describe("lesson list", () => {
   test("first visit: the first lesson is open and the rest are locked", () => {
     setup();
     expect(screenHeading()).toHaveAccessibleName("English lessons");
-    expect(screen.getByText("0 of 5 lessons done.")).toBeInTheDocument();
+    expect(screen.getByText("0 of 9 lessons done.")).toBeInTheDocument();
 
     const list = screen.getByRole("list", { name: "English lessons" });
-    expect(within(list).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(list).getAllByRole("listitem")).toHaveLength(9);
     expect(
       within(list)
         .getAllByRole("heading", { level: 3 })
@@ -143,6 +143,10 @@ describe("lesson list", () => {
       "Letters k to o",
       "Letters p to t",
       "Letters u to z",
+      "Numbers 1 to 5",
+      "Numbers 6 to 0",
+      "Full stop to apostrophe",
+      "Hyphen to brackets",
     ]);
 
     const first = startButton("Start Letters a to e");
@@ -605,7 +609,7 @@ describe("finishing a lesson", () => {
 
     unmount();
     setup();
-    expect(screen.getByText("1 of 5 lessons done.")).toBeInTheDocument();
+    expect(screen.getByText("1 of 9 lessons done.")).toBeInTheDocument();
     // Done stays done, even if the answer after it was a slip.
     expect(startButton("Practise again Letters a to e")).toHaveAccessibleDescription(
       /^Done\. [45] of 5 letters learnt\.$/
@@ -642,7 +646,7 @@ describe("finishing a lesson", () => {
     expect(startButton("Practise again Letters a to e")).toHaveFocus();
   });
 
-  test("the last lesson of a course ends with plain congratulations", async () => {
+  test("finishing the letters opens the numbers", async () => {
     save({
       completedLessons: { english: ["a-e", "f-j", "k-o", "p-t"] },
       letters: {
@@ -656,16 +660,40 @@ describe("finishing a lesson", () => {
     await user.click(screen.getByRole("button", { name: "z" }));
 
     expect(status()).toHaveTextContent(
-      "You have finished Letters u to z, the last lesson in the English course. " +
-        "Congratulations, you have learnt every letter it teaches."
+      "You have finished the lesson Letters u to z, and Numbers 1 to 5 is now open."
+    );
+    expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
+  });
+
+  test("the last lesson of a course ends with plain congratulations", async () => {
+    save({
+      completedLessons: {
+        english: ["a-e", "f-j", "k-o", "p-t", "u-z", "numbers-1-5", "numbers-6-0", "punctuation-1"],
+      },
+      letters: {
+        ...boxes("english", ["-", ":", ";", "–", "("], 4),
+        ...boxes("english", [")"], 1),
+      },
+    });
+    const { user } = setup(0.5);
+    await start(user, "Continue Hyphen to brackets");
+    expect(prompt()).toHaveAccessibleName(
+      "Which sign has 2 cells, dot 5, then dots 3, 4 and 5?"
+    );
+    await user.click(screen.getByRole("button", { name: "closing bracket" }));
+
+    expect(status()).toHaveTextContent(
+      "Closing bracket is written with dot 5, then dots 3, 4 and 5, in English. " +
+        "You have finished Hyphen to brackets, the last lesson in the English course. " +
+        "Congratulations, you have learnt everything it teaches."
     );
     expect(screen.queryByRole("button", { name: "Next lesson" })).not.toBeInTheDocument();
     const back = screen.getAllByRole("button", { name: "Back to lessons" })[1];
     expect(back).toHaveFocus();
 
     await user.click(back);
-    expect(screen.getByText("5 of 5 lessons done.")).toBeInTheDocument();
-    expect(startButton("Practise again Letters u to z")).toHaveFocus();
+    expect(screen.getByText("9 of 9 lessons done.")).toBeInTheDocument();
+    expect(startButton("Practise again Hyphen to brackets")).toHaveFocus();
   });
 });
 
@@ -714,16 +742,16 @@ describe("going back and replaying", () => {
 test("each course keeps its own lesson progress", () => {
   save({ completedLessons: { english: ["a-e"] } });
   const { switchTo } = setup();
-  expect(screen.getByText("1 of 5 lessons done.")).toBeInTheDocument();
+  expect(screen.getByText("1 of 9 lessons done.")).toBeInTheDocument();
 
   switchTo({ language: "greek" });
   expect(screenHeading()).toHaveAccessibleName("Greek lessons");
-  expect(screen.getByText("0 of 6 lessons done.")).toBeInTheDocument();
+  expect(screen.getByText("0 of 10 lessons done.")).toBeInTheDocument();
   expect(startButton("Start Alpha to zeta")).not.toHaveAttribute("aria-disabled");
   expect(startButton("Start Eta to mu")).toHaveAttribute("aria-disabled", "true");
 
   switchTo({ language: "english" });
-  expect(screen.getByText("1 of 5 lessons done.")).toBeInTheDocument();
+  expect(screen.getByText("1 of 9 lessons done.")).toBeInTheDocument();
 });
 
 test("the lesson list names its course and offers to change it", async () => {
@@ -805,4 +833,145 @@ test("passes its random source to the review picker", async () => {
   expect(random).not.toHaveBeenCalled();
   await start(user);
   expect(random).toHaveBeenCalled();
+});
+
+describe("numbers and punctuation: signs of several cells", () => {
+  const LETTER_LESSONS = ["a-e", "f-j", "k-o", "p-t", "u-z"];
+  const cellButton = (name: RegExp) =>
+    within(screen.getByRole("group", { name: "Cells of your answer" })).getByRole(
+      "button",
+      { name }
+    );
+
+  test("letter lessons show no cell counter and no Next cell button", async () => {
+    const { user } = setup();
+    await start(user);
+    expect(screen.queryByText(/^Cell 1 of/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Cells of your answer" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Next cell" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Previous cell" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Press it" })).toBeInTheDocument();
+  });
+
+  test("the numbers open after the letters, named for screen readers", () => {
+    save({ completedLessons: { english: LETTER_LESSONS } });
+    setup();
+    const lesson = startButton("Start Numbers 1 to 5");
+    expect(lesson).not.toHaveAttribute("aria-disabled");
+    expect(lesson).toHaveAccessibleDescription("Next. 0 of 5 numbers learnt.");
+    expect(
+      screen.getAllByRole("listitem")[5].querySelector(".lesson-letters")
+    ).toHaveTextContent(/number 1.*number 5/);
+  });
+
+  test("write a number cell by cell: number sign, then the digit", async () => {
+    save({ completedLessons: { english: LETTER_LESSONS } });
+    const { user } = setup();
+    await start(user, "Start Numbers 1 to 5");
+
+    const bar = screen.getByRole("progressbar", { name: "Numbers learnt" });
+    expect(bar).toHaveAttribute("aria-valuetext", "0 of 5 numbers learnt");
+    expect(prompt()).toHaveAccessibleName("Write number 1 in braille");
+    expect(screen.getByText("Cell 1 of 2")).toBeVisible();
+    // The dots say which cell they write.
+    expect(
+      screen.getByRole("group", { name: /braille cell/i })
+    ).toHaveAccessibleDescription("Write number 1 in braille Cell 1 of 2");
+    expect(cellButton(/^Cell 1 of 2/)).toHaveAttribute("aria-current", "true");
+
+    // An empty cell can't be skipped.
+    await user.click(screen.getByRole("button", { name: "Next cell" }));
+    expect(status()).toHaveTextContent("Raise at least one dot in cell 1 first.");
+
+    for (const dot of [3, 4, 5, 6]) await user.click(dotButton("cell", dot));
+    await user.click(screen.getByRole("button", { name: "Next cell" }));
+    expect(status()).toHaveTextContent("Cell 2 of 2, no dots raised.");
+    expect(screen.getByText("Cell 2 of 2")).toBeVisible();
+    expect(cellButton(/^Cell 1 of 2, dots 3, 4, 5 and 6$/)).not.toHaveAttribute("aria-current");
+    expect(cellButton(/^Cell 2 of 2, no dots$/)).toHaveAttribute("aria-current", "true");
+    expect(dotButton("cell", 3)).toHaveAttribute("aria-pressed", "false");
+
+    // Back to cell 1 keeps what was written there.
+    await user.click(screen.getByRole("button", { name: "Previous cell" }));
+    expect(status()).toHaveTextContent("Cell 1 of 2, dots 3, 4, 5 and 6 raised.");
+    expect(dotButton("cell", 6)).toHaveAttribute("aria-pressed", "true");
+    await user.click(cellButton(/^Cell 2 of 2/));
+    expect(screen.queryByRole("button", { name: "Next cell" })).not.toBeInTheDocument();
+
+    await user.click(dotButton("cell", 1));
+    await user.click(screen.getByRole("button", { name: "Press it" }));
+    expect(status()).toHaveTextContent(
+      "Correct, plus 10 points. Number 1 is written with dots 3, 4, 5 and 6, then dot 1, in English."
+    );
+    expect(saved().letters["english:1"]).toEqual({ correct: 1, wrong: 0, box: 1 });
+    expect(screen.queryByRole("group", { name: "Cells of your answer" })).not.toBeInTheDocument();
+  });
+
+  test("keyboard: Enter moves to the next cell, then checks", async () => {
+    save({ completedLessons: { english: LETTER_LESSONS } });
+    const { user } = setup();
+    await start(user, "Start Numbers 1 to 5");
+
+    await user.keyboard("3456");
+    await user.keyboard("{Enter}");
+    expect(screen.getByText("Cell 2 of 2")).toBeVisible();
+    // Forgot the number sign's partner: the digit 2 is dots 1 and 2.
+    await user.keyboard("2");
+    await user.keyboard("{Enter}");
+    expect(status()).toHaveTextContent(
+      "Not quite. Number 1 is written with dots 3, 4, 5 and 6, then dot 1, in English. " +
+        "You raised dots 3, 4, 5 and 6, then dot 2."
+    );
+    expect(screen.getByRole("button", { name: "Next question" })).toHaveFocus();
+    expect(saved().letters["english:1"]).toEqual({ correct: 0, wrong: 1, box: 0 });
+  });
+
+  test("checking with an empty cell goes to that cell", async () => {
+    save({ completedLessons: { english: LETTER_LESSONS } });
+    const { user } = setup();
+    await start(user, "Start Numbers 1 to 5");
+    await user.click(cellButton(/^Cell 2 of 2/));
+    await user.click(dotButton("cell", 1));
+    await user.click(screen.getByRole("button", { name: "Press it" }));
+    expect(status()).toHaveTextContent(
+      "Raise at least one dot in cell 1, then check your answer."
+    );
+    expect(screen.getByText("Cell 1 of 2")).toBeVisible();
+  });
+
+  test("dots to sign: every cell is described, choices are named", async () => {
+    save({ completedLessons: { english: LETTER_LESSONS } });
+    const { user } = setup(0.5);
+    await start(user, "Start Numbers 1 to 5");
+    // random() = 0.5 asks about 3: number sign, then c.
+    expect(prompt()).toHaveAccessibleName(
+      "Which sign has 2 cells, dots 3, 4, 5 and 6, then dots 1 and 4?"
+    );
+    const choices = within(screen.getByRole("group", { name: /^Which sign/ }));
+    await user.click(choices.getByRole("button", { name: "number 3" }));
+    expect(status()).toHaveTextContent(
+      "Correct, plus 10 points. Number 3 is written with dots 3, 4, 5 and 6, then dots 1 and 4, in English."
+    );
+  });
+
+  test("Greek punctuation: the question mark is ; in print", async () => {
+    save({
+      completedLessons: {
+        greek: ["alpha-zeta", "eta-mu", "nu-sigma", "tau-omega", "pairs-1", "pairs-2", "numbers-1-5", "numbers-6-0"],
+      },
+      letters: boxes("greek", [".", ",", "!", "’"], 4),
+    });
+    // random() = 0.5 asks which sign has the question mark's dots.
+    const { user } = setup(0.5, undefined, { language: "greek" });
+    await start(user, "Continue Full stop to apostrophe");
+    expect(screen.getByRole("progressbar", { name: "Signs learnt" })).toBeInTheDocument();
+    expect(prompt()).toHaveAccessibleName("Which sign has dots 2 and 6?");
+    const choices = within(screen.getByRole("group", { name: /^Which sign/ }));
+    const mark = choices.getByRole("button", { name: "question mark" });
+    expect(within(mark).getByText(";")).toHaveAttribute("lang", "el");
+    await user.click(mark);
+    expect(status()).toHaveTextContent(
+      "Correct, plus 10 points. Question mark is written with dots 2 and 6, in Greek."
+    );
+  });
 });

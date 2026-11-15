@@ -3,22 +3,60 @@
  * Adding a language means adding a JSON file to this folder: nothing else in
  * the code needs to change. `courses.test.ts` checks every file's shape.
  */
-export type CourseLetter = {
-  /** A letter, or a letter pair written with one cell such as "ου". */
-  letter: string;
-  /** Raised dots, 1 to 6, in ascending order. */
-  dots: number[];
+
+/** What an entry is, for wording such as "Write the letter a" or "Write number 7". */
+export type EntryKind = "letter" | "number" | "punctuation";
+
+type EntryBase = {
   /**
-   * How a screen reader should say the letter, when the letter itself isn't
-   * read well without that language's voice installed ("alpha").
+   * The print form: a letter, a letter pair written with one cell such as
+   * "ου", a digit such as "7", or a punctuation mark such as "?". It is the
+   * entry's id in lessons and in saved progress ("english:a"), so never
+   * change it once released.
+   */
+  letter: string;
+  /** Leave out for a letter. */
+  kind?: EntryKind;
+  /**
+   * How a screen reader should say the entry, when the print form isn't read
+   * well ("alpha", "number 7", "question mark").
    */
   spoken?: string;
 };
 
+/**
+ * One thing to learn. Written with one cell (`dots`) or, like a number with
+ * its number sign, with several cells in order (`cells`). Use `entryCells`
+ * to read either form.
+ */
+export type CourseLetter = EntryBase &
+  (
+    | {
+        /** Raised dots, 1 to 6, in ascending order. */
+        dots: number[];
+        cells?: never;
+      }
+    | {
+        /** Two or more cells, each its raised dots in ascending order. */
+        cells: number[][];
+        dots?: never;
+      }
+  );
+
+/** Every cell of an entry, in order: one for a letter, two for "7". */
+export const entryCells = (entry: CourseLetter): number[][] =>
+  entry.cells ?? [entry.dots];
+
+export const entryKind = (entry: CourseLetter): EntryKind =>
+  entry.kind ?? "letter";
+
 export type Lesson = {
   id: string;
   title: string;
-  /** The letters this lesson introduces. Each letter belongs to one lesson. */
+  /**
+   * The entries this lesson introduces, by their print form. Each entry
+   * belongs to one lesson.
+   */
   letters: string[];
 };
 
@@ -29,7 +67,13 @@ export type Course = {
   name: string;
   /** BCP 47 tag for the `lang` attribute on this course's letters. */
   lang: string;
+  /** Letters first, then numbers and punctuation. */
   letters: CourseLetter[];
+  /**
+   * The number sign that starts every number entry (dots 3456 in UEB and in
+   * Greek braille). Required once a course has numbers.
+   */
+  numberSign?: number[];
   lessons: Lesson[];
 };
 

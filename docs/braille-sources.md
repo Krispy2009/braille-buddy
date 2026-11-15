@@ -124,6 +124,61 @@ Sources: **R** = *The Rules of Unified English Braille*, 2nd ed., 2013 (ICEB). *
 
 Caveats: the fetch tool could not show me the UEB alphabet table (section 4.1) itself. The values in column R were derived by the tool from the braille-order description in section 1.1.2 of the Rules, not quoted from a table, and the dots for w were not given. Wikipedia's table states it is derived from cell patterns and Unicode, and cites no specific source for the table. Treat the English letters as correct (this is the universal alphabet and agrees everywhere), but the "confirmed in primary" label is only partial. For the file as written, `english.json` contains the correct 26 cells: 25 matched ICEB-derived values, w matched Wikipedia only.
 
+## Numbers and punctuation (issue #41, 15 November 2026)
+
+Added to both course files as their own lessons after the letters. Read on 15 November 2026 through the same fetch tool as above (its extraction and quotes, not the rendered PDF).
+
+### English (UEB)
+
+Sources:
+- **A** = *UEB Australian Training Manual*, revised September 2016, Braille Australia. https://brailleaustralia.org/wp-content/uploads/2013/10/UEB-Australian-Training-Manual-Revised-September-2016.pdf. Gives dot numbers in words; quoted lines below. Teaching manual from a national braille authority (secondary to the Rules, but explicit).
+- **R** = *The Rules of Unified English Braille*, 2024 edition, ICEB. https://iceb.org/Rules%20of%20Unified%20English%20Braille%202024.pdf. The extracted text shows signs as Unicode braille cells (the dot numbers in column R are my conversion of those cells) and stops in the Foreword, so only the signs listed in the contents were visible: 6.1 numeric indicator with digits, 7.2 dash and hyphen, 7.5 question mark, apostrophe, and the full stop inside 7.3 ellipsis.
+- **U** = *ICEB UBC Symbol List* (27 February 2001), https://iceb.org/symbs.html, the research list that UEB grew from. Gives signs in North American ASCII braille, not dots; the conversion to dots is mine.
+- *The ABCs of UEB* (Risjord, BANA, 2014), https://brailleauthority.org/ueb/abcs/abcs-ueb.html, says comma, exclamation mark, hyphen, colon and semicolon are the same in EBAE and UEB, and shows the dash as `,-` (dot 6, dots 36). No dot numbers otherwise.
+
+| Sign | Our cells | A (quoted) | R | U | Match |
+|---|---|---|---|---|---|
+| number sign | 3456 | "Numeric prefix # dots 3 and 4 5 6" | ⠼ 3456 | `#` | yes |
+| digits 1-0 | 3456 + a-j | (Lesson 1, Numerals) | ⠼⠁ to ⠼⠚: a-j | | yes |
+| full stop . | 256 | "Full stop (.) 4 dots 2 and 5 6" | ⠲ 256 | `4` | yes |
+| comma , | 2 | "Comma (,) 1 dot 2" | not visible | `1` | yes |
+| question mark ? | 236 | "Question Mark (?) 8 dots 2 3 and 6" | ⠦ 236 | `8` | yes |
+| exclamation mark ! | 235 | "Exclamation Mark (!) 6 dots 2 3 and 5" | not visible | `6` | yes |
+| apostrophe ' | 3 | "Apostrophe (') ' dot 3" | ⠄ 3 | `'` | yes |
+| hyphen - | 36 | "Hyphen (-) - dots 3 and 6" | ⠤ 36 | `-` | yes |
+| colon : | 25 | "Colon (:) 3 dots 2 and 5" | not visible | `3` | yes |
+| semicolon ; | 23 | "Semicolon (;) 2 dots 2 3" | not visible | `2` | yes |
+| dash – (two cells) | 6, 36 | "Dash (–) ,- dot 6, dots 3 and 6." | ⠠⠤ 6, 36 | `,-` | yes |
+| opening bracket ( (two cells) | 5, 126 | "Opening round bracket or parenthesis ( "< dot 5, dots 1 2 and 6" | not visible | `"<` | yes |
+| closing bracket ) (two cells) | 5, 345 | "Closing round bracket or parenthesis ) "> dot 5, dots 3 and 4 5" | not visible | `">` | yes |
+
+All the basic marks the issue lists are one cell in UEB. Dash and round brackets are the two-cell UEB signs we teach, so the multi-cell flow is exercised by punctuation as well as by numbers. Not covered: UEB grade 1 indicators, capitals, quotation marks.
+
+### Greek
+
+Source: **K** = Kouroupetroglou, "The Greek Braille System" (University of Athens; Yumpu text, see the 15 November update above). Lines quoted as extracted, in the form "Unicode, print sign, ASCII braille, dots, Greek name, English name". Checked against **P** = Pharmabraille "Greece Braille Codes" (secondary, January 2016).
+
+| Sign | Our cells | K (quoted) | P | Match |
+|---|---|---|---|---|
+| number sign | 3456 | "Prefix for the numbers: # dots (3456)" | 3456 | yes |
+| digits 1-0 | 3456 + the cells of a-j | "0031 1 #∙ 3456,1 ένα" to "0039 9 #i 3456,24 εννέα", "0030 0 #j 3456,245 μηδέν" | same | yes; Greek digits are the same as UEB |
+| full stop . | 256 | "002E . 4 256 τελεία Period (full stop)" | 256 | yes |
+| comma , | 2 | "002C , 1 2 κόμμα comma" | 2 | yes |
+| question mark ; | 26 | "037E ; 5 26 ερωτηματικό Greek question mark" | 26 | yes |
+| exclamation mark ! | 235 | "0021 ! 6 235 θαυμαστικό" | 235 | yes |
+| apostrophe ’ | 3 | "0027 ’ ' 3 απόστροφος apostrophe" | not listed | yes |
+| hyphen - | 36 | "002D - - 36 ενωτικό παύλα hyphen" | 36 | yes |
+| colon : | 25 | "003A : 3 25 άνω και κάτω τελεία colon" | 25 | yes |
+| ano teleia · | 23 | "0387 · 2 23 άνω τελεία Greek semicolon" | 23 | yes |
+| dash — (two cells) | 36, 36 | "002D, 002D -- -- 36,36 κάτω παύλα dash" | not listed | yes (one source) |
+
+Notes:
+- The Greek question mark is the print character ";" (stored as U+003B, which U+037E normalises to) with cell 26. K also lists the English question mark "?" as 236, which we do not teach in the Greek course.
+- The Greek "semicolon" is the ano teleia "·" (23), which is the cell UEB uses for its semicolon.
+- K gives both round brackets the same cell (2356), so print "(" and ")" cannot be told apart from the braille alone. They are left out of the Greek course: the "which sign?" question would have two right answers, and the data test forbids two entries with the same cells.
+- K writes the dash as two hyphen cells (36, 36). Only K gives it; treat it as single-source.
+- The Greek digit cells after the number sign match the Wikipedia statement noted on 11 November ("digits are the same as in English braille") and liblouis `el.ctb` (number sign 3456).
+
 ## Sources
 
 Full titles, publishers, years and URLs are given only for what I retrieved.
@@ -158,7 +213,7 @@ Full titles, publishers, years and URLs are given only for what I retrieved.
    - **Accent (tonos):** dot 5 placed before the vowel or pair (Wikipedia, liblouis), after the capital sign. Other accents/breathings exist in liblouis for polytonic Greek (grave 4, circumflex 6); not needed for modern monotonic Greek.
    - **Capital sign:** dots 46 before the letter (Wikipedia, liblouis, Grekas 2020); capital word sign 46-46 (liblouis only).
    - **Final sigma ς:** sources say it uses the same cell as σ (234); nothing extra to teach.
-   - **Numbers:** number sign dots 3456 (liblouis, Grekas 2020), then the digits as in English braille (Wikipedia). Letters a-j serve as digits 1-0.
+   - **Numbers:** number sign dots 3456 (liblouis, Grekas 2020), then the digits as in English braille (Wikipedia). Letters a-j serve as digits 1-0. (Added to the courses on 15 November 2026 and confirmed in the Kouroupetroglou table; see Numbers and punctuation.)
    - **Dialytika (diaeresis):** liblouis says it is not shown in braille; unconfirmed by a primary source.
    - Obsolete letters (stigma, digamma, koppa, sampi): sources disagree on cells (Wikipedia notes World Braille Usage and brl.org assign sampi and stigma oppositely). Out of scope.
 5. English: if exact UEB confirmation matters, read section 4.1 of the 2024 Rules of UEB directly in a PDF viewer and confirm w (2456) from the text.

@@ -7,6 +7,8 @@ import { Letter } from "./Letter";
 type LessonCardProps = {
   lesson: Lesson;
   language: Language;
+  /** What the lesson teaches, for "3 of 5 letters learnt". */
+  noun?: string;
   state: LessonState;
   learnt: number;
   /** The lesson that has to be finished first, for a locked lesson. */
@@ -28,6 +30,7 @@ const buttonText = (state: LessonState, learnt: number): string => {
 export const LessonCard = ({
   lesson,
   language,
+  noun = "letters",
   state,
   learnt,
   before,
@@ -52,7 +55,7 @@ export const LessonCard = ({
         </span>
       </div>
       <p className="lesson-letters">
-        <span className="sr-only">Letters:</span>{" "}
+        <span className="sr-only">{noun.charAt(0).toUpperCase() + noun.slice(1)}:</span>{" "}
         {lesson.letters.map((letter, index) => (
           <React.Fragment key={letter}>
             {index > 0 && <span className="sr-only">,</span>}{" "}
@@ -64,7 +67,7 @@ export const LessonCard = ({
         <span className="sr-only">{STATE_LABELS[state]}.</span>{" "}
         {locked && before
           ? `Finish ${before.title} first.`
-          : `${learnt} of ${lesson.letters.length} letters learnt.`}
+          : `${learnt} of ${lesson.letters.length} ${noun} learnt.`}
       </p>
       {/* A locked lesson keeps a focusable button with aria-disabled rather
           than the disabled attribute: disabled would drop it from the Tab

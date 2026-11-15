@@ -337,7 +337,13 @@ describe('Home and the screens it opens', () => {
   });
 
   test('when every lesson is done, Home offers to mix them all', async () => {
-    saveProgress({ completedLessons: { english: ['a-e', 'f-j', 'k-o', 'p-t', 'u-z'] } });
+    saveProgress({
+      completedLessons: {
+        english: COURSES.find((course) => course.id === 'english')!.lessons.map(
+          (lesson) => lesson.id
+        ),
+      },
+    });
     const user = userEvent.setup();
     render(<App />);
     expect(screen.getByText(/Every card in English is pressed/)).toBeInTheDocument();

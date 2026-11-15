@@ -1,15 +1,17 @@
 import {
-  cellForLetter,
+  cellsForLetter,
   CellType,
   CLEAR_CELL,
   itemId,
   ItemId,
+  kindOfLetter,
   Language,
   LANGUAGE_LABELS,
   parseItemId,
   raisedDots,
   spokenLetter,
 } from "../../game/braille";
+import { cellsInWords, dotsInWords, sameCells } from "../../game/cells";
 import type { Course, Lesson } from "../../courses";
 import { POINTS_PER_CORRECT, Progress } from "../../game/progress";
 import { pickDistractors, pickNextItem } from "../../game/review";
@@ -77,23 +79,41 @@ export const makeQuestion = (
   return { kind: "letter", item, choices };
 };
 
-export const answerCell = (item: ItemId): CellType => {
+export { dotsInWords };
+
+/** Every cell of the answer, in order: one for a letter, two for "7". */
+export const answerCells = (item: ItemId): CellType[] => {
   const { letter, language } = parseItemId(item);
-  return cellForLetter(letter, language) ?? CLEAR_CELL;
+  return cellsForLetter(letter, language) ?? [CLEAR_CELL];
 };
 
-const sameCell = (a: CellType, b: CellType): boolean =>
-  raisedDots(a).join() === raisedDots(b).join();
+/** The answer's first cell: the whole answer for a one-cell letter. */
+export const answerCell = (item: ItemId): CellType => answerCells(item)[0];
+
+export const isRightCells = (
+  item: ItemId,
+  cells: readonly CellType[]
+): boolean => sameCells(answerCells(item), cells);
 
 export const isRightCell = (item: ItemId, cell: CellType): boolean =>
-  sameCell(answerCell(item), cell);
+  isRightCells(item, [cell]);
 
-/** "no dots", "dot 1", "dots 1 and 4", "dots 1, 4 and 5". */
-export const dotsInWords = (cell: CellType): string => {
-  const dots = raisedDots(cell);
-  if (dots.length === 0) return "no dots";
-  if (dots.length === 1) return `dot ${dots[0]}`;
-  return `dots ${dots.slice(0, -1).join(", ")} and ${dots[dots.length - 1]}`;
+const isLetter = (item: ItemId): boolean => {
+  const { letter, language } = parseItemId(item);
+  return kindOfLetter(letter, language) === "letter";
+};
+
+/**
+ * The "dots to letter" question: "Which letter has dots 1 and 4?", or for
+ * numbers and punctuation "Which sign has 2 cells, dots 3, 4, 5 and 6, then
+ * dot 1?".
+ */
+export const choicePrompt = (item: ItemId): string => {
+  const cells = answerCells(item);
+  const noun = isLetter(item) ? "letter" : "sign";
+  return cells.length === 1
+    ? `Which ${noun} has ${dotsInWords(cells[0])}?`
+    : `Which ${noun} has ${cells.length} cells, ${cellsInWords(cells)}?`;
 };
 
 const capitalize = (text: string): string =>
@@ -103,25 +123,27 @@ const capitalize = (text: string): string =>
 // readers read "d." as an abbreviation and run on into the next sentence.
 const rule = (item: ItemId): string => {
   const { letter, language } = parseItemId(item);
-  const cell = answerCell(item);
-  const verb = raisedDots(cell).length === 1 ? "makes" : "make";
-  return `${capitalize(dotsInWords(cell))} ${verb} ${spokenLetter(
-    letter,
-    language
-  )} in ${LANGUAGE_LABELS[language]}.`;
+  const cells = answerCells(item);
+  const name = spokenLetter(letter, language);
+  if (!isLetter(item)) {
+    return `${capitalize(name)} is written with ${cellsInWords(cells)}, in ${LANGUAGE_LABELS[language]}.`;
+  }
+  const verb = cells.length === 1 && raisedDots(cells[0]).length === 1 ? "makes" : "make";
+  return `${capitalize(cellsInWords(cells))} ${verb} ${name} in ${LANGUAGE_LABELS[language]}.`;
 };
 
 export type Answer =
-  | { kind: "dots"; correct: boolean; cell: CellType }
+  /** What the player wrote, one entry per cell. */
+  | { kind: "dots"; correct: boolean; cells: CellType[] }
   | { kind: "letter"; correct: boolean; choice: string };
 
 const mistakeText = (item: ItemId, answer: Answer): string => {
   if (answer.kind === "dots") {
-    return `You raised ${dotsInWords(answer.cell)}.`;
+    return `You raised ${cellsInWords(answer.cells)}.`;
   }
   const { language } = parseItemId(item);
-  const chosen = cellForLetter(answer.choice, language) ?? CLEAR_CELL;
-  return `You chose ${spokenLetter(answer.choice, language)}, which is ${dotsInWords(
+  const chosen = cellsForLetter(answer.choice, language) ?? [CLEAR_CELL];
+  return `You chose ${spokenLetter(answer.choice, language)}, which is ${cellsInWords(
     chosen
   )}.`;
 };
@@ -146,7 +168,7 @@ export const finishedText = (
   { lesson, next, courseDone }: Finished
 ): string => {
   if (courseDone) {
-    return `You have finished ${lesson.title}, the last lesson in the ${course.name} course. Congratulations, you have learnt every letter it teaches.`;
+    return `You have finished ${lesson.title}, the last lesson in the ${course.name} course. Congratulations, you have learnt everything it teaches.`;
   }
   if (next) {
     return `You have finished the lesson ${lesson.title}, and ${next.title} is now open.`;

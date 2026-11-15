@@ -1,10 +1,11 @@
 import React from "react";
 import type { Course } from "../../courses";
 import {
-  cellForLetter,
+  cellsForLetter,
   CLEAR_CELL,
   DOT_KEYS,
   itemId,
+  kindOfLetter,
   LANGUAGE_TAGS,
   raisedDots,
   spokenLetter,
@@ -13,7 +14,7 @@ import { isLetterLearnt, lessonStates } from "../../game/lessons";
 import { currentStreak, Progress } from "../../game/progress";
 import { GearIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
-import { dotsInWords } from "../Practice/question";
+import { cellsInWords } from "../../game/cells";
 import "./Home.css";
 
 /** The Home button that opened a screen, focused again on the way back. */
@@ -76,13 +77,17 @@ export const Home = ({
 
   const learnt = (letter: string) => isLetterLearnt(progress, itemId(course.id, letter));
   const allLetters = course.lessons.flatMap((lesson) => lesson.letters);
-  const learntTotal = allLetters.filter(learnt).length;
+  // Letters only: numbers and punctuation have lessons of their own.
+  const alphabet = allLetters.filter((entry) => kindOfLetter(entry, course.id) === "letter");
+  const learntTotal = alphabet.filter(learnt).length;
 
   const states = lessonStates(course, progress);
   const lesson = course.lessons[states.indexOf("open")];
   const toLearn = lesson ? lesson.letters.filter((letter) => !learnt(letter)) : [];
   const letter = toLearn[0] ?? lesson?.letters[0] ?? allLetters[0];
-  const cell = cellForLetter(letter, course.id) ?? CLEAR_CELL;
+  // A number is two cells: the card shows its last, the digit, and says all.
+  const cells = cellsForLetter(letter, course.id) ?? [CLEAR_CELL];
+  const cell = cells[cells.length - 1];
   const isNew = !progress.letters[itemId(course.id, letter)];
   const number = String(allLetters.indexOf(letter) + 1).padStart(2, "0");
   const streak = currentStreak(progress, now());
@@ -115,7 +120,7 @@ export const Home = ({
         the page.
       </h2>
       <p className="eyebrow">
-        {course.name} · {learntTotal} of {allLetters.length} letters learnt
+        {course.name} · {learntTotal} of {alphabet.length} letters learnt
       </p>
       <p className="home-note">
         Braille Buddy teaches the dot patterns of braille. Reading by touch
@@ -129,7 +134,7 @@ export const Home = ({
         <div
           className="deck-card deck-front"
           role="img"
-          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${dotsInWords(cell)}.`}
+          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}.`}
         >
           <span className="deck-card-top" aria-hidden="true">
             <span>card {number}</span>
@@ -146,7 +151,7 @@ export const Home = ({
             </span>
           </span>
           <span className="deck-card-bottom" aria-hidden="true">
-            dots {raisedDots(cell).join(" ")}
+            dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
           </span>
         </div>
       </div>
