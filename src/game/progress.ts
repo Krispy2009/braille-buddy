@@ -1,4 +1,5 @@
 import type { ItemId } from "./braille";
+import { notifyLocalChange } from "./localChanges";
 
 export type LetterStats = {
   correct: number;
@@ -57,7 +58,7 @@ export const dayNumber = (key: string): number => {
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-const isValidDayKey = (value: unknown): value is string => {
+export const isValidDayKey = (value: unknown): value is string => {
   if (typeof value !== "string" || !DAY_PATTERN.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
@@ -169,6 +170,31 @@ const defaultStorage = (): Storage | undefined => {
   }
 };
 
+/**
+ * Checks data from storage or from the account server and returns it as
+ * Progress, or an empty Progress if it is broken or from another version.
+ */
+export const parseProgress = (data: unknown): Progress => {
+  if (!isRecord(data) || data.version !== 1) return emptyProgress();
+  const { points, streak, bestStreak, lastPlayed } = data;
+  if (!isCount(points) || !isCount(streak) || !isCount(bestStreak)) {
+    return emptyProgress();
+  }
+  if (lastPlayed !== null && !isValidDayKey(lastPlayed)) {
+    return emptyProgress();
+  }
+  return {
+    version: 1,
+    points,
+    streak,
+    bestStreak: Math.max(bestStreak, streak),
+    lastPlayed,
+    letters: sanitizeLetters(data.letters),
+    // Missing in progress saved before lessons existed.
+    completedLessons: sanitizeLessons(data.completedLessons),
+  };
+};
+
 export const loadProgress = (
   storage?: Pick<Storage, "getItem">
 ): Progress => {
@@ -176,25 +202,7 @@ export const loadProgress = (
     const source = storage ?? defaultStorage();
     const raw = source?.getItem(STORAGE_KEY);
     if (!raw) return emptyProgress();
-    const data: unknown = JSON.parse(raw);
-    if (!isRecord(data) || data.version !== 1) return emptyProgress();
-    const { points, streak, bestStreak, lastPlayed } = data;
-    if (!isCount(points) || !isCount(streak) || !isCount(bestStreak)) {
-      return emptyProgress();
-    }
-    if (lastPlayed !== null && !isValidDayKey(lastPlayed)) {
-      return emptyProgress();
-    }
-    return {
-      version: 1,
-      points,
-      streak,
-      bestStreak: Math.max(bestStreak, streak),
-      lastPlayed,
-      letters: sanitizeLetters(data.letters),
-      // Missing in progress saved before lessons existed.
-      completedLessons: sanitizeLessons(data.completedLessons),
-    };
+    return parseProgress(JSON.parse(raw));
   } catch {
     return emptyProgress();
   }
@@ -209,6 +217,7 @@ export const saveProgress = (
     const target = storage ?? defaultStorage();
     if (!target) return false;
     target.setItem(STORAGE_KEY, JSON.stringify(progress));
+    notifyLocalChange();
     return true;
   } catch {
     return false;
