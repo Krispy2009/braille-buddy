@@ -33,10 +33,10 @@
 
 /* The cells said in words, typed small under the cells. */
 .daily-cell-words {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   justify-content: center;
-  gap: 0.25rem 1rem;
+  justify-items: start;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
