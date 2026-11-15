@@ -203,11 +203,14 @@ test('footer credits and links to kristi.cy', () => {
   );
 });
 
-test('footer says honestly what the app can and cannot teach', () => {
+test('Home says honestly what the app can and cannot teach', () => {
   render(<App />);
-  expect(screen.getByRole('contentinfo')).toHaveTextContent(
-    'Reading braille by touch takes practice on real embossed braille.'
+  const note = screen.getByText(/teaches the dot patterns of braille/);
+  expect(note).toHaveTextContent(
+    'Reading by touch takes practice with real embossed braille, ideally with a braille teacher or a local blindness organisation.'
   );
+  // Near the intro, in the main content, not tucked into the footer.
+  expect(screen.getByRole('main')).toContainElement(note);
 });
 
 test('types a whole letter as a chord in the brailler keys', async () => {

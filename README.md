@@ -6,6 +6,8 @@
 
 ## What it does
 
+**Braille Buddy teaches the dot patterns of braille. Reading by touch takes practice with real embossed braille, ideally with a braille teacher or a local blindness organisation.**
+
 Home shows your next card, your daily streak and points, with one button to press new cards. From there:
 
 - **Explore:** a six-dot braille cell you can click or type on. Raise dots and the matching English and Greek letters appear straight away.
@@ -26,8 +28,6 @@ Built to work with a keyboard and a screen reader, not just a mouse:
 - **Announcements are worded** so screen readers pause between sentences instead of running them together
 - **Settings** (the gear on Home): enter dots by tapping one big cell or on six brailler keys, three themes (Paper, Ink and High vis, following your system's colour scheme and contrast setting until you choose), and comfort switches for key letters, less motion (following your system's reduced motion setting) and bigger text
 - **Greek text is marked up** with its language
-
-Braille Buddy teaches the dot patterns. Reading braille by touch takes practice on real embossed braille.
 
 ## Install it and play offline
 

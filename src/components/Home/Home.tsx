@@ -117,6 +117,11 @@ export const Home = ({
       <p className="eyebrow">
         {course.name} · {learntTotal} of {allLetters.length} letters learnt
       </p>
+      <p className="home-note">
+        Braille Buddy teaches the dot patterns of braille. Reading by touch
+        takes practice with real embossed braille, ideally with a braille
+        teacher or a local blindness organisation.
+      </p>
 
       <div className="deck">
         <span className="deck-card deck-back-1" aria-hidden="true" />

@@ -139,10 +139,6 @@ function App() {
       </main>
       {onHome && (
         <footer className="site-footer">
-          <p className="about">
-            Braille Buddy teaches the dot patterns. Reading braille by touch
-            takes practice on real embossed braille.
-          </p>
           made with <span aria-hidden="true">❤️</span>
           <span className="sr-only">love</span> by{" "}
           <a href="https://kristi.cy">kristi.cy</a>
