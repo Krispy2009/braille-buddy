@@ -61,6 +61,18 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - `npm run lint` checks the code with ESLint
 - `npm run build` creates a production build in `build/`
 
+### Editing the daily puzzle words
+
+The daily puzzle's word lists live in `src/daily/words.en.dat` and `words.el.dat`, lightly scrambled (XOR plus base64) so the answers aren't spoiled by reading the repo or the built JavaScript. This is only a guard against casual spoilers, not security; a leaderboard would need the server to hand out the words. Order matters, since it decides each day's word, so only append to the end of a list.
+
+```sh
+npm run words:show -- en > /tmp/en.txt      # print the list, one word per line (en or el)
+# edit /tmp/en.txt, then:
+npm run words:encode -- en /tmp/en.txt      # rewrite src/daily/words.en.dat
+```
+
+Keep the plain text file out of the repo, and update the length and fingerprint in `src/daily/wordCodec.test.ts` when you change a list on purpose.
+
 ## Deploying
 
 The production build in `build/` is served as static assets by Cloudflare Workers (see `wrangler.jsonc`), e.g. `npm run build && npx wrangler deploy`.

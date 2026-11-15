@@ -1,7 +1,8 @@
 import { cellsForLetter, cellToBitmap, CellType, Language, spokenLetter } from "../game/braille";
 import { dayKey, dayNumber } from "../game/progress";
-import english from "./words.en.json";
-import greek from "./words.el.json";
+import { decodeWords } from "./wordCodec";
+import englishEncoded from "./words.en.dat?raw";
+import greekEncoded from "./words.el.dat?raw";
 
 /**
  * The daily puzzle (issue #51): the same two words for everyone on a given
@@ -11,6 +12,11 @@ import greek from "./words.el.json";
  * spelled letter by letter, one cell per letter (uncontracted braille), using
  * only the course's letters. `daily.test.ts` checks this for every word.
  *
+ * The lists are stored obfuscated (words.*.dat, see wordCodec.ts) so they are
+ * not spoiled in the repo or the bundle; edit them with `npm run words:show`
+ * and `npm run words:encode`. The order is part of the data: it decides which
+ * word each day gets.
+ *
  * Greek words are lowercase and unaccented, as the course's letters are.
  * Greek braille writes the pairs αι, ει, οι, υι, αυ, ευ, ηυ and ου with one
  * cell each, so spelling those letter by letter would be wrong braille: the
@@ -19,8 +25,8 @@ import greek from "./words.el.json";
  * sigma, whose print form would be the final ς the course doesn't teach.
  */
 export const WORD_LISTS: Readonly<Record<Language, readonly string[]>> = {
-  english,
-  greek,
+  english: decodeWords(englishEncoded),
+  greek: decodeWords(greekEncoded),
 };
 
 /** Greek braille's one-cell letter pairs, which the Greek list never contains. */
