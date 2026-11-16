@@ -101,34 +101,37 @@ export const Cards = ({ course, letter, onLanguageChange, onHome }: CardsProps) 
 
       <CardDeck ref={cardRef} course={course} letters={letters} index={shown} onIndex={setIndex} />
 
-      <p className="eyebrow card-hint">
-        On a keyboard, type a letter to jump to its card, or use the left and right
-        arrow keys.
-      </p>
+      {/* Beside the card on a wide window. */}
+      <div className="card-library">
+        <p className="eyebrow card-hint">
+          On a keyboard, type a letter to jump to its card, or use the left and right
+          arrow keys.
+        </p>
 
-      {GROUPS.map(({ kind, title }) => {
-        const entries = letters.filter((entry) => kindOfLetter(entry, course.id) === kind);
-        if (entries.length === 0) return null;
-        return (
-          <section key={kind} className="card-index" aria-label={title}>
-            <h3 className="eyebrow">{title}</h3>
-            <ul className="card-index-list">
-              {entries.map((entry) => (
-                <li key={itemId(course.id, entry)}>
-                  <button
-                    type="button"
-                    className="card-index-button"
-                    aria-current={letters[shown] === entry || undefined}
-                    onClick={() => jump(letters.indexOf(entry))}
-                  >
-                    <Letter letter={entry} language={course.id} />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+        {GROUPS.map(({ kind, title }) => {
+          const entries = letters.filter((entry) => kindOfLetter(entry, course.id) === kind);
+          if (entries.length === 0) return null;
+          return (
+            <section key={kind} className="card-index" aria-label={title}>
+              <h3 className="eyebrow">{title}</h3>
+              <ul className="card-index-list">
+                {entries.map((entry) => (
+                  <li key={itemId(course.id, entry)}>
+                    <button
+                      type="button"
+                      className="card-index-button"
+                      aria-current={letters[shown] === entry || undefined}
+                      onClick={() => jump(letters.indexOf(entry))}
+                    >
+                      <Letter letter={entry} language={course.id} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 };

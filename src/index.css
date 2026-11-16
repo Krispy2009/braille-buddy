@@ -340,3 +340,22 @@ kbd {
     border: 2px solid ButtonText;
   }
 }
+
+/* Desktop: a screen with a task ends where its content ends. Pinning the
+   action to the bottom of a tall window (as on a phone, for the thumb)
+   would leave a gulf between a question and its answer button. */
+@container page (min-width: 64rem) {
+  .lesson,
+  .board,
+  .daily,
+  .cards {
+    min-height: 0;
+  }
+
+  .screen .action,
+  .screen .daily-form,
+  .screen .daily-continue,
+  .screen .meet-actions {
+    margin-top: 2rem;
+  }
+}
