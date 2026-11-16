@@ -74,7 +74,15 @@ const startButton = (name: string) => screen.getByRole("button", { name });
 const start = async (
   user: ReturnType<typeof userEvent.setup>,
   name = "Start Letters a to e"
-) => user.click(startButton(name));
+) => {
+  await user.click(startButton(name));
+  await passIntro(user);
+};
+/** New letters show their cards first; practising starts after them. */
+const passIntro = async (user: ReturnType<typeof userEvent.setup>) => {
+  const go = screen.queryByRole("button", { name: "Start practising" });
+  if (go) await user.click(go);
+};
 
 const status = () => screen.getByRole("status");
 const screenHeading = () => screen.getByRole("heading", { level: 2 });
@@ -629,7 +637,14 @@ describe("finishing a lesson", () => {
     await user.click(screen.getByRole("button", { name: "e" }));
     await user.keyboard("{Enter}");
 
+    // The new letters are met on their cards first.
     expect(screenHeading()).toHaveAccessibleName("English: Letters f to j");
+    expect(screenHeading()).toHaveFocus();
+    expect(prompt()).toHaveTextContent("Meet the new cards");
+    expect(screen.getByRole("status")).toHaveTextContent("Card 1 of 5: f, dots 1, 2 and 4.");
+    await user.click(screen.getByRole("button", { name: "Next card" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Card 2 of 5: g");
+    await user.click(screen.getByRole("button", { name: "Start practising" }));
     expect(screenHeading()).toHaveFocus();
     expect(status()).toHaveTextContent("");
     expect(learnt()).toHaveAttribute("aria-valuetext", "0 of 5 letters learnt");

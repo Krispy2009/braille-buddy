@@ -19,7 +19,7 @@ import type { DailyStatus } from "../../daily/storage";
 import "./Home.css";
 
 /** The Home button that opened a screen, focused again on the way back. */
-export type HomeFocus = "settings" | "account" | "start" | "lessons" | "explore" | "daily";
+export type HomeFocus = "settings" | "account" | "start" | "lessons" | "explore" | "daily" | "cards";
 
 type HomeProps = {
   course: Course;
@@ -34,6 +34,8 @@ type HomeProps = {
   onStart: (lessonId?: string) => void;
   onLessons: () => void;
   onExplore: () => void;
+  /** Opens the card library, on this card. */
+  onCards: (letter?: string) => void;
   onSettings: () => void;
   /** Whether a player is signed in; undefined when accounts are off. */
   account?: "signedIn" | "signedOut";
@@ -73,6 +75,7 @@ export const Home = ({
   onStart,
   onLessons,
   onExplore,
+  onCards,
   onSettings,
   account,
   onAccount,
@@ -139,8 +142,8 @@ export const Home = ({
       </header>
 
       <h2 className="home-headline">
-        Feel <br />
-        the page.
+        Six dots. <br />
+        Every letter.
       </h2>
       <p className="eyebrow">
         {course.name} · {learntTotal} of {alphabet.length} letters learnt
@@ -154,10 +157,12 @@ export const Home = ({
       <div className="deck">
         <span className="deck-card deck-back-1" aria-hidden="true" />
         <span className="deck-card deck-back-2" aria-hidden="true" />
-        <div
+        <button
+          type="button"
           className="deck-card deck-front"
-          role="img"
-          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}.`}
+          data-return="cards"
+          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}. Open the cards.`}
+          onClick={() => onCards(letter)}
         >
           <span className="deck-card-top" aria-hidden="true">
             <span>card {number}</span>
@@ -176,7 +181,7 @@ export const Home = ({
           <span className="deck-card-bottom" aria-hidden="true">
             dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
           </span>
-        </div>
+        </button>
       </div>
 
       <p className="home-today">
@@ -223,14 +228,24 @@ export const Home = ({
           </button>
         </section>
       )}
-      <button
-        type="button"
-        className="quiet-button home-explore"
-        data-return="explore"
-        onClick={onExplore}
-      >
-        Explore the cell
-      </button>
+      <div className="home-links">
+        <button
+          type="button"
+          className="quiet-button"
+          data-return="cards"
+          onClick={() => onCards()}
+        >
+          All the cards
+        </button>
+        <button
+          type="button"
+          className="quiet-button"
+          data-return="explore"
+          onClick={onExplore}
+        >
+          Explore the cell
+        </button>
+      </div>
 
       <div className="home-base base">
         <span className="home-keys" aria-hidden="true">

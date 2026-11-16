@@ -228,3 +228,10 @@
     border-width: 3px;
   }
 }
+
+/* Wider windows: a roomier column. */
+@container page (min-width: 48rem) {
+  .daily {
+    max-width: var(--page-medium);
+  }
+}

@@ -69,3 +69,10 @@
 .a11y-note {
   color: var(--text-soft);
 }
+
+/* Wider windows: a roomier column. */
+@container page (min-width: 48rem) {
+  .accessibility {
+    max-width: var(--page-measure);
+  }
+}

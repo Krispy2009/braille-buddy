@@ -266,7 +266,7 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByText('day 0 · 0 pts')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('Daily streak 0 days, 0 points')).toBeInTheDocument();
     expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Card 1: a, dot 1.' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Open the cards.' })).toBeInTheDocument();
     expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
       'Five new cards to press today: a, b, c, d, e.'
     );
@@ -297,7 +297,7 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByText('Daily streak 4 days, 120 points')).toBeInTheDocument();
     expect(screen.getByText('English · 1 of 26 letters learnt')).toBeInTheDocument();
     // f is learnt, so the next card is g, seen once already.
-    expect(screen.getByRole('img', { name: 'Card 7: g, dots 1, 2, 4 and 5.' })).toHaveTextContent(
+    expect(screen.getByRole('button', { name: 'Card 7: g, dots 1, 2, 4 and 5. Open the cards.' })).toHaveTextContent(
       'practise'
     );
     expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
@@ -310,6 +310,9 @@ describe('Home and the screens it opens', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Press new cards' }));
+    // New letters are met on their cards before any question.
+    expect(screen.getByRole('heading', { level: 3, name: 'Meet the new cards' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Start practising' }));
     const heading = screen.getByRole('heading', { level: 2, name: 'English: Letters a to e' });
     expect(heading).toHaveFocus();
     expect(screen.getByRole('heading', { level: 3 })).toHaveAccessibleName(
@@ -358,7 +361,7 @@ describe('Home and the screens it opens', () => {
   test('Greek cards are marked as Greek and named for screen readers', () => {
     localStorage.setItem('braille-buddy:practice-language', 'greek');
     render(<App />);
-    expect(screen.getByRole('img', { name: 'Card 1: alpha, dot 1.' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Card 1: alpha, dot 1. Open the cards.' })).toBeInTheDocument();
     const today = screen.getByText(/new cards to press today/);
     expect(within(today).getByText('β')).toHaveAttribute('lang', 'el');
     expect(today).toHaveTextContent(/alpha/);

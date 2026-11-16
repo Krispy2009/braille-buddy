@@ -11,7 +11,8 @@
 Home shows your next card, your daily streak and points, with one button to press new cards. From there:
 
 - **Explore:** a six-dot braille cell you can click or type on. Raise dots and the matching English and Greek letters appear straight away.
-- **Lessons:** pick a course (English or Greek) in Settings and work through its lessons, a handful of letters at a time. Either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Get every letter in a lesson right twice in a row and the next lesson opens. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
+- **Cards:** a deck of every card in the course (letters, numbers and punctuation, in English or Greek) to flick through with the buttons, arrow keys or a swipe, or jump to from the index. Tap the big card on Home to open it.
+- **Lessons:** pick a course (English or Greek) in Settings and work through its lessons, a handful of letters at a time. Each lesson starts by showing its new letters as cards. Then either the game names a letter and you raise its dots, or it shows a cell (and says which dots are raised) and you pick the letter from four choices. Get every letter in a lesson right twice in a row and the next lesson opens. Right answers earn points, playing each day keeps a daily streak, and letters you miss come up more often. No timers, and your progress is saved in your browser.
 
 - **English:** all 26 letters
 - **Greek:** the 24 letters, plus 8 common letter pairs (ου, αι, ει, οι, ευ, αυ, υι, ηυ)

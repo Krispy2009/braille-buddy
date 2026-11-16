@@ -259,3 +259,32 @@
 .switch-row:has(.switch-hint) {
   padding: 0.5rem 0;
 }
+
+/* Wider windows: a roomier column. */
+@container page (min-width: 48rem) {
+  .settings {
+    max-width: var(--page-measure);
+  }
+}
+
+/* Desktop: the groups side by side, two to a row, read left to right in
+   the same order as on a phone. */
+@container page (min-width: 64rem) {
+  .settings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    align-items: start;
+    gap: 2rem 3rem;
+    max-width: var(--page-wide);
+  }
+
+  .settings > .frame,
+  .settings > .settings-link {
+    grid-column: 1 / -1;
+  }
+
+  .settings > .settings-link {
+    justify-self: start;
+  }
+}
