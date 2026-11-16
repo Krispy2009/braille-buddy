@@ -90,6 +90,7 @@ test("choosing Brailler keys changes Explore and lessons at once and is saved", 
   // random() = 0 asks "write the letter a".
   vi.spyOn(Math, "random").mockReturnValue(0);
   await user.click(screen.getByRole("button", { name: "Press new cards" }));
+  await user.click(screen.getByRole("button", { name: "Start practising" }));
   expect(screen.getByRole("heading", { level: 3 })).toHaveAccessibleName(
     "Write the letter a in braille"
   );
@@ -172,6 +173,7 @@ test("the comfort switches take effect at once and are saved", async () => {
   // The key letters go from the keys, but stay in their names.
   await back(user);
   await user.click(screen.getByRole("button", { name: "Press new cards" }));
+  await user.click(screen.getByRole("button", { name: "Start practising" }));
   const keys = screen.getByRole("application", { name: "Brailler keys" });
   expect(keys).toHaveClass("no-letters");
   expect(screen.getByRole("button", { name: "Dot 1, key F" })).toBeInTheDocument();

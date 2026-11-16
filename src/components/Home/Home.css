@@ -42,7 +42,8 @@
 
 .home-headline {
   margin: 0.25rem 0 0;
-  font-size: 2.875rem;
+  /* "Every letter." has to fit a narrow phone on one line. */
+  font-size: clamp(2.25rem, 11vw, 2.875rem);
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: -0.03em;
@@ -149,10 +150,17 @@
   font-weight: 500;
 }
 
-.home-explore {
-  align-self: flex-start;
-  margin-left: -1rem;
-  margin-top: -0.25rem;
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -0.25rem 0 0 -1rem;
+}
+
+/* The front card is a button: it opens the card library. */
+button.deck-front {
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
 }
 
 /* The black base, as on the brailler: a row of keys showing the next

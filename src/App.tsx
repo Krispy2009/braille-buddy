@@ -1,5 +1,6 @@
 import React from "react";
 import { Accessibility } from "./components/Accessibility/Accessibility";
+import { Cards } from "./components/Cards/Cards";
 import { Board } from "./components/Board/Board";
 import { Daily } from "./components/Daily/Daily";
 import { Home, HomeFocus } from "./components/Home/Home";
@@ -25,6 +26,7 @@ type View =
   | { screen: "home"; focus?: HomeFocus }
   | { screen: "explore" }
   | { screen: "daily" }
+  | { screen: "cards"; letter?: string }
   | { screen: "practice"; start: PracticeView }
   | { screen: "settings"; focus?: SettingsFocus; back: View }
   | { screen: "accessibility"; back: View };
@@ -86,6 +88,7 @@ function App() {
           }
           onLessons={() => setView({ screen: "practice", start: { screen: "lessons" } })}
           onExplore={() => setView({ screen: "explore" })}
+          onCards={(letter) => setView({ screen: "cards", letter })}
           onSettings={() => setView({ screen: "settings", back: { screen: "home", focus: "settings" } })}
         />
       );
@@ -97,6 +100,16 @@ function App() {
           showKeyLetters={settings.keyLetters}
           keyShortcuts={settings.keyShortcuts}
           onHome={() => home("explore")}
+        />
+      );
+      break;
+    case "cards":
+      screen = (
+        <Cards
+          course={course}
+          letter={view.letter}
+          onLanguageChange={changeLanguage}
+          onHome={() => home("cards")}
         />
       );
       break;
