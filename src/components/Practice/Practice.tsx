@@ -1,10 +1,11 @@
 import React from "react";
 import { getCourse, Lesson } from "../../courses";
-import { Language } from "../../game/braille";
+import { itemId, Language } from "../../game/braille";
 import type { DotEntry } from "../../game/settings";
 import { coursePoints } from "../../game/lessons";
 import { currentStreak, Progress } from "../../game/progress";
 import { CHANGE_COURSE, EVERYTHING, LessonList } from "./LessonList";
+import { LessonIntro } from "./LessonIntro";
 import { LessonPractice } from "./LessonPractice";
 import { Score } from "./Score";
 import "./Practice.css";
@@ -58,8 +59,22 @@ export const Practice = ({
   const [view, setView] = React.useState<PracticeView>(start);
   const course = getCourse(language);
 
-  const startLesson = (lesson: Lesson) =>
+  // The letters of a lesson nobody has been asked about yet: they get a look
+  // at their cards first.
+  const newLetters = (lesson: Lesson) =>
+    lesson.letters.filter((letter) => !progress.letters[itemId(course.id, letter)]);
+  const [meeting, setMeeting] = React.useState<string | null>(() => {
+    const first =
+      start.screen === "lesson"
+        ? course.lessons.find((entry) => entry.id === start.lessonId)
+        : undefined;
+    return first && newLetters(first).length > 0 ? first.id : null;
+  });
+
+  const startLesson = (lesson: Lesson) => {
+    setMeeting(newLetters(lesson).length > 0 ? lesson.id : null);
     setView({ screen: "lesson", lessonId: lesson.id });
+  };
 
   if (view.screen === "lessons") {
     return (
@@ -96,6 +111,18 @@ export const Practice = ({
       ? course.lessons.find((entry) => entry.id === view.lessonId)
       : undefined;
   const key = lesson?.id ?? EVERYTHING;
+  if (lesson && meeting === lesson.id) {
+    return (
+      <LessonIntro
+        key={`${key}-meet`}
+        course={course}
+        lesson={lesson}
+        letters={newLetters(lesson)}
+        onStart={() => setMeeting(null)}
+        onBack={() => setView({ screen: "lessons", returnTo: key })}
+      />
+    );
+  }
   return (
     <LessonPractice
       // A new lesson is a new screen: fresh question, focus on its heading.
