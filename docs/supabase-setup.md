@@ -78,6 +78,19 @@ Supabase's built-in email sender is for testing only: it sends very few emails p
 3. In **Table Editor → player_progress** you should see one row for you, updated as you play.
 4. Delete the account from the Account screen; the row and the user (under **Authentication → Users**) should both be gone, and your progress should still be in the browser.
 
+## Regenerating types
+
+`src/account/database.types.ts` holds the table and function types the
+client is checked against. Regenerate it after any new migration (you need
+to run `supabase login` once first):
+
+```
+npm run db:types
+```
+
+The output is unformatted; `npx oxfmt src/account/database.types.ts` tidies it,
+and keep the header comment at the top.
+
 ## How the pieces fit
 
 - `.env`: project URL and publishable key. Without them, accounts are hidden and the game works as before.

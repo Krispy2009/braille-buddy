@@ -11,6 +11,7 @@ import {
 } from "../daily/storage";
 import { onLocalChange } from "../game/localChanges";
 import { loadProgress, parseProgress, saveProgress } from "../game/progress";
+import type { Database } from "./database.types";
 import type { AccountConfig } from "./config";
 import { isAuthCallback } from "./config";
 import type { Snapshot } from "./merge";
@@ -40,7 +41,7 @@ export type AccountService = {
 };
 
 type Options = {
-  createClient?: (url: string, key: string, options: object) => SupabaseClient;
+  createClient?: (url: string, key: string, options: object) => SupabaseClient<Database>;
   win?: Window;
   debounceMs?: number;
 };
@@ -61,7 +62,7 @@ export const accountError = (error: unknown): AccountError => {
 const fail = (error: unknown): Result => ({ ok: false, error: accountError(error) });
 
 /** The account's copy of progress: one row per player, readable only by them. */
-export const supabaseRemote = (client: SupabaseClient, userId: string): Remote => ({
+export const supabaseRemote = (client: SupabaseClient<Database>, userId: string): Remote => ({
   pull: async () => {
     const { data, error } = await client
       .from(TABLE)
@@ -121,7 +122,7 @@ export const startAccount = async (
   config: AccountConfig,
   events: AccountEvents,
   {
-    createClient = supabaseCreateClient as unknown as NonNullable<Options["createClient"]>,
+    createClient = supabaseCreateClient<Database>,
     win = window,
     debounceMs,
   }: Options = {}
