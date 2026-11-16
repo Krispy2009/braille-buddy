@@ -12,6 +12,21 @@
   --radius: 1rem;
   --gutter: 1.375rem;
   --mono: var(--font-mono);
+
+  /* Page widths. A phone column is the default; wider windows open up to
+     the others (see "Wider windows" below). In rem, so Bigger text makes
+     the columns grow with the type. */
+  --page: 30rem;
+  --page-medium: 44rem;
+  --page-measure: 46rem;
+  --page-wide: 72rem;
+}
+
+/* The app measures its own width, not the window's, so the layout
+   breakpoints below (in rem) move with Bigger text: bigger type needs a
+   wider window before a screen splits into columns. */
+#root {
+  container: page / inline-size;
 }
 
 /* Comfort settings, set on <html> by App. */
@@ -86,13 +101,13 @@ button {
 }
 
 /* ---- Screens ------------------------------------------------------------
-   One centred column. Lessons stay phone-width on a desktop too. */
+   One centred column on a phone. Wider windows widen it (see below). */
 
 .screen {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 30rem;
+  max-width: var(--page);
   /* Fills a phone, but stops growing on a tall window so the action at the
      bottom is never a screen away from what it belongs to. */
   min-height: min(100vh, 56rem);
@@ -290,6 +305,31 @@ kbd {
   min-height: 2.75rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ---- Wider windows ------------------------------------------------------
+   Tablet (48rem) and desktop (64rem) widths. Screens with a task in hand
+   (a question, Explore, the daily puzzle) get a roomier single column with
+   bigger targets; Home and Lessons spread out (in their own CSS). The DOM
+   order never changes, so reading and Tab order match what is seen. */
+
+@container page (min-width: 48rem) {
+  .screen,
+  .site-footer {
+    --gutter: 2rem;
+  }
+
+  .screen {
+    padding-bottom: 2rem;
+  }
+
+  .task {
+    font-size: 2.25rem;
+  }
+
+  .frame-title {
+    font-size: 2.25rem;
+  }
 }
 
 @media (forced-colors: active) {

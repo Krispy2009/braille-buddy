@@ -205,7 +205,7 @@
 }
 
 .site-footer {
-  max-width: 30rem;
+  max-width: var(--page);
   margin: 0 auto;
   padding: 1.5rem var(--gutter) 2rem;
   font-size: 0.875rem;
@@ -278,4 +278,100 @@
 
 .daily-card-button {
   min-height: 3rem;
+}
+
+/* ---- Wider windows --------------------------------------------------------
+   Two columns: the words and the daily card on the left, the deck of cards
+   on the right, and the black base running the full width underneath like
+   the front of a brailler. The deck sits between the note and today's line
+   in the DOM too, so reading order matches. */
+
+@container page (min-width: 48rem) {
+  .home {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: start;
+    column-gap: 3rem;
+    max-width: var(--page-wide);
+  }
+
+  .home > * {
+    grid-column: 1;
+  }
+
+  .home > .home-header {
+    grid-column: 1 / -1;
+    margin-bottom: 1rem;
+  }
+
+  /* Rows 2 to 7 hold the headline down to the explore link. */
+  .home > .deck {
+    grid-column: 2;
+    grid-row: 2 / 8;
+    align-self: center;
+    margin-top: 0;
+  }
+
+  .home-headline {
+    margin-bottom: 0.5rem;
+    font-size: 3.5rem;
+  }
+
+  .home > .home-explore {
+    justify-self: start;
+  }
+
+  .home > .daily-card {
+    max-width: 30rem;
+  }
+
+  .home > .home-base {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    margin: 2rem 0 0;
+    padding: 1.5rem 2rem 1.75rem;
+    border-radius: 1.75rem;
+  }
+
+  .home-keys {
+    gap: 0.5rem;
+  }
+
+  .home-key {
+    width: 2.75rem;
+    height: 1.625rem;
+  }
+
+  .home-actions {
+    flex: 0 1 28rem;
+  }
+
+  .site-footer {
+    max-width: var(--page-wide);
+  }
+}
+
+@container page (min-width: 64rem) {
+  .home {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 4rem;
+  }
+
+  .home > .deck {
+    justify-self: center;
+    /* The same deck, a size up: everything in it scales together. */
+    zoom: 1.3;
+  }
+
+  .home-headline {
+    font-size: 4.5rem;
+  }
+
+  .home-note,
+  .home-today {
+    font-size: 1.0625rem;
+  }
 }
