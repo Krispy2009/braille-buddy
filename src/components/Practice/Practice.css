@@ -374,6 +374,74 @@
   align-self: center;
 }
 
+/* ---- Wider windows ---------------------------------------------------------- */
+
+@container page (min-width: 48rem) {
+  /* Lessons: the cards in a grid, the next one first. Each card keeps its
+     Start button on its bottom edge, so a row of cards lines up. */
+  .lessons {
+    max-width: var(--page-wide);
+  }
+
+  .lesson-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .lesson-card {
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  .everything-card {
+    align-items: flex-start;
+  }
+
+  /* A question: a roomier column, bigger letter cards to pick from. The
+     brailler base and feedback sheet become a rounded slab in the column
+     instead of bleeding off a phone's edges. */
+  .lesson {
+    max-width: var(--page-medium);
+  }
+
+  .hero {
+    margin-top: 2.25rem;
+  }
+
+  .choices {
+    gap: 0.875rem;
+  }
+
+  .choice {
+    min-height: 5.5rem;
+    font-size: 2.5rem;
+  }
+
+  .brailler-base,
+  .sheet {
+    margin: auto 0 0;
+    border-radius: 1.75rem;
+  }
+
+  .sheet-right {
+    border-bottom: var(--line-width) solid var(--line);
+  }
+
+  .sheet-links > .primary-button,
+  .sheet-links > .key-button,
+  .sheet-next {
+    max-width: 30rem;
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+
+@container page (min-width: 64rem) {
+  .lesson-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (forced-colors: active) {
   .lesson-card,
   .choice,
