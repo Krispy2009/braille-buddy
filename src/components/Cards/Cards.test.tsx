@@ -49,3 +49,34 @@ test("the same deck in Greek", async () => {
   await user.click(screen.getByRole("button", { name: "Greek" }));
   expect(card()).toHaveTextContent(/Card 1 of \d+: alpha, dot 1\./);
 });
+
+test("typing a letter or digit opens its card", async () => {
+  const user = userEvent.setup();
+  render(<Harness />);
+  await user.keyboard("m");
+  expect(card()).toHaveTextContent("Card 13 of 47: m");
+  expect(screen.getByRole("button", { name: "m" })).toHaveAttribute("aria-current", "true");
+  await user.keyboard("T");
+  expect(card()).toHaveTextContent("Card 20 of 47: t");
+  await user.keyboard("7");
+  expect(card()).toHaveTextContent(/of 47: number 7/);
+});
+
+test("typing Greek letters works, accents and final sigma included", async () => {
+  const user = userEvent.setup();
+  render(<Harness />);
+  await user.click(screen.getByRole("button", { name: "Greek" }));
+  await user.keyboard("β");
+  expect(card()).toHaveTextContent(/: beta,/);
+  await user.keyboard("ά");
+  expect(card()).toHaveTextContent(/: alpha,/);
+  await user.keyboard("ς");
+  expect(card()).toHaveTextContent(/: sigma,/);
+});
+
+test("keys with a modifier are left to the browser", async () => {
+  const user = userEvent.setup();
+  render(<Harness />);
+  await user.keyboard("{Control>}m{/Control}");
+  expect(card()).toHaveTextContent("Card 1 of 47");
+});

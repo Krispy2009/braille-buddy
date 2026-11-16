@@ -21,6 +21,14 @@ const GROUPS: { kind: EntryKind; title: string }[] = [
   { kind: "punctuation", title: "Punctuation" },
 ];
 
+/** Lower case, without accents, and a final sigma as a plain one: "Ά" is "α". */
+const plain = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace("ς", "σ")
+    .toLocaleLowerCase();
+
 /**
  * The library: every card in the course to flick through or jump to, for
  * learning a letter before (or without) being asked about it.
@@ -39,6 +47,25 @@ export const Cards = ({ course, letter, onLanguageChange, onHome }: CardsProps) 
     cardRef.current?.focus();
     cardRef.current?.scrollIntoView?.({ block: "center" });
   };
+
+  // Typing a letter, digit or sign opens its card, with no need to find it
+  // in the index. A pair such as "ου" opens on its first letter.
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+      if ([...event.key].length !== 1 || event.key === " ") return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable]")) return;
+      const typed = plain(event.key);
+      const found = letters.findIndex((entry) => plain(entry).startsWith(typed));
+      if (found < 0) return;
+      event.preventDefault();
+      setIndex(found);
+      cardRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [letters]);
 
   return (
     <div className="screen cards">
@@ -73,6 +100,11 @@ export const Cards = ({ course, letter, onLanguageChange, onHome }: CardsProps) 
       </div>
 
       <CardDeck ref={cardRef} course={course} letters={letters} index={shown} onIndex={setIndex} />
+
+      <p className="eyebrow card-hint">
+        On a keyboard, type a letter to jump to its card, or use the left and right
+        arrow keys.
+      </p>
 
       {GROUPS.map(({ kind, title }) => {
         const entries = letters.filter((entry) => kindOfLetter(entry, course.id) === kind);

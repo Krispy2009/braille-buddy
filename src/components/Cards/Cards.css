@@ -71,6 +71,10 @@
   color: var(--on-base);
 }
 
+.card-hint {
+  margin-top: 1rem;
+}
+
 .card-index {
   margin-top: 1.5rem;
 }
