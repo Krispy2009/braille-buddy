@@ -116,3 +116,60 @@
   margin-top: auto;
   padding-top: 1.5rem;
 }
+
+/* ---- Wider windows ---------------------------------------------------------- */
+
+@container page (min-width: 48rem) {
+  .cards {
+    max-width: var(--page-medium);
+  }
+
+  /* The same card, a size up (here and before a lesson): everything in it
+     scales together, Previous and Next included. */
+  .card-deck {
+    zoom: 1.2;
+  }
+
+  .card-index-button {
+    min-width: 3.25rem;
+    min-height: 3.25rem;
+    font-size: 1.25rem;
+  }
+}
+
+/* Desktop: the card on the left, the index to jump around on the right.
+   Reading and Tab order stay title, courses, card, then index. */
+@container page (min-width: 64rem) {
+  .cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-content: start;
+    column-gap: 4rem;
+    max-width: var(--page-wide);
+  }
+
+  .cards > .frame,
+  .cards > .prompt-block,
+  .cards > .card-courses {
+    grid-column: 1 / -1;
+  }
+
+  .cards > .card-deck {
+    grid-column: 1;
+    align-self: start;
+    margin-top: 1.5rem;
+  }
+
+  .card-deck {
+    zoom: 1.35;
+  }
+
+  .cards > .card-library {
+    grid-column: 2;
+    margin-top: 1.5rem;
+  }
+
+  .card-library > .card-hint {
+    margin-top: 0;
+  }
+}
