@@ -1,0 +1,221 @@
+/* The Account screen. Colours only from theme/tokens.css. A lifted card for
+   each step, like the daily puzzle card on Home, and the shared buttons. */
+
+.account {
+  gap: 1.125rem;
+  padding-bottom: 2rem;
+}
+
+.account-status {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+/* Empty live regions stay on the page (a hidden one may not be announced
+   when it fills) but take no room in the column. */
+.account-status:empty,
+.account-error:empty {
+  position: absolute;
+}
+
+.account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.125rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 4px 5px 0 var(--accent);
+}
+
+[data-theme="high-visibility"] .account-card {
+  box-shadow: none;
+}
+
+.account-step {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.account-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.account-email,
+.account-address {
+  font-family: var(--mono);
+  font-weight: 700;
+  /* Long addresses wrap instead of widening a small phone's page. */
+  overflow-wrap: anywhere;
+}
+
+.account-email {
+  margin: -0.25rem 0 0;
+  font-size: 1rem;
+}
+
+/* ---- Forms --------------------------------------------------------------- */
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.account-label {
+  font-weight: 700;
+}
+
+.account-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 3.5rem;
+  padding: 0 1rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: inset 2px 2px 4px var(--shade), inset -2px -2px 4px var(--hi);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.account-input:focus-visible {
+  outline-offset: 2px;
+}
+
+/* An invalid field gets a thicker, dashed edge: not only a colour change. */
+.account-input[aria-invalid="true"] {
+  border-style: dashed;
+  border-width: calc(var(--line-width) + 1px);
+}
+
+.account-code {
+  font-family: var(--mono);
+  font-size: 1.625rem;
+  letter-spacing: 0.3em;
+}
+
+.account-hint {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--text-soft);
+}
+
+.account-error {
+  margin: 0;
+  font-weight: 700;
+}
+
+.account-error:not(:empty)::before {
+  content: "! ";
+  font-family: var(--mono);
+}
+
+.account-form .primary-button {
+  margin-top: 0.5rem;
+}
+
+.account-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.5rem;
+  margin: 0 -1rem;
+}
+
+.account-wide {
+  width: 100%;
+}
+
+/* ---- Signed in ----------------------------------------------------------- */
+
+.account-sync {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+}
+
+/* Synced is a solid pill; anything else is dashed, like the daily card. */
+.account-sync-state {
+  margin: 0;
+  padding: 0.125rem 0.625rem;
+  border: 2px dashed var(--line);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.account-sync-state[data-sync="synced"] {
+  border-style: solid;
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.account-sync .quiet-button {
+  padding: 0;
+}
+
+.account-danger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px dotted var(--key-edge);
+}
+
+.account-small-heading {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 900;
+}
+
+.account-delete {
+  align-self: flex-start;
+  padding-left: 0;
+}
+
+.account-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: var(--line-width) dashed var(--line);
+  border-radius: var(--radius);
+}
+
+.account-confirm-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.account-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.account-confirm-actions .outline-button {
+  width: 100%;
+}
+
+.account-privacy {
+  align-self: flex-start;
+  padding-left: 0;
+  text-align: start;
+}
+
+@media (forced-colors: active) {
+  .account-card,
+  .account-confirm,
+  .account-input {
+    border-color: CanvasText;
+  }
+}

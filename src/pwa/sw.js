@@ -55,14 +55,21 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  // Only this site's own GET requests are handled. Everything else, such as
+  // account sign-in and sync calls to Supabase (another origin, often POST),
+  // goes straight to the network and is never cached.
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) {
     return;
   }
   if (request.mode === "navigate") {
+    // Also the sign-in link from the email: "/#access_token=..." or
+    // "/?token_hash=...". The hash never reaches the network, and offline the
+    // cached "./" is used whatever the query, so the app still loads.
     event.respondWith(networkFirst(request));
   } else {
     // Hashed assets never change; icons and the manifest are re-cached with
-    // every version. Fall back to the network for anything not precached.
+    // every version. Fall back to the network for anything not precached,
+    // such as the account code, which only signed-in players download.
     event.respondWith(
       caches.match(request, MATCH).then((cached) => cached || fetch(request))
     );

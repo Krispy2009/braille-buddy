@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
-import { cacheVersion, precacheList, serviceWorkerSource } from "./serviceWorkerPlugin";
+import { cacheVersion, lazyFiles, precacheList, serviceWorkerSource } from "./serviceWorkerPlugin";
 import { registerServiceWorker } from "./register";
 
 describe("precacheList", () => {
@@ -8,6 +8,44 @@ describe("precacheList", () => {
     expect(
       precacheList(["index.html", "assets/index-abc.js", "sw.js", "_headers", "manifest.json"])
     ).toEqual(["./", "assets/index-abc.js", "manifest.json"]);
+  });
+});
+
+describe("lazy chunks", () => {
+  const bundle = {
+    "index.js": {
+      type: "chunk" as const,
+      fileName: "assets/index.js",
+      isEntry: true,
+      imports: ["assets/shared.js"],
+      viteMetadata: { importedCss: new Set(["assets/index.css"]) },
+    },
+    "shared.js": { type: "chunk" as const, fileName: "assets/shared.js", imports: [] },
+    "account.js": {
+      type: "chunk" as const,
+      fileName: "assets/account.js",
+      imports: ["assets/shared.js", "assets/supabase.js"],
+      viteMetadata: { importedCss: new Set(["assets/account.css"]) },
+    },
+    "supabase.js": { type: "chunk" as const, fileName: "assets/supabase.js", imports: [] },
+    "index.css": { type: "asset" as const, fileName: "assets/index.css" },
+  };
+
+  it("finds chunks only reached through import(), with their CSS", () => {
+    expect([...lazyFiles(bundle)].sort()).toEqual([
+      "assets/account.css",
+      "assets/account.js",
+      "assets/supabase.js",
+    ]);
+  });
+
+  it("leaves lazy files out of the precache, so only players who use them download them", () => {
+    expect(
+      precacheList(
+        ["index.html", "assets/index.js", "assets/shared.js", "assets/account.js"],
+        lazyFiles(bundle)
+      )
+    ).toEqual(["./", "assets/index.js", "assets/shared.js"]);
   });
 });
 
@@ -42,6 +80,44 @@ describe("serviceWorkerSource", () => {
     expect(source).toContain('"assets/a.js"');
     // The generated worker must at least parse.
     expect(() => new Function(source)).not.toThrow();
+  });
+});
+
+describe("service worker fetch handling", () => {
+  /** Runs the worker with a fake scope and returns what it did with a request. */
+  const handle = (url: string, init: { method?: string; mode?: string } = {}) => {
+    const template = readFileSync(new URL("./sw.js", import.meta.url), "utf8");
+    const listeners: Record<string, (event: unknown) => void> = {};
+    const self = {
+      location: { origin: "https://braille-buddy.example" },
+      addEventListener: (type: string, listener: (event: unknown) => void) => {
+        listeners[type] = listener;
+      },
+    };
+    const caches = { match: vi.fn(() => Promise.resolve(undefined)) };
+    const fetch = vi.fn(() => Promise.resolve(new Response("ok")));
+    new Function("self", "caches", "fetch", "Request", "URL", "setTimeout",
+      serviceWorkerSource(template, "v1", ["./"])
+    )(self, caches, fetch, Request, URL, setTimeout);
+    const respondWith = vi.fn();
+    listeners.fetch({
+      request: { url, method: init.method ?? "GET", mode: init.mode ?? "cors" },
+      respondWith,
+    });
+    return respondWith;
+  };
+
+  it("never handles requests to Supabase", () => {
+    expect(handle("https://hynbvcxulcklilmeqjtj.supabase.co/rest/v1/player_progress")).not.toHaveBeenCalled();
+    expect(
+      handle("https://hynbvcxulcklilmeqjtj.supabase.co/auth/v1/otp", { method: "POST" })
+    ).not.toHaveBeenCalled();
+  });
+
+  it("answers the sign-in link's page load, so the app opens", () => {
+    expect(
+      handle("https://braille-buddy.example/?token_hash=abc&type=email", { mode: "navigate" })
+    ).toHaveBeenCalled();
   });
 });
 

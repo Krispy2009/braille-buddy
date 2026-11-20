@@ -1,4 +1,6 @@
 import type { Language } from "../game/braille";
+import { isValidDayKey } from "../game/progress";
+import { notifyLocalChange } from "../game/localChanges";
 import { attemptsFor, dailyPuzzle, halfResult, MAX_TRIES, resultText } from "./daily";
 
 /**
@@ -95,6 +97,59 @@ export const saveDaily = (
     const courses = saved?.day === day ? { ...saved.courses } : {};
     courses[course] = record;
     target.setItem(STORAGE_KEY, JSON.stringify({ version: VERSION, day, courses }));
+    notifyLocalChange();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Everything saved for the daily puzzle: one day, with a record per course.
+ * Used by account sync, which keeps it whole; the game itself reads one
+ * record at a time with loadDaily.
+ */
+export type DailyState = { day: string; courses: Record<string, DailyRecord> };
+
+/** Checks saved or downloaded data; broken course records are dropped. */
+export const parseDailyState = (data: unknown): DailyState | null => {
+  if (!isRecord(data) || data.version !== VERSION) return null;
+  if (!isValidDayKey(data.day) || !isRecord(data.courses)) return null;
+  const courses: Record<string, DailyRecord> = {};
+  for (const [course, value] of Object.entries(data.courses)) {
+    if (course === "__proto__") continue;
+    const record = sanitize(value);
+    if (record) courses[course] = record;
+  }
+  return { day: data.day, courses };
+};
+
+/** The form kept in storage and sent to the account server. */
+export const dailyStateData = (state: DailyState) => ({
+  version: VERSION,
+  day: state.day,
+  courses: state.courses,
+});
+
+export const loadDailyState = (storage?: Pick<Storage, "getItem">): DailyState | null => {
+  try {
+    const raw = (storage ?? defaultStorage())?.getItem(STORAGE_KEY);
+    return raw ? parseDailyState(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Returns true if saved. Storage errors (private mode, quota) are swallowed. */
+export const saveDailyState = (
+  state: DailyState,
+  storage?: Pick<Storage, "setItem">
+): boolean => {
+  try {
+    const target = storage ?? defaultStorage();
+    if (!target) return false;
+    target.setItem(STORAGE_KEY, JSON.stringify(dailyStateData(state)));
+    notifyLocalChange();
     return true;
   } catch {
     return false;
