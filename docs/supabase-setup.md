@@ -14,7 +14,16 @@ Do these in the [Supabase dashboard](https://supabase.com/dashboard/project/hynb
 
 This creates `public.player_progress` (one row of progress per player), turns on row level security with policies that let a signed-in player read and write only their own row, removes all access for signed-out visitors (`anon`), and adds `public.delete_account()`, which deletes the calling player's account.
 
-If you later use the Supabase CLI, this file is already in the CLI's `supabase/migrations` layout, so `supabase db push` would apply it. Do not run it twice by hand: the second run fails because the table exists.
+**Or with the CLI** (pinned in `devDependencies`, so use `npx`). This applies every migration in `supabase/migrations` that the project hasn't had yet, oldest first:
+
+```sh
+npx supabase login
+npx supabase link --project-ref hynbvcxulcklilmeqjtj   # asks for the database password
+npx supabase db push --remote --dry-run                # lists what it would apply
+npx supabase db push --remote
+```
+
+`--remote` matters: without it, CLI v3 targets a local Supabase in Docker. If you already ran a file by hand in the SQL Editor, tell the CLI first, or it will run it again and fail because the table exists: `npx supabase migration repair --remote --status applied 20261115120000`.
 
 ### Size limits
 
