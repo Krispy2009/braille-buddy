@@ -9,7 +9,7 @@
   gap: clamp(0.75rem, 4vw, 1.25rem) clamp(1.25rem, 9vw, 2.625rem);
   padding: clamp(1.25rem, 6vw, 1.75rem) clamp(1.5rem, 10vw, 2.625rem);
   border: var(--line-width) solid var(--line);
-  border-radius: 1.875rem;
+  border-radius: 8px;
   background: var(--surface);
   box-shadow: -8px -8px 16px var(--hi), 8px 8px 18px var(--shade);
 }
@@ -21,7 +21,7 @@
   --dot-lift-y: 4px;
   gap: 0.625rem 1.125rem;
   padding: 1rem 1.375rem;
-  border-radius: 1.25rem;
+  border-radius: 7px;
 }
 
 .cell.small {
@@ -31,7 +31,7 @@
   --dot-lift-y: 2px;
   gap: 0.3rem 0.45rem;
   padding: 0.55rem 0.7rem;
-  border-radius: 0.75rem;
+  border-radius: 4px;
   box-shadow: none;
 }
 
@@ -87,7 +87,7 @@
   --dot-font-size: calc(1.125 * var(--cu));
   gap: calc(0.625 * var(--cu)) calc(1.125 * var(--cu));
   padding: calc(1 * var(--cu)) calc(1.375 * var(--cu));
-  border-radius: calc(1.25 * var(--cu));
+  border-radius: calc(0.4375 * var(--cu));
 }
 
 .cell-row .cell.small {
@@ -95,7 +95,7 @@
   --dot-font-size: calc(0.75 * var(--cu));
   gap: calc(0.3 * var(--cu)) calc(0.45 * var(--cu));
   padding: calc(0.55 * var(--cu)) calc(0.7 * var(--cu));
-  border-radius: calc(0.75 * var(--cu));
+  border-radius: calc(0.25 * var(--cu));
 }
 
 /* A cell that moves the writing to it. The cell being written sits on a

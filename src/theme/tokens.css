@@ -3,45 +3,53 @@
    values the theme switcher and the pre-paint script in index.html set:
    light = Paper, dark = Ink, high-visibility = High vis. The selectors
    match any element, not only the root, so a small preview (the theme
-   cards in Settings) can show another theme inside the current one. */
+   cards in Settings) can show another theme inside the current one.
+
+   The accent (--accent, --on-accent) is the player's own setting, apart
+   from the theme: data-accent on <html>, set by App and the pre-paint
+   script (see "Accents" below). The theme blocks carry Cobalt, the
+   default, for a page without data-accent. */
 
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #eceae4;
-  --surface: #eceae4;
-  --text: #1a1a1a;
-  --text-soft: #5a5650;
-  --line: #1a1a1a;
-  --accent: #ff5a1f;
-  --on-accent: #1a1a1a;
-  --base: #1a1a1a;
-  --on-base: #eceae4;
-  --key: #eceae4;
-  --key-edge: #a8a49a;
+  --bg: #f3f5f8;
+  --surface: #f3f5f8;
+  --text: #111827;
+  --text-soft: #4b5567;
+  --line: #111827;
+  --accent: #3355ff;
+  --on-accent: #ffffff;
+  --base: #111827;
+  --on-base: #f3f5f8;
+  --key: #f3f5f8;
+  --key-edge: #9aa3b4;
   --hi: #ffffff;
   --shade: rgba(0, 0, 0, 0.18);
   --line-width: 2px;
 
-  --font-ui: "Commissioner", system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
-  --font-mono: "Fira Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
+  /* Commissioner is only loaded for Greek, which Atkinson lacks (see
+     theme/fonts.css). */
+  --font-ui: "Atkinson Hyperlegible Next", "Commissioner", system-ui,
+    -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* The daily puzzle's share grid only, so its rows line up as they do in
+     the shared text. The device's own monospace: nothing to download. */
+  --font-grid: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #17171a;
-  --surface: #1f1f23;
-  --text: #eceae4;
-  --text-soft: #a9a49a;
-  --line: #eceae4;
-  --accent: #ff7a45;
-  --on-accent: #17171a;
+  --bg: #15171c;
+  --surface: #1d2027;
+  --text: #e6e9ef;
+  --text-soft: #a3abba;
+  --line: #e6e9ef;
+  --accent: #6b8aff;
+  --on-accent: #0b1020;
   --base: #000000;
-  --on-base: #eceae4;
-  --key: #2a2a2e;
-  --key-edge: #0a0a0a;
+  --on-base: #e6e9ef;
+  --key: #272b34;
+  --key-edge: #0a0b0e;
   --hi: rgba(255, 255, 255, 0.06);
   --shade: rgba(0, 0, 0, 0.6);
 }
@@ -64,4 +72,72 @@
   --hi: transparent;
   --shade: transparent;
   --line-width: 3px;
+}
+
+/* ---- Accents --------------------------------------------------------------
+   One block per accent and theme, setting only --accent and --on-accent.
+   Ink gets brighter variants of each, to stand out on its dark page.
+   Every pair keeps on-accent text at 4.5:1 or more, and Ink's accents stay
+   3:1 or more against its page and surfaces.
+
+   Each block matches three ways, all at (0,2,0), so it beats the theme
+   blocks above (0,1,0) wherever it sits:
+   - [data-accent][data-theme]: the root, which carries both;
+   - [data-accent] [data-theme]: a theme preview inside the page;
+   - [data-theme] [data-accent]: an accent swatch in Settings, which
+     carries its own data-accent to show that accent in the current theme.
+   A bare [data-accent] shows Paper's variant, for a swatch with no theme
+   around it (and under High vis, which keeps its own colours). */
+
+[data-accent="cobalt"],
+[data-accent="cobalt"][data-theme="light"],
+[data-accent="cobalt"] [data-theme="light"],
+[data-theme="light"] [data-accent="cobalt"] {
+  --accent: #3355ff;
+  --on-accent: #ffffff;
+}
+
+[data-accent="orange"],
+[data-accent="orange"][data-theme="light"],
+[data-accent="orange"] [data-theme="light"],
+[data-theme="light"] [data-accent="orange"] {
+  --accent: #ff5a1f;
+  --on-accent: #111827;
+}
+
+[data-accent="mint"],
+[data-accent="mint"][data-theme="light"],
+[data-accent="mint"] [data-theme="light"],
+[data-theme="light"] [data-accent="mint"] {
+  --accent: #1fc79c;
+  --on-accent: #111827;
+}
+
+[data-accent="cobalt"][data-theme="dark"],
+[data-accent="cobalt"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="cobalt"] {
+  --accent: #6b8aff;
+  --on-accent: #0b1020;
+}
+
+[data-accent="orange"][data-theme="dark"],
+[data-accent="orange"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="orange"] {
+  --accent: #ff7a45;
+  --on-accent: #0b1020;
+}
+
+[data-accent="mint"][data-theme="dark"],
+[data-accent="mint"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="mint"] {
+  --accent: #3ddcb0;
+  --on-accent: #0b1020;
+}
+
+/* High vis ignores the accent: black on yellow whatever the player chose,
+   on the page and in its preview card. The repeated attribute lifts this
+   to (0,3,0), above every accent block, so source order cannot undo it. */
+[data-theme="high-visibility"][data-theme][data-theme] {
+  --accent: #000000;
+  --on-accent: #ffd60a;
 }

@@ -18,6 +18,7 @@ const DEFAULTS: Settings = {
   lessMotion: false,
   biggerText: false,
   keyShortcuts: true,
+  accent: "cobalt",
 };
 
 const KEYS: Settings = { ...DEFAULTS, dotEntry: "keys" };
@@ -52,7 +53,7 @@ test("settings saved before the comfort switches existed keep their entry mode",
 
 test("saves and loads the comfort switches", () => {
   const storage = memoryStorage();
-  const comfy: Settings = { dotEntry: "cell", keyLetters: false, lessMotion: true, biggerText: true, keyShortcuts: false };
+  const comfy: Settings = { dotEntry: "cell", keyLetters: false, lessMotion: true, biggerText: true, keyShortcuts: false, accent: "mint" };
   saveSettings(comfy, storage);
   expect(loadSettings(storage)).toEqual(comfy);
 });
@@ -123,4 +124,23 @@ test("keyShortcuts defaults to on and a bad value falls back to it", () => {
   expect(loadSettings(memoryStorage(bad))).toEqual(KEYS);
   const off = JSON.stringify({ version: 1, keyShortcuts: false });
   expect(loadSettings(memoryStorage(off)).keyShortcuts).toBe(false);
+});
+
+test("the accent defaults to Cobalt and loads each choice", () => {
+  expect(defaultSettings().accent).toBe("cobalt");
+  for (const accent of ["cobalt", "orange", "mint"] as const) {
+    const storage = memoryStorage();
+    saveSettings({ ...DEFAULTS, accent }, storage);
+    expect(loadSettings(storage).accent).toBe(accent);
+  }
+});
+
+test.each([
+  ["an unknown accent", "purple"],
+  ["a capitalised one", "Orange"],
+  ["a wrong type", 2],
+  ["null", null],
+])("%s falls back to Cobalt alone", (_, accent) => {
+  const raw = JSON.stringify({ version: 1, dotEntry: "keys", accent });
+  expect(loadSettings(memoryStorage(raw))).toEqual(KEYS);
 });
