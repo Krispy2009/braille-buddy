@@ -37,7 +37,7 @@
 .account-step {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
@@ -49,7 +49,6 @@
 
 .account-email,
 .account-address {
-  font-family: var(--mono);
   font-weight: 700;
   /* Long addresses wrap instead of widening a small phone's page. */
   overflow-wrap: anywhere;
@@ -96,8 +95,8 @@
 }
 
 .account-code {
-  font-family: var(--mono);
   font-size: 1.625rem;
+  font-variant-numeric: tabular-nums;
   letter-spacing: 0.3em;
 }
 
@@ -114,7 +113,6 @@
 
 .account-error:not(:empty)::before {
   content: "! ";
-  font-family: var(--mono);
 }
 
 .account-form .primary-button {
@@ -147,7 +145,6 @@
   padding: 0.125rem 0.625rem;
   border: 2px dashed var(--line);
   border-radius: 999px;
-  font-family: var(--mono);
   font-size: 0.875rem;
   font-weight: 700;
 }
@@ -173,7 +170,7 @@
 .account-small-heading {
   margin: 0;
   font-size: 1.125rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .account-delete {
@@ -193,7 +190,7 @@
 .account-confirm-title {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .account-confirm-actions {

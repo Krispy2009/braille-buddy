@@ -5,19 +5,23 @@
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#eceae4" />
+    <meta name="theme-color" content="#f3f5f8" />
     <meta name="description" content="Learn braille letters in English and Greek" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Braille Buddy" />
     <link rel="manifest" href="/manifest.json" />
     <title>Braille Buddy</title>
     <script>
-      // Apply the saved or system theme before first paint. Keep in sync with
-      // getInitialTheme in src/components/ThemeSwitcher/ThemeSwitcher.tsx.
+      // Apply the saved or system theme, and the saved accent, before first
+      // paint. Keep in sync with getInitialTheme in
+      // src/components/ThemeSwitcher/ThemeSwitcher.tsx and with ACCENTS and
+      // loadSettings in src/game/settings.ts.
       (function () {
-        var theme;
+        var theme, accent;
         try {
           theme = localStorage.getItem("theme");
+          var settings = JSON.parse(localStorage.getItem("braille-buddy:settings") || "null");
+          if (settings && settings.version === 1) accent = settings.accent;
         } catch (e) {}
         if (!/^(light|dark|high-visibility)$/.test(theme || "")) {
           var mq = window.matchMedia;
@@ -30,10 +34,11 @@
         }
         var root = document.documentElement;
         root.dataset.theme = theme;
+        root.dataset.accent = /^(cobalt|orange|mint)$/.test(accent || "") ? accent : "cobalt";
 
         // Match the browser/status bar to the page colour (--bg in
         // src/theme/tokens.css), also when the theme switcher changes the theme later.
-        var colors = { light: "#eceae4", dark: "#17171a", "high-visibility": "#ffd60a" };
+        var colors = { light: "#f3f5f8", dark: "#15171c", "high-visibility": "#ffd60a" };
         var meta = document.querySelector('meta[name="theme-color"]');
         var syncThemeColor = function () {
           var color = colors[root.dataset.theme];

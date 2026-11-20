@@ -11,7 +11,7 @@ type DotProps = {
   onClick?: (dot: keyof CellType) => void;
 };
 
-/* Raised: an orange dot standing on the plate, solid rim, hard shadow.
+/* Raised: an accent dot standing on the plate, solid rim, hard shadow.
    Flat: a dimple pressed into the plate, dashed rim. Shape and rim tell
    them apart as well as colour. Sizes come from the cell (Cell.css). */
 const DotButton = styled.button<{ $on: boolean }>`
@@ -24,7 +24,7 @@ const DotButton = styled.button<{ $on: boolean }>`
   border-radius: 50%;
   font-family: var(--font-ui);
   font-size: var(--dot-font-size, 1.5rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   cursor: pointer;
   touch-action: manipulation;

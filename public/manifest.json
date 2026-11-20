@@ -8,8 +8,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "theme_color": "#ECEAE4",
-  "background_color": "#ECEAE4",
+  "theme_color": "#F3F5F8",
+  "background_color": "#F3F5F8",
   "categories": ["education"],
   "icons": [
     {

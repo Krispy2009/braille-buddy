@@ -20,9 +20,9 @@ const Pad = styled.div`
   min-height: 2.75rem;
   padding: 0.35rem 0.9rem;
   border: 2px dashed transparent;
-  border-radius: 0.75rem;
-  font-family: var(--font-mono);
+  border-radius: 5px;
   font-size: 0.875rem;
+  font-weight: 700;
   color: var(--text-soft);
   cursor: pointer;
 

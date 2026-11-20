@@ -19,7 +19,7 @@
   flex: 1;
   margin: 0;
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -27,7 +27,6 @@
 
 .home-stats {
   margin: 0;
-  font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
   white-space: nowrap;
@@ -56,7 +55,7 @@
   margin: 0.25rem 0 0;
   /* "Every letter." has to fit a narrow phone on one line. */
   font-size: clamp(2.25rem, 11vw, 2.875rem);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 0.95;
   letter-spacing: -0.03em;
 }
@@ -76,7 +75,7 @@
   width: 13.125rem;
   height: 16.875rem;
   border: var(--line-width) solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: 7px;
   background: var(--bg);
 }
 
@@ -110,7 +109,6 @@
 .deck-card-bottom {
   display: flex;
   justify-content: space-between;
-  font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -124,7 +122,7 @@
 
 .deck-letter {
   font-size: 6.5rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 0.8;
 }
 
@@ -183,7 +181,7 @@ button.deck-front {
   gap: 1rem;
   margin: 1.75rem calc(-1 * var(--gutter)) 0;
   padding: 1.125rem 1.125rem 1.5rem;
-  border-radius: 1.75rem 1.75rem 0 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .home-keys {
@@ -195,7 +193,7 @@ button.deck-front {
 .home-key {
   width: 2.375rem;
   height: 1.375rem;
-  border-radius: 0.5rem;
+  border-radius: 3px;
   background: var(--key);
   box-shadow: inset -2px -3px 0 var(--key-edge);
 }
@@ -272,14 +270,13 @@ button.deck-front {
 .daily-card-title {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .daily-card-state {
   padding: 0 0.5rem;
   border: 2px dashed var(--line);
   border-radius: 999px;
-  font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -353,7 +350,7 @@ button.deck-front {
     gap: 2rem;
     margin: 2rem 0 0;
     padding: 1.5rem 2rem 1.75rem;
-    border-radius: 1.75rem;
+    border-radius: 8px;
   }
 
   .home-keys {

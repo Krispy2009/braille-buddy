@@ -6,7 +6,7 @@
   margin: 1rem 0 0;
 }
 
-/* The big orange card, on its own. Sideways swipes turn it; up and down
+/* The big accent card, on its own. Sideways swipes turn it; up and down
    still scroll the page. */
 .flash-card {
   display: flex;
@@ -18,7 +18,7 @@
   min-height: 17.5rem;
   padding: 1.125rem 1.25rem;
   border: var(--line-width) solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: 7px;
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 8px 10px 0 var(--line);
@@ -93,7 +93,7 @@
   min-height: 2.75rem;
   padding: 0 0.5rem;
   border: var(--line-width) solid var(--line);
-  border-radius: 0.6rem;
+  border-radius: 4px;
   background: transparent;
   font-size: 1.125rem;
   font-weight: 700;

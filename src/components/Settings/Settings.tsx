@@ -1,6 +1,12 @@
 import React from "react";
 import type { Language } from "../../game/braille";
-import { DotEntry, DOT_ENTRIES, Settings as SettingsType } from "../../game/settings";
+import {
+  Accent,
+  ACCENTS,
+  DotEntry,
+  DOT_ENTRIES,
+  Settings as SettingsType,
+} from "../../game/settings";
 import { BackIcon } from "../Icons/Icons";
 import { LanguagePicker } from "../Practice/LanguagePicker";
 import { ThemeSwitcher } from "../ThemeSwitcher/ThemeSwitcher";
@@ -18,6 +24,12 @@ const CellPicture = () => (
   </span>
 );
 
+const CheckMark = () => (
+  <svg className="accent-check" viewBox="0 0 16 16" focusable="false">
+    <path d="M3 8.5l3.25 3.25L13 5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+  </svg>
+);
+
 const DOT_ENTRY_OPTIONS: Record<
   DotEntry,
   { name: string; hint: string; picture: React.ReactNode }
@@ -32,6 +44,12 @@ const DOT_ENTRY_OPTIONS: Record<
     hint: "Tap each dot of one big cell",
     picture: <CellPicture />,
   },
+};
+
+const ACCENT_NAMES: Record<Accent, string> = {
+  cobalt: "Cobalt",
+  orange: "Orange",
+  mint: "Mint",
 };
 
 type ComfortSetting = "keyLetters" | "lessMotion" | "biggerText";
@@ -134,6 +152,34 @@ export const Settings = ({
       </fieldset>
 
       <ThemeSwitcher />
+
+      {/* Each swatch carries its own data-accent, so tokens.css paints it in
+          that accent for the current theme. The chosen one gets a tick and
+          a thicker ring, not only a colour. */}
+      <fieldset className="setting" aria-describedby={`${id}-accent-hint`}>
+        <legend className="setting-legend">Accent</legend>
+        <div className="accent-options">
+          {ACCENTS.map((option) => (
+            <label key={option} className="accent-option">
+              <input
+                type="radio"
+                name="accent"
+                value={option}
+                className="sr-only"
+                checked={settings.accent === option}
+                onChange={() => onChange({ ...settings, accent: option })}
+              />
+              <span className="accent-swatch" data-accent={option} aria-hidden="true">
+                <CheckMark />
+              </span>
+              <span className="accent-name">{ACCENT_NAMES[option]}</span>
+            </label>
+          ))}
+        </div>
+        <p id={`${id}-accent-hint`} className="option-hint accent-hint">
+          High vis keeps its own black and yellow.
+        </p>
+      </fieldset>
 
       <fieldset className="setting comfort">
         <legend className="setting-legend">Comfort</legend>

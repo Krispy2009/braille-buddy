@@ -1,12 +1,12 @@
 /* Six keys on the black base, in Perkins order: 3 2 1, a gap, 4 5 6.
-   A pressed key turns orange and sinks 5px into the base, so pressed and
+   A pressed key turns the accent and sinks 5px into the base, so pressed and
    not pressed differ in depth and shadow as well as colour. */
 .brailler-keys {
   display: flex;
   justify-content: center;
   gap: clamp(0.5rem, 4vw, 1rem);
   padding: 0.25rem;
-  border-radius: 1rem;
+  border-radius: 6px;
   outline-offset: 2px;
 }
 
@@ -31,7 +31,7 @@
   height: 4.625rem;
   padding: 0;
   border: var(--line-width) solid var(--on-base);
-  border-radius: 0.875rem;
+  border-radius: 5px;
   background: var(--key);
   color: var(--text);
   box-shadow: inset -3px -4px 0 var(--key-edge), 0 5px 0 var(--key-edge);
@@ -55,12 +55,11 @@
 
 .brailler-key-dot {
   font-size: 1.5rem;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
 }
 
 .brailler-key-letter {
-  font-family: var(--mono);
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.2;
@@ -90,7 +89,7 @@
 
 /* The instructions: always read by screen readers, and on screen only while
    keyboard focus is in the keys or in the help itself, so the base stays
-   uncluttered for touch. A short typed hint next to the cell stands in for
+   uncluttered for touch. A short hint next to the cell stands in for
    them. :focus-visible, not :focus-within, so a tap or click never shows
    them: the keys would jump under the finger before it lifts. */
 .brailler-help {
