@@ -66,14 +66,13 @@ export const Privacy = ({ accounts, onBack }: PrivacyProps) => {
 
           <section aria-labelledby="privacy-where">
             <h3 id="privacy-where">Where</h3>
-            {/* TODO(Kristi): confirm the Supabase project's region in the
-                dashboard. If it is in the EU, this can say "Supabase (hosted
-                in the EU)". If sign-in emails go through your own email
-                provider (custom SMTP), name it here too. */}
+            {/* The Supabase project is in eu-west-1 (Ireland). TODO(Kristi):
+                once sign-in emails go through your own email provider
+                (custom SMTP), name it here too. */}
             <p>
-              Accounts are run with Supabase, a database service. Your email
-              address and progress are stored there, and sign-in emails are
-              sent through it. Your progress is also kept in this browser, so
+              Accounts are run with Supabase, a database service, on servers
+              in Ireland (EU). Your email address and progress are stored
+              there, and sign-in emails are sent through it. Your progress is also kept in this browser, so
               you can play offline.
             </p>
           </section>
