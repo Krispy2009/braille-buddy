@@ -10,7 +10,8 @@
 --
 -- It makes two pretend players, A and B, each with a progress row, then
 -- acts as B (signed in) and as a signed-out visitor (anon) and checks that
--- neither can read, change or delete A's progress.
+-- neither can read, change or delete A's progress. It also checks that a
+-- player cannot save an oversize or malformed progress or daily value.
 
 begin;
 
@@ -64,6 +65,8 @@ declare
   b constant uuid := '00000000-0000-4000-8000-00000000000b';
   c constant uuid := '00000000-0000-4000-8000-00000000000c';
   n integer;
+  big_progress jsonb;
+  big_daily jsonb;
 begin
   if auth.uid() is distinct from b then
     raise exception 'FAIL: could not act as player B (auth.uid() is %)', auth.uid();
@@ -135,6 +138,66 @@ begin
   if n <> 1 then
     raise exception 'FAIL: player B cannot change their own progress';
   end if;
+
+  -- Size and shape limits. B may fill only their own row, but not with
+  -- something huge or malformed. Each bad save must fail with
+  -- check_violation; a normal one must still work.
+  big_progress := jsonb_build_object('version', 1, 'filler', repeat('x', 70000));
+  big_daily := jsonb_build_object('version', 1, 'filler', repeat('x', 9000));
+
+  begin
+    update public.player_progress set progress = big_progress where user_id = b;
+    raise exception 'FAIL: player B can save a progress value over 64 KB';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    update public.player_progress set progress = '[1, 2, 3]' where user_id = b;
+    raise exception 'FAIL: player B can save progress that is not an object';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    update public.player_progress set progress = '"just text"' where user_id = b;
+    raise exception 'FAIL: player B can save progress that is plain text';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    update public.player_progress set daily = big_daily where user_id = b;
+    raise exception 'FAIL: player B can save a daily value over 8 KB';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    update public.player_progress set daily = '[1]' where user_id = b;
+    raise exception 'FAIL: player B can save a daily value that is not an object';
+  exception when check_violation then
+    null;
+  end;
+
+  -- Inserting is limited too, not just updating.
+  begin
+    delete from public.player_progress where user_id = b;
+    insert into public.player_progress (user_id, progress) values (b, big_progress);
+    raise exception 'FAIL: player B can insert a progress value over 64 KB';
+  exception when check_violation then
+    null;
+  end;
+
+  -- A normal save still works, with and without a daily value.
+  insert into public.player_progress (user_id, progress, daily)
+  values (b, '{"version": 1, "points": 444}', '{"version": 1, "day": "2026-11-20", "courses": {}}')
+  on conflict (user_id) do update set progress = excluded.progress, daily = excluded.daily;
+  update public.player_progress set daily = null where user_id = b;
+  get diagnostics n = row_count;
+  if n <> 1 then
+    raise exception 'FAIL: player B cannot save a normal progress row after the size checks';
+  end if;
 end
 $$;
 
@@ -198,4 +261,4 @@ $$;
 
 rollback;
 
-select 'PASS: players only reach their own progress, signed-out visitors reach nothing, and delete_account() removes only the caller. Nothing was changed (rolled back).' as result;
+select 'PASS: players only reach their own progress, a player cannot save oversize or malformed progress, signed-out visitors reach nothing, and delete_account() removes only the caller. Nothing was changed (rolled back).' as result;

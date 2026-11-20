@@ -16,13 +16,17 @@ This creates `public.player_progress` (one row of progress per player), turns on
 
 If you later use the Supabase CLI, this file is already in the CLI's `supabase/migrations` layout, so `supabase db push` would apply it. Do not run it twice by hand: the second run fails because the table exists.
 
+### Size limits
+
+Then run `supabase/migrations/20261120090000_player_progress_limits.sql` the same way (new query, paste, run). It adds check constraints so a player cannot save a progress value that is not a JSON object or is over 64 KB, or a daily value that is not an object or is over 8 KB. Real progress is about 7 KB at most, so normal play never comes near. Running it twice is harmless.
+
 ## 2. Run the row level security test
 
 1. In **SQL Editor**, start another new query.
 2. Paste the whole of `supabase/tests/rls_test.sql` and run it.
 3. The result should be one row starting with **PASS**. If it stops with an error starting **FAIL:**, the message says what leaked; do not turn accounts on until it passes.
 
-The test makes pretend players inside a transaction and rolls everything back, so it changes nothing. It checks that one player cannot read, change, delete or take over another player's progress, that signed-out visitors can do nothing, and that `delete_account()` removes only the caller. Run it again after any change to the table or its policies.
+The test makes pretend players inside a transaction and rolls everything back, so it changes nothing. It checks that one player cannot read, change, delete or take over another player's progress, that oversize or malformed saves are refused, that signed-out visitors can do nothing, and that `delete_account()` removes only the caller. Run it again after any change to the table or its policies.
 
 ## 3. Auth: URL configuration
 

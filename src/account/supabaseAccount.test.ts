@@ -21,6 +21,8 @@ type FakeOptions = {
   row?: Row;
   /** What every table request answers with instead of working. */
   tableError?: { message: string; code?: string };
+  /** Reads work, but saving is refused. */
+  upsertError?: { message: string; code?: string };
   rpcError?: { message: string; code?: string };
   otpError?: { message: string; code?: string; status?: number };
 };
@@ -39,6 +41,10 @@ const fakeClient = (options: FakeOptions = {}) => {
     ),
     upsert: vi.fn(async (value: Record<string, unknown>) => {
       if (options.tableError) return { error: options.tableError };
+      if (options.upsertError) {
+        state.upserts.push(value);
+        return { error: options.upsertError };
+      }
       state.upserts.push(value);
       state.row = { progress: value.progress, daily: value.daily };
       return { error: null };
@@ -212,6 +218,23 @@ test("a refused request shows an error, and local progress is kept", async () =>
   const { statuses } = await start(fake);
   await vi.waitFor(() => expect(lastStatus(statuses)).toBe("error"));
   expect(loadProgress()).toEqual(played);
+});
+
+test("a save refused for being too big shows an error, keeps local progress and is not retried in a loop", async () => {
+  saveProgress(played);
+  const fake = fakeClient({
+    signedIn: true,
+    upsertError: {
+      message: 'new row for relation "player_progress" violates check constraint "player_progress_progress_limits"',
+      code: "23514",
+    },
+  });
+  const { statuses } = await start(fake);
+  await vi.waitFor(() => expect(lastStatus(statuses)).toBe("error"));
+  expect(loadProgress()).toEqual(played);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  expect(fake.state.upserts).toHaveLength(1);
+  expect(lastStatus(statuses)).toBe("error");
 });
 
 test("signing out signs out this device only and keeps local progress", async () => {
