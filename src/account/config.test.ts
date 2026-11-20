@@ -1,4 +1,4 @@
-import { accountConfig, isAuthCallback } from "./config";
+import { accountConfig, emailCodeEnabled, isAuthCallback } from "./config";
 
 describe("accountConfig", () => {
   it("is off without both values, so accounts are simply hidden", () => {
@@ -34,5 +34,13 @@ describe("isAuthCallback", () => {
   it("ignores ordinary addresses", () => {
     expect(isAuthCallback({ hash: "", search: "" })).toBe(false);
     expect(isAuthCallback({ hash: "#top", search: "?utm_source=x" })).toBe(false);
+  });
+});
+
+describe("emailCodeEnabled", () => {
+  it("is off unless the flag is exactly \"true\"", () => {
+    expect(emailCodeEnabled({})).toBe(false);
+    expect(emailCodeEnabled({ VITE_SUPABASE_EMAIL_CODE: "false" })).toBe(false);
+    expect(emailCodeEnabled({ VITE_SUPABASE_EMAIL_CODE: "true" })).toBe(true);
   });
 });

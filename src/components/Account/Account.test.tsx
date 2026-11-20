@@ -9,7 +9,11 @@ beforeEach(() => localStorage.clear());
 type Fakes = Partial<Record<keyof AccountActions, (...args: never[]) => unknown>>;
 
 /** The screen with a fake account: actions are spies that move the state on. */
-const setup = (initial: AccountState = { phase: "signedOut" }, fakes: Fakes = {}) => {
+const setup = (
+  initial: AccountState = { phase: "signedOut" },
+  fakes: Fakes = {},
+  emailCode = true
+) => {
   let setState: (next: AccountState) => void = () => {};
   const ok: Result = { ok: true };
   const actions = {
@@ -35,7 +39,13 @@ const setup = (initial: AccountState = { phase: "signedOut" }, fakes: Fakes = {}
   const Harness = () => {
     const [state, set] = React.useState(initial);
     setState = set;
-    return <Account state={state} actions={actions} onPrivacy={onPrivacy} onBack={onBack} />;
+    return <Account
+        state={state}
+        actions={actions}
+        onPrivacy={onPrivacy}
+        onBack={onBack}
+        emailCode={emailCode}
+      />;
   };
   const user = userEvent.setup();
   render(<Harness />);
@@ -219,4 +229,77 @@ test("links to the privacy note", async () => {
   const { user, onPrivacy } = setup();
   await user.click(screen.getByRole("button", { name: /Privacy/ }));
   expect(onPrivacy).toHaveBeenCalled();
+});
+
+describe("with the email code off (link only)", () => {
+  const linkSetup = (initial?: AccountState, fakes?: Fakes) => setup(initial, fakes, false);
+
+  test("the signed-out screen does not promise a code", () => {
+    linkSetup();
+    expect(screen.getByLabelText("Email address")).toHaveAccessibleDescription(
+      /^We will email you a sign-in link\. No password needed\./
+    );
+    expect(screen.getByRole("button", { name: "Send me a link" })).toBeInTheDocument();
+    expect(screen.queryByText(/code/i)).not.toBeInTheDocument();
+  });
+
+  test("sending moves to a check-your-email step with no code box", async () => {
+    const { user, actions } = linkSetup();
+    await user.type(screen.getByLabelText("Email address"), " kim@example.com ");
+    await user.click(screen.getByRole("button", { name: "Send me a link" }));
+    expect(actions.sendCode).toHaveBeenCalledWith("kim@example.com");
+    expect(status()).toHaveTextContent("Link sent. Check your email.");
+    expect(screen.getByRole("heading", { name: "Check your email" })).toHaveFocus();
+    expect(
+      screen.getByText(/We sent a sign-in link to/).closest("p")
+    ).toHaveTextContent(
+      "We sent a sign-in link to kim@example.com. Open it on this device, in this browser, to sign in."
+    );
+    expect(screen.queryByLabelText(/code/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/code/i)).not.toBeInTheDocument();
+  });
+
+  test("sending a new link announces it and keeps focus on the step", async () => {
+    localStorage.setItem(
+      "braille-buddy:account-pending",
+      JSON.stringify({ email: "kim@example.com", sent: Date.now() })
+    );
+    const { user, actions } = linkSetup();
+    expect(screen.getByRole("heading", { name: "Check your email" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Send a new link" }));
+    expect(actions.sendCode).toHaveBeenCalledWith("kim@example.com");
+    expect(status()).toHaveTextContent("We sent a new link to kim@example.com.");
+    expect(screen.getByRole("heading", { name: "Check your email" })).toHaveFocus();
+  });
+
+  test("a failed resend is shown in a live region", async () => {
+    localStorage.setItem(
+      "braille-buddy:account-pending",
+      JSON.stringify({ email: "kim@example.com", sent: Date.now() })
+    );
+    const { user } = linkSetup(undefined, {
+      sendCode: async () => ({ ok: false, error: "rateLimit" }) as Result,
+    });
+    await user.click(screen.getByRole("button", { name: "Send a new link" }));
+    expect(screen.getByText(/Too many emails/)).toHaveAttribute("aria-live", "polite");
+  });
+
+  test("a different email goes back to the email field", async () => {
+    localStorage.setItem(
+      "braille-buddy:account-pending",
+      JSON.stringify({ email: "kim@example.com", sent: Date.now() })
+    );
+    const { user } = linkSetup();
+    await user.click(screen.getByRole("button", { name: "Use a different email" }));
+    expect(screen.getByLabelText("Email address")).toHaveFocus();
+  });
+
+  test("an expired link says to send a new link, not a code", () => {
+    linkSetup({ phase: "signedOut", linkError: "expiredLink" });
+    expect(status()).toHaveTextContent(
+      "That sign-in link has expired or was already used. Send yourself a new link."
+    );
+  });
 });

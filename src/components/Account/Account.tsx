@@ -1,8 +1,9 @@
 import React from "react";
 import { clearPendingEmail, loadPendingEmail, savePendingEmail } from "../../account/pending";
+import { emailCodeEnabled } from "../../account/config";
 import type { AccountActions, AccountState } from "../../account/types";
 import { BackIcon } from "../Icons/Icons";
-import { checkEmail, cleanCode, CODE_ERROR, ERROR_TEXT, SYNC_TEXT } from "./messages";
+import { checkEmail, cleanCode, CODE_ERROR, errorText, SYNC_TEXT } from "./messages";
 import "./Account.css";
 
 type AccountProps = {
@@ -12,18 +13,26 @@ type AccountProps = {
   onPrivacy: () => void;
   /** Back to the screen this was opened from. */
   onBack: () => void;
+  /** Whether the sign-in email has a code to type. Defaults to the build setting. */
+  emailCode?: boolean;
 };
 
 type FocusTarget = "title" | "step" | "email" | "code" | "confirm" | "delete";
 
 /**
- * Sign in with an emailed code (or the link in the same email), see that
+ * Sign in with an emailed code (when enabled) or the link in the email, see that
  * progress is synced, sign out, or delete the account. Optional: the game
  * never asks for it. Focus lands on the page heading when it opens, then on
  * each new step's heading or field. Messages go to live regions and stay
  * until something else replaces them.
  */
-export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => {
+export const Account = ({
+  state,
+  actions,
+  onPrivacy,
+  onBack,
+  emailCode = emailCodeEnabled(),
+}: AccountProps) => {
   const id = React.useId();
   const titleRef = React.useRef<HTMLHeadingElement>(null);
   const stepRef = React.useRef<HTMLHeadingElement>(null);
@@ -68,7 +77,7 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
   }, [state.phase]);
 
   const linkError = state.phase === "signedOut" ? state.linkError : undefined;
-  const status = message || (linkError ? ERROR_TEXT[linkError] : "");
+  const status = message || (linkError ? errorText(linkError, emailCode) : "");
   const errorId = `${id}-error`;
   const codeStep = state.phase === "signedOut" && pendingEmail !== undefined;
 
@@ -95,15 +104,15 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
       setMessage("");
       const result = await actions.sendCode(address);
       if (!result.ok) {
-        setFieldError(ERROR_TEXT[result.error]);
+        setFieldError(errorText(result.error, emailCode));
         return;
       }
       savePendingEmail(address);
       setPendingEmail(address);
       setCode("");
       setFieldError("");
-      setMessage("Code sent. Check your email.");
-      setFocus({ target: "code" });
+      setMessage(emailCode ? "Code sent. Check your email." : "Link sent. Check your email.");
+      setFocus({ target: emailCode ? "code" : "step" });
     });
   };
 
@@ -118,7 +127,7 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
     void run(async () => {
       const result = await actions.verifyCode(pendingEmail, digits);
       if (!result.ok) {
-        setFieldError(ERROR_TEXT[result.error]);
+        setFieldError(errorText(result.error, emailCode));
         setFocus({ target: "code" });
         return;
       }
@@ -135,14 +144,18 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
       if (!pendingEmail) return;
       const result = await actions.sendCode(pendingEmail);
       if (!result.ok) {
-        setFieldError(ERROR_TEXT[result.error]);
+        setFieldError(errorText(result.error, emailCode));
         return;
       }
       savePendingEmail(pendingEmail);
       setFieldError("");
       setCode("");
-      setMessage(`We sent a new code to ${pendingEmail}.`);
-      setFocus({ target: "code" });
+      setMessage(
+        emailCode
+          ? `We sent a new code to ${pendingEmail}.`
+          : `We sent a new link to ${pendingEmail}.`
+      );
+      setFocus({ target: emailCode ? "code" : "step" });
     });
 
   const changeEmail = () => {
@@ -176,7 +189,7 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
     run(async () => {
       const result = await actions.deleteAccount();
       if (!result.ok) {
-        setMessage(`Your account was not deleted. ${ERROR_TEXT[result.error]}`);
+        setMessage(`Your account was not deleted. ${errorText(result.error, emailCode)}`);
         return;
       }
       setConfirming(false);
@@ -274,6 +287,29 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
         </section>
       </>
     );
+  } else if (codeStep && !emailCode) {
+    body = (
+      <section className="account-card" aria-labelledby={`${id}-step`}>
+        <h3 ref={stepRef} id={`${id}-step`} tabIndex={-1} className="account-step">
+          Check your email
+        </h3>
+        <p className="account-text">
+          We sent a sign-in link to <strong className="account-address">{pendingEmail}</strong>.
+          Open it on this device, in this browser, to sign in.
+        </p>
+        <p id={errorId} className="account-error" aria-live="polite">
+          {fieldError}
+        </p>
+        <div className="account-links">
+          <button type="button" className="quiet-button" onClick={resend}>
+            Send a new link
+          </button>
+          <button type="button" className="quiet-button" onClick={changeEmail}>
+            Use a different email
+          </button>
+        </div>
+      </section>
+    );
   } else if (codeStep) {
     body = (
       <section className="account-card" aria-labelledby={`${id}-step`}>
@@ -349,13 +385,15 @@ export const Account = ({ state, actions, onPrivacy, onBack }: AccountProps) => 
             onChange={(event) => setEmail(event.currentTarget.value)}
           />
           <p id={`${id}-email-hint`} className="account-hint">
-            We will email you a 6-digit code. No password needed.
+            {emailCode
+              ? "We will email you a 6-digit code. No password needed."
+              : "We will email you a sign-in link. No password needed."}
           </p>
           <p id={errorId} className="account-error" aria-live="polite">
             {fieldError}
           </p>
           <button type="submit" className="primary-button" aria-disabled={busy || undefined}>
-            {busy ? "Sending…" : "Send me a code"}
+            {busy ? "Sending…" : emailCode ? "Send me a code" : "Send me a link"}
           </button>
         </form>
       </section>

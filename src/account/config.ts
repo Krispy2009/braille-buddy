@@ -26,6 +26,15 @@ export const accountConfig = (
   }
 };
 
+/**
+ * Whether the sign-in email carries a typed code as well as the link. Off
+ * until custom SMTP is set up and {{ .Token }} is in the email templates
+ * (see docs/supabase-setup.md); until then the email only has the link.
+ */
+export const emailCodeEnabled = (
+  env: Record<string, string | boolean | undefined> = import.meta.env
+): boolean => env.VITE_SUPABASE_EMAIL_CODE === "true";
+
 /** A session saved by an earlier sign-in on this device. */
 export const hasStoredSession = (config: AccountConfig): boolean => {
   try {

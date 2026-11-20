@@ -59,7 +59,7 @@ export const Privacy = ({ accounts, onBack }: PrivacyProps) => {
             <h3 id="privacy-why">Why</h3>
             <p>
               Only to keep your progress safe and let you carry on from another
-              device. Your email is used to send you sign-in codes, never for
+              device. Your email is used to send you sign-in emails, never for
               anything else. Nothing is sold or shared.
             </p>
           </section>

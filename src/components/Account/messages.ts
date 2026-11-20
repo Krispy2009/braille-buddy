@@ -10,6 +10,16 @@ export const ERROR_TEXT: Record<AccountError, string> = {
   unknown: "Something went wrong. Please try again.",
 };
 
+/** The failure text for the sign-in style in use: with the email code off, nothing mentions a code. */
+export const errorText = (error: AccountError, emailCode: boolean): string =>
+  emailCode
+    ? ERROR_TEXT[error]
+    : error === "expiredLink"
+      ? "That sign-in link has expired or was already used. Send yourself a new link."
+      : error === "badCode"
+        ? ERROR_TEXT.unknown
+        : ERROR_TEXT[error];
+
 export const SYNC_TEXT: Record<SyncStatus, string> = {
   syncing: "Syncing…",
   synced: "Synced",

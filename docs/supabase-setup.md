@@ -1,6 +1,6 @@
 # Setting up Supabase for player accounts
 
-Player accounts (sign in with an emailed code, progress sync, account deletion) use the Supabase project `hynbvcxulcklilmeqjtj`. The app only ever uses the **publishable** key, which is public and committed in `.env`. Everything that keeps players' data private is enforced in the database by row level security, so the steps below matter.
+Player accounts (sign in with an emailed link, or a code once enabled; progress sync, account deletion) use the Supabase project `hynbvcxulcklilmeqjtj`. The app only ever uses the **publishable** key, which is public and committed in `.env`. Everything that keeps players' data private is enforced in the database by row level security, so the steps below matter.
 
 Never put the database password or the `service_role` / secret key in this repo, in `.env`, or in the app.
 
@@ -51,16 +51,25 @@ The test makes pretend players inside a transaction and rolls everything back, s
 
 The app asks for the email link to come back to the page's own origin (`emailRedirectTo: window.location.origin`). If that origin is not in the list, Supabase sends people to the Site URL instead.
 
-## 4. Auth: email sign-in and the code in the email
+## 4. Auth: email sign-in, link or code
 
 **Authentication → Sign In / Providers → Email**: make sure **Email** is enabled. Since there are no passwords, "Confirm email" does not matter for this sign-in, but leave it on.
 
-Check the **Email OTP length**: the app's text says "6-digit code", which is the default. (The code box accepts 6 to 10 digits, but if you change the length, change the wording in `src/components/Account/`.) The default OTP expiry of one hour is fine.
+### Link only (the current setting)
 
-**Authentication → Emails → Templates → Magic Link**: the default template only has a link. Add the code, so players can type it instead of switching apps to tap the link (hard with a screen reader, and in an installed app the link opens in the browser rather than the app). For example:
+Supabase's default email templates contain only a link, and the templates cannot be edited until custom SMTP is set up (section 5). So the app is built with `VITE_SUPABASE_EMAIL_CODE=false` in `.env`, which is also what happens when the variable is absent. The Account screen then says "We will email you a sign-in link", and after sending shows "Check your email" with "Send a new link" and "Use a different email", and no code box. Opening the link on the same device and browser signs the player in.
 
-- Subject: `Your Braille Buddy sign-in code`
-- Body:
+Supabase's built-in email sender only delivers to the project's team members, so until custom SMTP is set up only team members can sign in at all.
+
+### Turning the code on
+
+The code is a 6-digit number in the email that players can type instead of switching apps to tap the link (hard with a screen reader, and in an installed app the link opens in the browser rather than the app). To turn it on:
+
+1. Set up custom SMTP with a domain you control (section 5).
+2. **Authentication → Emails → Templates → Magic Link**: add `{{ .Token }}`. For example:
+
+   - Subject: `Your Braille Buddy sign-in code`
+   - Body:
 
 ```html
 <h2>Sign in to Braille Buddy</h2>
@@ -70,11 +79,15 @@ Check the **Email OTP length**: the app's text says "6-digit code", which is the
 <p>If you did not ask to sign in, you can ignore this email.</p>
 ```
 
-Also add `{{ .Token }}` the same way to the **Confirm signup** template: the very first sign-in for a new email may use that template instead, depending on your settings.
+3. Add `{{ .Token }}` the same way to the **Confirm signup** template: the very first sign-in for a new email may use that template instead, depending on your settings.
+4. Check the **Email OTP length**: the app's text says "6-digit code", which is the default. (The code box accepts 6 to 10 digits, but if you change the length, change the wording in `src/components/Account/`.) The default OTP expiry of one hour is fine.
+5. Set `VITE_SUPABASE_EMAIL_CODE=true` in `.env` and redeploy. The variable is read at build time, so changing it needs a new build.
+
+Cloudflare's build reads the committed `.env` like any Vite build (`wrangler.jsonc` only serves the built `build/` folder and sets no variables), so editing `.env` is enough. If a variable is also set in the Workers Builds settings, that value wins over `.env`, so check there that `VITE_SUPABASE_EMAIL_CODE` is not set to something else, and set it there if you would rather not commit the change.
 
 ## 5. Email sending and rate limits
 
-Supabase's built-in email sender is for testing only: it sends very few emails per hour and may only deliver to your own team's addresses. Before inviting players:
+Supabase's built-in email sender is for testing only: it sends very few emails per hour and only delivers to the project's team members. It also locks the email templates, so they cannot be edited (to add the code) until custom SMTP is set up. Before inviting players:
 
 - **Authentication → Emails → SMTP Settings**: set up custom SMTP with an email provider (for example Resend, Postmark or Amazon SES), using a sender such as `no-reply@` on a domain you own.
 - **Authentication → Rate Limits**: check "emails sent per hour" and "OTP / verification requests". Players who ask for too many codes see "Too many emails were sent just now. Wait a few minutes, then try again."
@@ -87,7 +100,7 @@ Supabase's built-in email sender is for testing only: it sends very few emails p
 ## 7. Try it
 
 1. `npm start`, open http://localhost:5173, press the person button on Home, and sign in with your email.
-2. Type the code from the email. Then sign out, and sign in again with the link instead.
+2. Open the link from the email in the same browser. (With the code turned on, also try typing the code, after signing out.)
 3. In **Table Editor → player_progress** you should see one row for you, updated as you play.
 4. Delete the account from the Account screen; the row and the user (under **Authentication → Users**) should both be gone, and your progress should still be in the browser.
 
