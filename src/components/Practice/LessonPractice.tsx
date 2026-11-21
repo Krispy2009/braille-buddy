@@ -6,6 +6,7 @@ import {
   CLEAR_CELL,
   DotKey,
   itemId,
+  ItemId,
   kindOfLetter,
   LANGUAGE_TAGS,
   parseItemId,
@@ -33,7 +34,12 @@ import {
   lessonStates,
   metLetters,
 } from "../../game/lessons";
-import { currentStreak, Progress, recordAnswer } from "../../game/progress";
+import {
+  currentStreak,
+  POINTS_PER_CORRECT,
+  Progress,
+  recordAnswer,
+} from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
 import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
@@ -54,6 +60,7 @@ import {
   isRightCells,
   makeQuestion,
   masteryText,
+  missText,
   namedLetters,
   Question,
   QuestionSource,
@@ -70,6 +77,8 @@ type LessonPracticeProps = {
   progress: Progress;
   onProgress: (next: Progress) => void;
   onBack: () => void;
+  /** The finished lesson's "Back to lessons". Leave out to use onBack. */
+  onLessons?: () => void;
   onStartLesson: (lesson: Lesson) => void;
   random: () => number;
   now: () => Date;
@@ -90,7 +99,7 @@ const sourceFor = (
 ): QuestionSource => {
   const met = metLetters(course, progress);
   return lesson
-    ? { language: course.id, letters: lesson.letters, others: met }
+    ? { language: course.id, letters: lesson.letters, others: met, untilLearnt: true }
     : { language: course.id, letters: met, others: [] };
 };
 
@@ -126,6 +135,7 @@ export const LessonPractice = ({
   progress,
   onProgress,
   onBack,
+  onLessons = onBack,
   onStartLesson,
   random,
   now,
@@ -143,6 +153,9 @@ export const LessonPractice = ({
   const [answer, setAnswer] = React.useState<Answer | null>(null);
   const [finished, setFinished] = React.useState<Finished | null>(null);
   const [status, setStatus] = React.useState("");
+  // Letters missed in this run and not answered right since: they come up
+  // more often, since a miss doesn't lower a letter that isn't learnt yet.
+  const [missed, setMissed] = React.useState<ItemId[]>([]);
   // Opening the screen moves focus to its heading, so a screen reader says
   // which lesson this is before anything else.
   const [focusRequest, setFocusRequest] = React.useState<{
@@ -178,8 +191,8 @@ export const LessonPractice = ({
   const writing = asking && question.kind === "dots";
   const withKeys = writing && dotEntry === "keys";
   const title = lesson ? lesson.title : "Everything so far";
-  // Right answers in a row per letter, up to the two that make it learnt:
-  // the rule itself, drawn as the progress.
+  // Right answers per letter, up to the two that make it learnt: the rule
+  // itself, drawn as the progress. A miss never takes one away.
   const inARow = source.letters.map((entry) =>
     Math.min(progress.letters[itemId(language, entry)]?.box ?? 0, LEARNT_BOX)
   );
@@ -200,11 +213,16 @@ export const LessonPractice = ({
     onProgress(outcome.progress);
     setAnswer(result);
     setFinished(outcome.finished ?? null);
+    setMissed((current) => [
+      ...current.filter((item) => item !== question.item),
+      ...(result.correct ? [] : [question.item]),
+    ]);
     // The result goes to the live region only. Focus moves to a button whose
     // name doesn't repeat it, so nothing is read twice.
+    const box = answered.letters[question.item]?.box ?? 0;
     const mastery = result.correct
-      ? masteryText(question.item, answered.letters[question.item]?.box ?? 0)
-      : "";
+      ? masteryText(question.item, box)
+      : missText(question.item, box);
     setStatus(
       outcome.finished
         ? `${resultText(question.item, result)} ${finishedText(course, outcome.finished)} You have ${outcome.progress.points} points.`
@@ -267,7 +285,7 @@ export const LessonPractice = ({
   };
 
   const goNext = () => {
-    const next = makeQuestion(source, progress, question.item, random);
+    const next = makeQuestion(source, progress, question.item, random, missed);
     setQuestion(next);
     setEntry(startEntry(answerCells(next.item).length));
     setAnswer(null);
@@ -329,7 +347,7 @@ export const LessonPractice = ({
         <button
           type="button"
           className="round-button"
-          aria-label="Back to lessons"
+          aria-label="Close lesson"
           onClick={onBack}
         >
           <CloseIcon />
@@ -488,20 +506,27 @@ export const LessonPractice = ({
                 {right ? "Got it" : "Not quite"}
               </span>
             )}
-            {right && !finished && answeredBox <= LEARNT_BOX && (
+            {/* What the answer did for its letter. A miss shows the pip
+                unchanged: nothing earned is taken away. */}
+            {!finished && (!right || answeredBox <= LEARNT_BOX) && (
               <span className="mastery-note">
-                <span className="pip-dots" data-state={PIP_STATES[answeredBox]}>
+                <span
+                  className="pip-dots"
+                  data-state={PIP_STATES[Math.min(answeredBox, LEARNT_BOX)]}
+                >
                   <span className="pip-dot" />
                   <span className="pip-dot" />
                 </span>
                 <span>
-                  {answeredBox === LEARNT_BOX ? (
+                  {answeredBox >= LEARNT_BOX ? (
                     <>
-                      <Letter letter={letter} language={language} className="letter-chip" /> learnt!
+                      <Letter letter={letter} language={language} className="letter-chip" />{" "}
+                      {right ? "learnt!" : "still learnt"}
                     </>
                   ) : (
                     <>
-                      One more for <Letter letter={letter} language={language} className="letter-chip" />
+                      {right ? "One" : answeredBox === 0 ? "Two" : "Still one"} more for{" "}
+                      <Letter letter={letter} language={language} className="letter-chip" />
                     </>
                   )}
                 </span>
@@ -509,9 +534,17 @@ export const LessonPractice = ({
             )}
           </div>
         )}
-        {/* On a finished lesson the stamp, cards and totals show it; the
-            words are for screen readers only. */}
-        <p role="status" className={finished ? "feedback sr-only" : "feedback"}>
+        {/* The points are the one thing the stamp and the pip don't show. */}
+        {right && !finished && (
+          <p className="sheet-points" aria-hidden="true">
+            <b>+{POINTS_PER_CORRECT}</b> points
+          </p>
+        )}
+        {/* Once answered, the result in full is for screen readers only: the
+            stamp, the pip and the compare cells show it. Before that the
+            region shows hints such as "Raise at least one dot". It stays the
+            same element throughout, so it is never remounted. */}
+        <p role="status" className={answer ? "feedback sr-only" : "feedback"}>
           {status}
         </p>
         {answer && !answer.correct && (
@@ -521,9 +554,16 @@ export const LessonPractice = ({
                 {answer.kind === "dots" ? (
                   "You wrote"
                 ) : (
+                  // Each letter set as a chip, so a lone a or i never reads
+                  // as a word: the choice flat and dashed, as it lies in the
+                  // row above, the answer raised.
                   <>
                     You chose{" "}
-                    <span lang={LANGUAGE_TAGS[language]}>{answer.choice}</span>
+                    <Letter
+                      letter={answer.choice}
+                      language={language}
+                      className="letter-chip compare-chip compare-chip-miss"
+                    />
                   </>
                 )}
               </span>
@@ -538,7 +578,8 @@ export const LessonPractice = ({
             </div>
             <div className="compare-side">
               <span className="compare-label">
-                Answer <span lang={LANGUAGE_TAGS[language]}>{letter}</span>
+                Answer{" "}
+                <Letter letter={letter} language={language} className="letter-chip compare-chip" />
               </span>
               <CellRow cells={answerDots} size="small" />
             </div>
@@ -576,7 +617,7 @@ export const LessonPractice = ({
                 ref={nextLesson ? undefined : finishRef}
                 type="button"
                 className={nextLesson ? "quiet-button" : mainButton}
-                onClick={onBack}
+                onClick={onLessons}
               >
                 Back to lessons
               </button>

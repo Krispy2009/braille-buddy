@@ -44,7 +44,7 @@ Neighbouring products are Braillito (paid, phone-first, tap the dots, 38 languag
 ## Capabilities and Constraints
 
 - Courses are data files in `src/courses/` (English: 26 letters; Greek: 24 letters + ου, αι, ει, οι, ευ, αυ, υι, ηυ; plus numbers and punctuation). A new language is one JSON file, no code changes.
-- Lessons: two question types (name a letter and raise its dots; see a cell and pick from four letters). Every letter right twice in a row unlocks the next lesson. Points, a daily streak, missed letters come back more often. **No timers.**
+- Lessons: two question types (name a letter and raise its dots; see a cell and pick from four letters). Every letter right twice (a miss never takes a right answer away) unlocks the next lesson. Points, a daily streak, missed letters come back more often. **No timers.**
 - Progress is local-first in localStorage; account sync merges it (`src/account/merge.ts`).
 - Settings: tap one big cell or use six brailler keys; three themes (Paper, Ink, High vis) that follow the system colour scheme and contrast until chosen; key letters, less motion and bigger text switches; keyboard shortcuts can be turned off (WCAG 2.1.4).
 - Stack: React 19, TypeScript, Vite, styled-components, Vitest; static assets on Cloudflare Workers; hand-written service worker.

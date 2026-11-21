@@ -1,20 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { getCourse } from "../../courses";
 import { Cards } from "./Cards";
 
-const Harness = ({ letter }: { letter?: string }) => {
-  const [language, setLanguage] = React.useState("english");
-  return (
-    <Cards
-      course={getCourse(language)}
-      letter={letter}
-      onLanguageChange={setLanguage}
-      onHome={() => {}}
-    />
-  );
-};
+const Harness = ({ letter, course = "english" }: { letter?: string; course?: string }) => (
+  <Cards course={getCourse(course)} letter={letter} onHome={() => {}} />
+);
 
 const card = () => screen.getByRole("status");
 
@@ -48,6 +39,19 @@ test("the same deck in Greek", async () => {
   render(<Harness />);
   await user.click(screen.getByRole("button", { name: "Greek" }));
   expect(card()).toHaveTextContent(/Card 1 of \d+: alpha, dot 1\./);
+});
+
+test("opens on the player's course, and the other deck is a look only", async () => {
+  const user = userEvent.setup();
+  render(<Harness course="greek" />);
+  const deck = screen.getByRole("group", { name: "Deck" });
+  expect(screen.getByRole("button", { name: "Greek" })).toHaveAttribute("aria-pressed", "true");
+  expect(card()).toHaveTextContent(/: alpha, dot 1\./);
+  await user.click(screen.getByRole("button", { name: "English" }));
+  expect(deck).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "English" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByText("Cards · English")).toBeInTheDocument();
+  expect(card()).toHaveTextContent("Card 1 of 47: a, dot 1.");
 });
 
 test("typing a letter or digit opens its card", async () => {

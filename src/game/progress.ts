@@ -26,6 +26,11 @@ export type Progress = {
 
 export const POINTS_PER_CORRECT = 10;
 export const MAX_BOX = 4;
+/**
+ * A letter counts as learnt once it reaches this review box: two right
+ * answers, in a row or not. A lesson is finished when all its letters have.
+ */
+export const LEARNT_BOX = 2;
 const STORAGE_KEY = "braille-buddy:progress";
 
 export const emptyProgress = (): Progress => ({
@@ -86,13 +91,21 @@ export const recordAnswer = (
 ): Progress => {
   const today = dayKey(now);
   const previous = progress.letters[item] ?? { correct: 0, wrong: 0, box: 0 };
+  // A right answer moves the letter up a box. A miss never takes a right
+  // answer away on the way to learnt (LEARNT_BOX, two right answers), and a
+  // learnt letter stays learnt: a miss on a well-known one only drops it
+  // back to just learnt, so it comes up more often in review.
   const stats: LetterStats = correct
     ? {
         correct: previous.correct + 1,
         wrong: previous.wrong,
         box: Math.min(previous.box + 1, MAX_BOX),
       }
-    : { correct: previous.correct, wrong: previous.wrong + 1, box: 0 };
+    : {
+        correct: previous.correct,
+        wrong: previous.wrong + 1,
+        box: Math.min(previous.box, LEARNT_BOX),
+      };
   const streak = nextStreak(progress, today);
   return {
     ...progress,

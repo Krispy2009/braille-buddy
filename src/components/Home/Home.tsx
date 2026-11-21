@@ -11,7 +11,7 @@ import {
   spokenLetter,
 } from "../../game/braille";
 import { isLetterLearnt, lessonStates } from "../../game/lessons";
-import { currentStreak, Progress } from "../../game/progress";
+import { currentStreak, dayKey, Progress } from "../../game/progress";
 import { GearIcon, PersonIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
 import { cellsInWords } from "../../game/cells";
@@ -111,6 +111,9 @@ export const Home = ({
   const started = lesson?.letters.some((each) => progress.letters[itemId(course.id, each)]);
   const action = !lesson ? "Practise everything" : started ? "Keep going" : "Start lesson";
   const start = () => onStart(lesson?.id);
+  // After a lesson finished today, the next one's cards are up next, not
+  // today's task: the day's practice is already done.
+  const playedToday = progress.lastPlayed === dayKey(now());
 
   return (
     <div ref={root} className="screen home">
@@ -191,8 +194,9 @@ export const Home = ({
           <>You have done every lesson in {course.name}. Mix all the cards to keep them sharp.</>
         ) : toLearn.length > 0 ? (
           <>
-            {countWord(toLearn.length)} new {toLearn.length === 1 ? "card" : "cards"} to
-            learn today: <LetterList letters={toLearn} course={course} />.
+            {countWord(toLearn.length)} new {toLearn.length === 1 ? "card" : "cards"}{" "}
+            {playedToday && !started ? "up next" : "to learn today"}:{" "}
+            <LetterList letters={toLearn} course={course} />.
           </>
         ) : (
           <>

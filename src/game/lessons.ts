@@ -1,12 +1,8 @@
 import { entryKind, type Course, type Lesson } from "../courses";
 import { itemId, ItemId } from "./braille";
-import { POINTS_PER_CORRECT, Progress } from "./progress";
+import { LEARNT_BOX, POINTS_PER_CORRECT, Progress } from "./progress";
 
-/**
- * A letter counts as learnt once it reaches this review box, which takes two
- * right answers in a row. A lesson is finished when all its letters have.
- */
-export const LEARNT_BOX = 2;
+export { LEARNT_BOX };
 
 export type LessonState = "done" | "open" | "locked";
 

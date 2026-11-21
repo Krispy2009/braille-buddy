@@ -13,7 +13,7 @@ import {
 } from "../../game/braille";
 import { cellsInWords, dotsInWords, sameCells } from "../../game/cells";
 import type { Course, Lesson } from "../../courses";
-import { LEARNT_BOX } from "../../game/lessons";
+import { isLetterLearnt, LEARNT_BOX } from "../../game/lessons";
 import { POINTS_PER_CORRECT, Progress } from "../../game/progress";
 import { pickDistractors, pickNextItem } from "../../game/review";
 
@@ -32,6 +32,12 @@ export type QuestionSource = {
   letters: readonly string[];
   /** Other letters the player has already met, used as wrong choices too. */
   others: readonly string[];
+  /**
+   * A lesson asks only the letters not learnt yet, so it ends when the last
+   * one is. Once every letter is learnt (a lesson played again, or kept on
+   * after finishing) it asks them all. "Everything so far" asks them all.
+   */
+  untilLearnt?: boolean;
 };
 
 // Mostly letters from the lesson itself, since telling its new letters apart
@@ -63,14 +69,24 @@ const wrongChoices = (
   return [...fromLesson, ...earlier, ...more];
 };
 
+/** The letters a run asks about now: see `untilLearnt`. */
+export const askedItems = (source: QuestionSource, progress: Progress): ItemId[] => {
+  const items = source.letters.map((letter) => itemId(source.language, letter));
+  if (!source.untilLearnt) return items;
+  const left = items.filter((item) => !isLetterLearnt(progress, item));
+  return left.length > 0 ? left : items;
+};
+
 export const makeQuestion = (
   source: QuestionSource,
   progress: Progress,
   previous: ItemId | undefined,
-  random: () => number
+  random: () => number,
+  /** Letters missed in this run and not answered right since. */
+  missed: readonly ItemId[] = []
 ): Question => {
-  const items = source.letters.map((letter) => itemId(source.language, letter));
-  const item = pickNextItem(items, progress, { previous, random });
+  const items = askedItems(source, progress);
+  const item = pickNextItem(items, progress, { previous, random, missed });
   if (random() < 0.5) {
     return { kind: "dots", item };
   }
@@ -188,14 +204,28 @@ export const resultText = (item: ItemId, answer: Answer): string =>
 
 /**
  * What a right answer did for its letter, for the live region: halfway
- * there, or learnt. Learnt means right twice in a row (LEARNT_BOX); later
- * right answers on a learnt letter say nothing more.
+ * there, or learnt. Learnt means right twice (LEARNT_BOX), in a row or not;
+ * later right answers on a learnt letter say nothing more.
  */
 export const masteryText = (item: ItemId, box: number): string => {
   const name = named(item);
   if (box === LEARNT_BOX - 1) return `One more right answer for ${name} to learn it.`;
   if (box === LEARNT_BOX) return `${capitalize(name)} is learnt now.`;
   return "";
+};
+
+/**
+ * What a miss means for its letter, for the live region: nothing is taken
+ * away. `box` is the letter's box after the miss, which a miss never lowers
+ * below learnt.
+ */
+export const missText = (item: ItemId, box: number): string => {
+  const name = named(item);
+  if (box >= LEARNT_BOX) return `${capitalize(name)} is still learnt.`;
+  if (box === LEARNT_BOX - 1) {
+    return `Your right answer still counts. Get ${name} right once more to learn it.`;
+  }
+  return `Get ${name} right twice to learn it.`;
 };
 
 export type Finished = {

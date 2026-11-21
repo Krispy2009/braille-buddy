@@ -31,7 +31,7 @@ export const LessonIntro = ({ course, lesson, letters, onStart, onBack }: Lesson
         <button
           type="button"
           className="round-button"
-          aria-label="Back to lessons"
+          aria-label="Close lesson"
           onClick={onBack}
         >
           <CloseIcon />
@@ -48,8 +48,8 @@ export const LessonIntro = ({ course, lesson, letters, onStart, onBack }: Lesson
         </h2>
         <h3 className="task prompt">Meet the new {noun}</h3>
         <p className="lesson-note">
-          Look at each one first. Then get each {item} right twice in a row to
-          finish the lesson.
+          Look at each one first. Then get each {item} right twice to finish
+          the lesson. A wrong answer never takes away a right one.
         </p>
       </div>
       <CardDeck course={course} letters={letters} index={index} onIndex={setIndex} />

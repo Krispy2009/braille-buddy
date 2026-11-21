@@ -374,9 +374,15 @@
   border-style: dashed;
 }
 
-.sheet .feedback {
-  text-align: start;
-  font-size: 1.0625rem;
+/* A right answer's points, typed small like the finished lesson's totals. */
+.sheet-points {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+}
+
+.sheet-points b {
+  font-weight: 700;
 }
 
 .sheet-head {
@@ -386,13 +392,23 @@
   gap: 0.5rem 1rem;
 }
 
-/* What the right answer did for its letter: the letter's pip, then words. */
+/* What the answer did for its letter: the letter's pip, then words. */
 .mastery-note {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 1.0625rem;
   font-weight: 900;
+}
+
+/* The chip's hard shadow would fill the word space after it. */
+.mastery-note .letter-chip {
+  margin-inline-end: 0.2em;
+}
+
+/* After a miss the note is quieter: the pip as it was, in a lighter hand. */
+.sheet-wrong .mastery-note {
+  font-weight: 700;
 }
 
 /* A rubber stamp, slightly crooked. */
@@ -427,10 +443,30 @@
   gap: 0.375rem;
 }
 
+/* As tall as a label with a chip, so "You wrote" lines up with "Answer". */
 .compare-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.625rem;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
+}
+
+/* The letter in each label, as a small chip like the pip note's. */
+.compare-chip {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+/* The wrong choice lies flat, as its choice does: dashed, no fill. */
+.compare-chip-miss {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
 }
 
 .sheet-next {
@@ -456,6 +492,12 @@
 
 .sheet .quiet-button {
   align-self: center;
+}
+
+/* When the window is short, the sheet still keeps clear of the choices'
+   hard shadows instead of touching them. */
+.hero:has(+ .sheet) {
+  margin-bottom: 0.75rem;
 }
 
 /* Focus lands on the sheet's main button; scrolling it into view takes the
@@ -519,7 +561,9 @@
   justify-content: center;
   width: 100%;
   margin: 0;
-  padding: 0 0.375rem;
+  /* A little more room on the right, where the hard shadows fall, so the
+     row looks centred and the last card stays clear of the column edge. */
+  padding: 0 0.875rem 0 0.625rem;
   list-style: none;
 }
 
@@ -703,6 +747,26 @@
 
   .sheet-wrong {
     border-bottom: var(--line-width) dashed var(--line);
+  }
+
+  /* A miss on a wide sheet: the stamp and pip beside the compare cells,
+     not above them, so Next question stays on a laptop's first screen. */
+  .sheet-wrong {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem 2rem;
+  }
+
+  .sheet-wrong > .sheet-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .sheet-wrong > .sheet-next {
+    grid-column: 1 / -1;
   }
 
   .sheet-links > .primary-button,

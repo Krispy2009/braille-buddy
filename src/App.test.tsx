@@ -311,7 +311,25 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByRole('button', { name: 'Keep going' })).toBeInTheDocument();
   });
 
-  test('Start lesson opens the next lesson; the way back passes the lesson list', async () => {
+  test("after today's lesson, the next lesson's cards are up next, not today's", () => {
+    saveProgress({
+      points: 100,
+      streak: 1,
+      bestStreak: 1,
+      lastPlayed: today(),
+      completedLessons: { english: ['a-e'] },
+      letters: Object.fromEntries(
+        ['a', 'b', 'c', 'd', 'e'].map((letter) => [`english:${letter}`, { correct: 2, wrong: 0, box: 2 }])
+      ),
+    });
+    render(<App />);
+    expect(screen.getByText(/new cards up next/)).toHaveTextContent(
+      'Five new cards up next: f, g, h, i, j.'
+    );
+    expect(screen.queryByText(/to learn today/)).not.toBeInTheDocument();
+  });
+
+  test('Start lesson opens the next lesson, and closing it goes back to Home', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const user = userEvent.setup();
     render(<App />);
@@ -332,11 +350,71 @@ describe('Home and the screens it opens', () => {
     expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
     expect(screen.getAllByRole('status')).toHaveLength(1);
 
-    await user.click(screen.getByRole('button', { name: 'Back to lessons' }));
+    // Opened from Home, so closing it goes back to Home, on the button
+    // that started it.
+    await user.click(screen.getByRole('button', { name: 'Close lesson' }));
+    expect(screen.queryByRole('heading', { level: 2, name: 'English lessons' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start lesson' })).toHaveFocus();
+    vi.restoreAllMocks();
+  });
+
+  test('leaving the meet-the-cards screen of a lesson started on Home goes back to Home', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Start lesson' }));
+    await user.click(screen.getByRole('button', { name: 'Close lesson' }));
+    expect(screen.getByRole('button', { name: 'Start lesson' })).toHaveFocus();
+  });
+
+  test('a lesson started from the lesson list closes back to the list', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Lessons' }));
+    await user.click(screen.getByRole('button', { name: 'Start Letters a to e' }));
+    await user.click(screen.getByRole('button', { name: 'Start practising' }));
+    await user.click(screen.getByRole('button', { name: 'Close lesson' }));
     expect(screen.getByRole('button', { name: 'Start Letters a to e' })).toHaveFocus();
     await user.click(screen.getByRole('button', { name: 'Home' }));
     expect(screen.getByRole('button', { name: 'Lessons' })).toHaveFocus();
+  });
+
+  test('Back to lessons on a lesson finished from Home goes to the lesson list', async () => {
+    // a to d learnt and e halfway, so one right answer finishes the lesson.
+    const learnt = { correct: 2, wrong: 0, box: 2 };
+    saveProgress({
+      letters: {
+        'english:a': learnt,
+        'english:b': learnt,
+        'english:c': learnt,
+        'english:d': learnt,
+        'english:e': { correct: 1, wrong: 0, box: 1 },
+      },
+    });
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /^(Start lesson|Keep going)$/ }));
+    expect(screen.getByRole('heading', { level: 3 })).toHaveAccessibleName(
+      'Write the letter e in braille'
+    );
+    await user.keyboard('15{Enter}');
+    expect(screen.getByRole('status')).toHaveTextContent('Lesson done.');
+    await user.click(screen.getByRole('button', { name: 'Back to lessons' }));
+    expect(screen.getByRole('heading', { level: 2, name: 'English lessons' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Letters a to e/ })).toHaveFocus();
     vi.restoreAllMocks();
+  });
+
+  test('looking at the Greek cards leaves the course English', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'All the cards' }));
+    await user.click(screen.getByRole('button', { name: 'Greek' }));
+    expect(screen.getByText('Cards · Greek')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Home' }));
+    expect(screen.getByRole('button', { name: 'All the cards' })).toHaveFocus();
+    expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
+    expect(localStorage.getItem('braille-buddy:practice-language')).toBeNull();
   });
 
   test('the front card starts the next lesson too', async () => {
@@ -351,7 +429,7 @@ describe('Home and the screens it opens', () => {
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Lessons' }));
     expect(screen.getByRole('heading', { level: 2, name: 'English lessons' })).toHaveFocus();
-    expect(screen.getByText('Total points')).toBeInTheDocument();
+    expect(screen.getByText('Points')).toBeInTheDocument();
   });
 
   test('when every lesson is done, Home offers to mix them all', async () => {

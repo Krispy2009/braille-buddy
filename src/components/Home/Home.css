@@ -4,6 +4,17 @@
      so a tall window has no empty band above it. */
   min-height: 0;
   padding-bottom: 0;
+  /* The fanned back cards, scaled down on a narrow phone, still count
+     toward the page width at their full size: clip them to the page so a
+     320px screen never scrolls sideways. Clip is not a scroll container,
+     so the sticky base below still sticks to the window. */
+  overflow-x: clip;
+}
+
+/* The base stays at the bottom of the window (see .home-base), so a
+   control reached with Tab is scrolled clear of it, never under it. */
+html:has(.home) {
+  scroll-padding-bottom: 10rem;
 }
 
 /* One row on any phone: the wordmark takes what is left and breaks between
@@ -213,11 +224,38 @@
   background: var(--on-accent);
 }
 
-/* What tapping the card does, in a ring like a button's. */
+/* What tapping the card does, as a raised key on the card: paper, an ink
+   rim and a hard ink shadow, in the type of things you act on. Pressing
+   the card presses it down onto its shadow. */
 .deck-card-go {
-  padding: 0 0.5rem;
-  border: 2px solid var(--on-accent);
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.875rem;
+  /* Stays at the right edge when a long dots line pushes it down a row. */
+  margin-left: auto;
+  padding: 0 0.75rem;
+  border: var(--line-width) solid var(--line);
   border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 2px 3px 0 var(--line);
+  font-family: var(--font-ui);
+  font-size: 0.9375rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.deck-front:active .deck-card-go {
+  transform: translate(2px, 3px);
+  box-shadow: none;
+}
+
+[data-theme="high-visibility"] .deck-card-go {
+  box-shadow: none;
+}
+
+:root[data-motion="less"] .deck-front:active .deck-card-go {
+  transform: none;
 }
 
 .home-today {
@@ -247,8 +285,15 @@ button.deck-front {
 }
 
 /* The black base, as on the brailler: a row of keys showing the next
-   letter, then the actions. */
+   letter, then the actions. It sits at the end of Home, but sticks to the
+   bottom of the window until the page reaches it, so the one action is in
+   the first screen on any phone, with Bigger text too. */
 .home-base {
+  position: sticky;
+  /* One pixel past the window's edge: at a fractional height (Bigger text)
+     the stuck base could otherwise leave a hairline of page showing below. */
+  bottom: -1px;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -285,6 +330,26 @@ button.deck-front {
   outline: 2px solid var(--on-base);
 }
 
+/* A short window keeps the actions and lets the key row go, so the base
+   covers less of the page. */
+@media (max-height: 43.75rem) {
+  .home-keys {
+    display: none;
+  }
+
+  .home-base {
+    padding-top: 1rem;
+  }
+}
+
+/* A very short window (an old small phone) also takes the deck down a size,
+   so the whole front card shows above the stuck base. */
+@media (max-height: 37.5rem) {
+  .home > .deck {
+    zoom: 0.72;
+  }
+}
+
 .home-actions {
   display: flex;
   gap: 0.625rem;
@@ -315,7 +380,9 @@ button.deck-front {
   color: var(--text);
 }
 
-/* Today's daily puzzle: a lifted card with its own way in. Done or not is
+/* Today's daily puzzle: a plate on the page with its own way in, embossed
+   softly like the answer choices. It is a container, not something raised,
+   so it gets no hard shadow and never outweighs the base. Done or not is
    said in words with a mark, and the border changes shape too. */
 .daily-card {
   display: flex;
@@ -325,7 +392,7 @@ button.deck-front {
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 4px 5px 0 var(--line);
+  box-shadow: -3px -3px 6px var(--hi), 3px 3px 6px var(--shade);
 }
 
 [data-theme="high-visibility"] .daily-card {
@@ -418,6 +485,8 @@ button.deck-front {
     max-width: 30rem;
   }
 
+  /* Square at the bottom, like the phone base: it rests on the window's
+     edge while it sticks, and on the footer once the page reaches it. */
   .home > .home-base {
     grid-column: 1 / -1;
     flex-direction: row;
@@ -426,7 +495,7 @@ button.deck-front {
     gap: 2rem;
     margin: 2rem 0 0;
     padding: 1.5rem 2rem 1.75rem;
-    border-radius: 1.75rem;
+    border-radius: 1.75rem 1.75rem 0 0;
   }
 
   .home-keys {
@@ -457,6 +526,15 @@ button.deck-front {
     justify-self: center;
     /* The same deck, a size up: everything in it scales together. */
     zoom: 1.3;
+  }
+
+  /* A short laptop window keeps the deck at its own size and level with the
+     headline, so the front card clears the stuck base. */
+  @media (max-height: 43.75rem) {
+    .home > .deck {
+      align-self: start;
+      zoom: 1;
+    }
   }
 
   .home-headline {

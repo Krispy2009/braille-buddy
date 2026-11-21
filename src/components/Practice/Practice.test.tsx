@@ -90,7 +90,8 @@ const prompt = () => screen.getByRole("heading", { level: 3 });
 /** How many of the lesson's letters are learnt, shown as a progress bar. */
 const learnt = () => screen.getByRole("progressbar", { name: "Letters learnt" });
 const term = (name: string) => screen.getByText(name).nextElementSibling;
-const points = () => term("Total points");
+/** One "Points" line until a second course has points, then the total. */
+const points = () => term(screen.queryByText("Total points") ? "Total points" : "Points");
 const englishPoints = () => term("English points");
 const streak = () => term("Daily streak");
 /** Saved progress: the score is not shown while a question is on screen. */
@@ -216,8 +217,23 @@ describe("lesson list", () => {
     setup();
     expect(englishPoints()).toHaveTextContent("30");
     expect(points()).toHaveTextContent("80");
+    expect(screen.queryByText("Points")).not.toBeInTheDocument();
     expect(streak()).toHaveTextContent("2 days");
     expect(screen.getByText("Total points").closest("[aria-live], [role=status]")).toBeNull();
+  });
+
+  test("with points from one course only, shows one Points line", () => {
+    save({
+      points: 30,
+      lastPlayed: "2026-11-11",
+      streak: 1,
+      bestStreak: 1,
+      letters: { "english:a": { correct: 3, wrong: 0, box: 3 } },
+    });
+    setup();
+    expect(term("Points")).toHaveTextContent("30");
+    expect(screen.queryByText("Total points")).not.toBeInTheDocument();
+    expect(screen.queryByText("English points")).not.toBeInTheDocument();
   });
 });
 
@@ -244,7 +260,7 @@ describe("letter to dots", () => {
     expect(screen.queryByRole("application", { name: "Brailler keys" })).not.toBeInTheDocument();
     expect(status()).toHaveTextContent("");
     // Points and streak stay on the lesson list, away from the question.
-    expect(screen.queryByText("Total points")).not.toBeInTheDocument();
+    expect(screen.queryByText(/^(Total )?points$/i)).not.toBeInTheDocument();
     expect(screen.queryByText("Daily streak")).not.toBeInTheDocument();
   });
 
@@ -295,6 +311,10 @@ describe("letter to dots", () => {
         "aria-valuetext",
         "0 of 5 letters learnt. The letter\u00a0a needs one more right answer."
       );
+      // The sentence is spoken only; the sheet shows the points, which the
+      // stamp and the pip don't.
+      expect(status()).toHaveClass("sr-only");
+      expect(screen.getByText("points")).toHaveTextContent("+10 points");
       const next = screen.getByRole("button", { name: "Next question" });
       expect(next).toHaveFocus();
       expect(saved()).toMatchObject({ points: 10, streak: 1 });
@@ -318,6 +338,9 @@ describe("letter to dots", () => {
         "Not quite. Dot 1 makes the letter a in English. You raised dots 1 and 4."
       );
       expect(screen.getByText("Answer")).toBeInTheDocument();
+      // Spoken only: the stamp, the pip and the compare cells show it all.
+      expect(status()).toHaveClass("sr-only");
+      expect(screen.queryByText(/points/)).not.toBeInTheDocument();
       expect(saved().points).toBe(0);
       // The cell is frozen: no dot buttons, and keys do nothing.
       expect(screen.queryByRole("button", { name: /^Dot 1/ })).not.toBeInTheDocument();
@@ -367,6 +390,8 @@ describe("letter to dots", () => {
     expect(status()).toHaveTextContent(
       "Raise at least one dot, then check your answer."
     );
+    // A hint before the answer is shown as well as spoken.
+    expect(status()).not.toHaveClass("sr-only");
     expect(screen.getByRole("button", { name: "Check" })).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
@@ -550,7 +575,9 @@ test("never ends an announcement sentence on a single letter", async () => {
   await start(user);
   await user.click(screen.getByRole("button", { name: "e" }));
   const text = status().textContent ?? "";
-  expect(text).toMatch(/You chose the letter\se, which is dots 1 and 5\.$/);
+  expect(text).toMatch(
+    /You chose the letter\se, which is dots 1 and 5\. Get the letter\sc right twice to learn it\.$/
+  );
   expect(text).not.toMatch(/(^|\s)\p{L}\./u);
 });
 
@@ -598,6 +625,102 @@ describe("learning a letter", () => {
     );
     expect(learnt()).toHaveAttribute("aria-valuetext", "1 of 5 letters learnt");
   });
+
+  test("a miss keeps the right answer already earned, and says so", async () => {
+    save({ letters: boxes("english", ["a"], 1) });
+    const { user } = setup(0);
+    await start(user);
+    expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
+    await user.keyboard("2{Enter}");
+
+    expect(status()).toHaveTextContent(
+      "Not quite. Dot 1 makes the letter a in English. You raised dot 2. " +
+        "Your right answer still counts. Get the letter a right once more to learn it."
+    );
+    // The sheet shows a's pip still half raised, and the frame agrees.
+    const note = screen.getByText(/Still one more for/);
+    expect(note).toHaveTextContent("Still one more for a");
+    expect(note.parentElement?.querySelector(".pip-dots")).toHaveAttribute(
+      "data-state",
+      "half"
+    );
+    expect(learnt()).toHaveAttribute(
+      "aria-valuetext",
+      "0 of 5 letters learnt. The letter a needs one more right answer."
+    );
+    expect(saved().letters["english:a"]).toEqual({ correct: 1, wrong: 1, box: 1 });
+  });
+
+  test("a first miss says the letter needs two right answers", async () => {
+    const { user } = setup(0);
+    await start(user);
+    await user.keyboard("2{Enter}");
+    expect(status()).toHaveTextContent(
+      "You raised dot 2. Get the letter a right twice to learn it."
+    );
+    expect(screen.getByText(/Two more for/)).toHaveTextContent("Two more for a");
+  });
+
+  test("a learnt letter stays learnt after a miss", async () => {
+    save({
+      completedLessons: { english: ["a-e"] },
+      letters: boxes("english", ["a", "b", "c", "d", "e"], 2),
+    });
+    const { user } = setup(0);
+    await start(user, "Practise again Letters a to e");
+    await user.keyboard("2{Enter}");
+    expect(status()).toHaveTextContent("You raised dot 2. The letter a is still learnt.");
+    expect(document.querySelector(".mastery-note")).toHaveTextContent("a still learnt");
+    expect(learnt()).toHaveAttribute("aria-valuetext", "5 of 5 letters learnt");
+  });
+
+  test("learnt letters are not asked again, so the lesson ends when the last is learnt", async () => {
+    save({ letters: { ...boxes("english", ["a", "b", "c", "d"], 2) } });
+    const { user } = setup(0);
+    await start(user, "Continue Letters a to e");
+    // Only e is left: every question is about it, until it is learnt.
+    expect(prompt()).toHaveAccessibleName("Write the letter e in braille");
+    await user.keyboard("2{Enter}");
+    await user.keyboard("{Enter}");
+    expect(prompt()).toHaveAccessibleName("Write the letter e in braille");
+    await user.keyboard("15{Enter}{Enter}");
+    expect(prompt()).toHaveAccessibleName("Write the letter e in braille");
+    await user.keyboard("15{Enter}");
+    expect(status()).toHaveTextContent("Lesson done.");
+    expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
+  });
+
+  test("a lesson answered right every time takes two questions per letter", async () => {
+    const dots: Record<string, string> = { a: "1", b: "12", c: "14", d: "145", e: "15" };
+    const { user } = setup(0);
+    await start(user);
+    let asked = 0;
+    while (!screen.queryByRole("button", { name: "Next lesson" }) && asked < 20) {
+      const name = prompt().textContent ?? "";
+      const letter = /Write the letter (\S) in braille/.exec(name)?.[1] ?? "";
+      expect(dots[letter]).toBeDefined();
+      asked++;
+      await user.keyboard(`${dots[letter]}{Enter}`);
+      if (!screen.queryByRole("button", { name: "Next lesson" })) {
+        await user.keyboard("{Enter}");
+      }
+    }
+    expect(asked).toBe(10);
+    expect(learnt()).toHaveAttribute("aria-valuetext", "5 of 5 letters learnt");
+  });
+});
+
+describe("lesson intro", () => {
+  test("states the rule: right twice, and a miss takes nothing away", async () => {
+    const { user } = setup();
+    await user.click(startButton("Start Letters a to e"));
+    expect(
+      screen.getByText(
+        "Look at each one first. Then get each letter right twice to finish the lesson. " +
+          "A wrong answer never takes away a right one."
+      )
+    ).toBeInTheDocument();
+  });
 });
 
 describe("finishing a lesson", () => {
@@ -628,7 +751,8 @@ describe("finishing a lesson", () => {
     expect(status().textContent).not.toMatch(/(^|\s)\p{L}\./u);
     expect(learnt()).toHaveAttribute("aria-valuetext", "5 of 5 letters learnt");
     expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
-    expect(screen.getAllByRole("button", { name: "Back to lessons" })).toHaveLength(2);
+    expect(screen.getByRole("button", { name: "Close lesson" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Back to lessons" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Keep practising" })).toBeInTheDocument();
     expect(
       JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}").completedLessons
@@ -683,7 +807,7 @@ describe("finishing a lesson", () => {
     const { user } = setup(0.5);
     await start(user, "Continue Letters a to e");
     await user.click(screen.getByRole("button", { name: "e" }));
-    await user.click(screen.getAllByRole("button", { name: "Back to lessons" })[1]);
+    await user.click(screen.getByRole("button", { name: "Back to lessons" }));
 
     expect(screenHeading()).toHaveAccessibleName("English lessons");
     expect(startButton("Practise again Letters a to e")).toHaveFocus();
@@ -731,7 +855,7 @@ describe("finishing a lesson", () => {
         "Congratulations, you have learnt everything it teaches."
     );
     expect(screen.queryByRole("button", { name: "Next lesson" })).not.toBeInTheDocument();
-    const back = screen.getAllByRole("button", { name: "Back to lessons" })[1];
+    const back = screen.getByRole("button", { name: "Back to lessons" });
     expect(back).toHaveFocus();
 
     await user.click(back);
@@ -741,10 +865,10 @@ describe("finishing a lesson", () => {
 });
 
 describe("going back and replaying", () => {
-  test("Back to lessons from a lesson focuses that lesson's button", async () => {
+  test("Closing a lesson focuses that lesson's button", async () => {
     const { user } = setup();
     await start(user);
-    await user.click(screen.getByRole("button", { name: "Back to lessons" }));
+    await user.click(screen.getByRole("button", { name: "Close lesson" }));
     expect(screenHeading()).toHaveAccessibleName("English lessons");
     expect(startButton("Start Letters a to e")).toHaveFocus();
   });
@@ -775,7 +899,7 @@ describe("going back and replaying", () => {
     // random() = 0.99 picks the last letter met: j, dots 2, 4 and 5.
     expect(prompt()).toHaveAccessibleName("Which letter has dots 2, 4 and 5?");
 
-    await user.click(screen.getByRole("button", { name: "Back to lessons" }));
+    await user.click(screen.getByRole("button", { name: "Close lesson" }));
     expect(
       screen.getByRole("button", { name: "Practise everything so far" })
     ).toHaveFocus();
@@ -844,10 +968,12 @@ test("loads progress saved before lessons existed", async () => {
   );
 
   await start(user, "Continue Letters a to e");
-  await user.keyboard("1{Enter}");
+  // a is learnt already, so the lesson starts on b (dots 1 and 2).
+  expect(prompt()).toHaveAccessibleName("Write the letter b in braille");
+  await user.keyboard("12{Enter}");
   // Totals are shown on the lesson list, not announced.
   expect(status()).not.toHaveTextContent(/50|4 days/);
-  await user.click(screen.getByRole("button", { name: "Back to lessons" }));
+  await user.click(screen.getByRole("button", { name: "Close lesson" }));
   expect(points()).toHaveTextContent("50");
   expect(streak()).toHaveTextContent("4 days");
 });
@@ -866,7 +992,7 @@ test("still works when storage throws", async () => {
   await user.keyboard("1{Enter}");
   expect(status()).toHaveTextContent("Correct, plus 10 points.");
 
-  await user.click(screen.getByRole("button", { name: "Back to lessons" }));
+  await user.click(screen.getByRole("button", { name: "Close lesson" }));
   expect(screenHeading()).toHaveAccessibleName("English lessons");
   expect(points()).toHaveTextContent("10");
 });

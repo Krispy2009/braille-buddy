@@ -222,6 +222,26 @@
         "displayName": "Result Letter",
         "purpose": "A single letter shown as an answer: Board result, wide answer choices."
       },
+      "display-wide": {
+        "displayName": "Display Wide",
+        "purpose": "The Home headline from 48rem wide."
+      },
+      "display-widest": {
+        "displayName": "Display Widest",
+        "purpose": "The Home headline from 64rem wide."
+      },
+      "finish-letter": {
+        "displayName": "Finish Letter",
+        "purpose": "The letter on a finished lesson's dealt cards."
+      },
+      "finish-letter-wide": {
+        "displayName": "Finish Letter Wide",
+        "purpose": "The finish card letter from 48rem wide."
+      },
+      "stamp-done": {
+        "displayName": "Stamp Done",
+        "purpose": "The big LESSON DONE stamp."
+      },
       "headline": {
         "displayName": "Headline",
         "purpose": "Screen titles in the frame."
@@ -277,6 +297,10 @@
       "key-letter": {
         "displayName": "Key Letter",
         "purpose": "Chord letters on brailler keys and other tiny marks."
+      },
+      "dot-numeral-small": {
+        "displayName": "Dot Numeral Small",
+        "purpose": "Dot numbers in the tiny lookup cells in Daily."
       }
     },
     "shadows": [
@@ -458,7 +482,7 @@
       "name": "Mastery Pips",
       "kind": "custom",
       "refersTo": "progress-track",
-      "description": "Lesson progress as the rule: one pip per letter, two dots each; a right answer in a row raises one, two raised is learnt.",
+      "description": "Lesson progress as the rule: one pip per letter, two dots each; each right answer raises one, two raised is learnt; a miss never lowers one.",
       "html": "<div class=\"ds-pips\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"3\" aria-valuenow=\"1\" aria-valuetext=\"1 of 3 letters learnt. b needs one more right answer.\"><span class=\"ds-pip\"><b>a</b><span class=\"ds-pd learnt\"><i></i><i></i></span></span><span class=\"ds-pip\"><b>b</b><span class=\"ds-pd half\"><i></i><i></i></span></span><span class=\"ds-pip\"><b>c</b><span class=\"ds-pd\"><i></i><i></i></span></span></div>",
       "css": ".ds-pips{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;gap:0.625rem;padding:0.5rem;background:var(--bg);color:var(--text)}.ds-pip{display:flex;flex-direction:column;align-items:center;gap:0.25rem}.ds-pip b{font-size:0.875rem;font-weight:900;line-height:1}.ds-pd{display:flex;gap:0.1875rem}.ds-pd i{box-sizing:border-box;width:0.75rem;height:0.75rem;border:1.5px dashed var(--text-soft);border-radius:50%}.ds-pd.half i:first-child,.ds-pd.learnt i{border:1.5px solid var(--line);background:var(--accent);box-shadow:1.5px 2px 0 var(--line)}"
     },

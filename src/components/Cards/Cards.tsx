@@ -1,5 +1,5 @@
 import React from "react";
-import type { Course, EntryKind } from "../../courses";
+import { type Course, type EntryKind, getCourse } from "../../courses";
 import { itemId, kindOfLetter, LANGUAGE_LABELS, LANGUAGES, Language } from "../../game/braille";
 import { BackIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
@@ -7,10 +7,10 @@ import { CardDeck } from "./CardDeck";
 import "./Cards.css";
 
 type CardsProps = {
+  /** The player's course: the deck opens on it. */
   course: Course;
   /** Open on this card. The first one by default. */
   letter?: string;
-  onLanguageChange: (language: Language) => void;
   /** Back to Home. */
   onHome: () => void;
 };
@@ -31,9 +31,13 @@ const plain = (text: string) =>
 
 /**
  * The library: every card in the course to flick through or jump to, for
- * learning a letter before (or without) being asked about it.
+ * learning a letter before (or without) being asked about it. The other
+ * decks are a tap away, for a look only: the course itself is chosen in
+ * Settings, so browsing Greek cards never moves Home or the lessons.
  */
-export const Cards = ({ course, letter, onLanguageChange, onHome }: CardsProps) => {
+export const Cards = ({ course: ownCourse, letter, onHome }: CardsProps) => {
+  const [language, setLanguage] = React.useState<Language>(ownCourse.id);
+  const course = language === ownCourse.id ? ownCourse : getCourse(language);
   const letters = course.letters.map((entry) => entry.letter);
   const [index, setIndex] = React.useState(() => Math.max(letters.indexOf(letter ?? ""), 0));
   const headingRef = React.useRef<HTMLHeadingElement>(null);
@@ -82,19 +86,19 @@ export const Cards = ({ course, letter, onLanguageChange, onHome }: CardsProps) 
         </h2>
       </div>
 
-      <div className="card-courses" role="group" aria-label="Course">
-        {LANGUAGES.map((language) => (
+      <div className="card-courses" role="group" aria-label="Deck">
+        {LANGUAGES.map((option) => (
           <button
-            key={language}
+            key={option}
             type="button"
             className="outline-button"
-            aria-pressed={language === course.id}
+            aria-pressed={option === course.id}
             onClick={() => {
               setIndex(0);
-              onLanguageChange(language);
+              setLanguage(option);
             }}
           >
-            {LANGUAGE_LABELS[language]}
+            {LANGUAGE_LABELS[option]}
           </button>
         ))}
       </div>

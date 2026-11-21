@@ -34,6 +34,11 @@ type PracticeProps = {
   onChangeCourse: () => void;
   /** Back from the lesson list to Home. */
   onHome: () => void;
+  /**
+   * Leaving a lesson that was opened straight from Home goes back there, not
+   * to a list the player never saw. Without it, leaving goes to the list.
+   */
+  onClose?: () => void;
   /** Where to open. The lesson list by default. */
   start?: PracticeView;
   /** Injectable for deterministic tests. */
@@ -52,6 +57,7 @@ export const Practice = ({
   onProgress,
   onChangeCourse,
   onHome,
+  onClose,
   start = { screen: "lessons" },
   random = Math.random,
   now = defaultNow,
@@ -70,6 +76,23 @@ export const Practice = ({
         : undefined;
     return first && newLetters(first).length > 0 ? first.id : null;
   });
+
+  // Where leaving a lesson goes: the list once the player has been there,
+  // or wherever the lesson was opened from.
+  const [fromList, setFromList] = React.useState(start.screen === "lessons");
+  // A finished lesson's "Back to lessons" goes to the list, wherever the
+  // lesson was opened from.
+  const toList = (key: string) => {
+    setFromList(true);
+    setView({ screen: "lessons", returnTo: key });
+  };
+  const leave = (key: string) => {
+    if (!fromList && onClose) {
+      onClose();
+      return;
+    }
+    toList(key);
+  };
 
   const startLesson = (lesson: Lesson) => {
     setMeeting(newLetters(lesson).length > 0 ? lesson.id : null);
@@ -119,7 +142,7 @@ export const Practice = ({
         lesson={lesson}
         letters={newLetters(lesson)}
         onStart={() => setMeeting(null)}
-        onBack={() => setView({ screen: "lessons", returnTo: key })}
+        onBack={() => leave(key)}
       />
     );
   }
@@ -134,7 +157,8 @@ export const Practice = ({
       keyShortcuts={keyShortcuts}
       progress={progress}
       onProgress={onProgress}
-      onBack={() => setView({ screen: "lessons", returnTo: key })}
+      onBack={() => leave(key)}
+      onLessons={() => toList(key)}
       onStartLesson={startLesson}
       random={random}
       now={now}

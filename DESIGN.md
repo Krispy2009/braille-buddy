@@ -38,6 +38,33 @@ typography:
     fontSize: "2.5rem"
     fontWeight: 900
     lineHeight: 1.1
+  display-wide:
+    fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "3.5rem"
+    fontWeight: 900
+    lineHeight: 0.95
+    letterSpacing: "-0.03em"
+  display-widest:
+    fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "4.5rem"
+    fontWeight: 900
+    lineHeight: 0.95
+    letterSpacing: "-0.03em"
+  finish-letter:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "2.75rem"
+    fontWeight: 900
+    lineHeight: 1
+  finish-letter-wide:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "3.5rem"
+    fontWeight: 900
+    lineHeight: 1
+  stamp-done:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "1.75rem"
+    fontWeight: 900
+    textTransform: "uppercase"
   headline:
     fontFamily: "Commissioner, system-ui, sans-serif"
     fontSize: "2rem"
@@ -103,6 +130,10 @@ typography:
     fontFamily: "Fira Mono, ui-monospace, monospace"
     fontSize: "0.75rem"
     fontWeight: 700
+  dot-numeral-small:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.625rem"
+    fontWeight: 900
 rounded:
   sliver: "3px"
   stamp: "0.375rem"
@@ -276,9 +307,10 @@ A warm paper-and-ink palette with one orange accent. Every colour is defined onl
 **Character:** Commissioner at heavy weights gives friendly, sturdy letterforms with full Greek support. Fira Mono reads like small text typed on a brailler label. Both are self-hosted, so the app looks the same offline, in only the Latin and Greek subsets and at only weights 500, 700 and 900.
 
 ### Hierarchy
-- **Display** (900, clamp 2.25–2.875rem, line-height 0.95, -0.03em): the Home headline. Sized so "Every letter." fits a 320px phone on one line.
+- **Display** (900, clamp 2.25–2.875rem, line-height 0.95, -0.03em): the Home headline. Sized so "Every letter." fits a 320px phone on one line. Steps up to **Display Wide** (3.5rem) from 48rem and **Display Widest** (4.5rem) from 64rem.
 - **Card Letter** (900, 6.5rem, line-height 0.8): the letter on a letter card. **Card Letter Long** (4rem) for long signs.
 - **Result Letter** (900, 2.5rem, 1.1): a single letter shown as an answer: the Board result, answer choices from 48rem wide.
+- **Finish Letter** (900, 2.75rem, 1; 3.5rem from 48rem): the letter on a finished lesson's dealt cards. **Stamp Done** (900, 1.75rem, uppercase): the big "LESSON DONE" stamp.
 - **Headline** (900, 2rem, 1.1, -0.02em): screen titles in the frame. 2.25rem from 48rem wide.
 - **Task** (900, 1.875rem, 1.1, -0.02em): the question or instruction in hand. 2.25rem from 48rem wide.
 - **Step** (900, 1.5rem, 1.15): a step heading in the account flow, and the dot numbers on a full cell and on brailler keys.
@@ -292,7 +324,7 @@ A warm paper-and-ink palette with one orange accent. Every colour is defined onl
 - **Label** (Fira Mono 500, 0.875rem): the eyebrow above a task.
 - **Stat** (Fira Mono 700, 0.8125rem): streak and points, lesson state, card corners.
 - **Code** (Fira Mono 700, 1.625rem): the emailed sign-in code, with wide letter spacing.
-- **Key Letter** (Fira Mono 700, 0.75rem): the chord letter on a brailler key and other tiny marks; dot numbers on small cells use the same size in Commissioner 900.
+- **Key Letter** (Fira Mono 700, 0.75rem): the chord letter on a brailler key and other tiny marks; dot numbers on small cells use the same size in Commissioner 900. **Dot Numeral Small** (900, 0.625rem): the dot numbers in the tiny lookup cells in Daily.
 
 Text wraps `pretty` (paragraphs, list items, headings), so no line ends on one lonely word.
 
@@ -305,7 +337,7 @@ Text wraps `pretty` (paragraphs, list items, headings), so no line ends on one l
 
 ## Layout
 
-A single centred column on a phone (`--page`, 30rem), with a 1.375rem gutter, filling the window height up to 56rem so the bottom action is never a screen away from what it belongs to. Each screen runs top to bottom. First the **frame**: the way out (a round button) on the left, then progress. Next a **prompt**: a mono eyebrow, then the task in heavy type. Then the content: a cell, choices or a card. Last the **action** at the bottom, which is one primary button, the brailler base, or a feedback sheet that bleeds to the column edges with rounded top corners.
+A single centred column on a phone (`--page`, 30rem), with a 1.375rem gutter, filling the window height up to 56rem so the bottom action is never a screen away from what it belongs to. On Home the brailler base sticks to the bottom of the window until the page reaches it, so its one action is always in the first screen (its line reads "N new cards to learn today" until the player has played today, then "N new cards up next"); on short windows (under 700px) it drops its key row, and focus scrolls clear of it. Each screen runs top to bottom. First the **frame**: the way out (a round button) on the left, then progress. The way out returns to where the screen was opened from: a lesson started on Home closes to Home, one started from the list closes to the list. The way out is labelled "Close lesson"; the finished lesson's "Back to lessons" always goes to the list. Next a **prompt**: a mono eyebrow, then the task in heavy type. Then the content: a cell, choices or a card. Last the **action** at the bottom, which is one primary button, the brailler base, or a feedback sheet that bleeds to the column edges with rounded top corners.
 
 Breakpoints are **container queries on `#root`** in rem, not media queries on the window, so Bigger text needs a wider window before a screen splits. From 48rem the gutter grows to 2rem and tasks get bigger. Screens with a task in hand stay a single, roomier column. Home and Lessons spread out at 48rem and 64rem (`--page-medium` 44rem, `--page-measure` 46rem for reading pages, `--page-wide` 72rem). DOM order never changes, so reading and Tab order match what's on screen.
 
@@ -317,7 +349,7 @@ Two kinds of depth with two meanings. **Soft embossing** is the plate: paired li
 
 ### Shadow Vocabulary
 - **Plate emboss** (`box-shadow: -8px -8px 16px var(--hi), 8px 8px 18px var(--shade)`): the full-size cell plate.
-- **Choice emboss** (`box-shadow: -3px -3px 6px var(--hi), 3px 3px 6px var(--shade)`): unanswered answer choices.
+- **Choice emboss** (`box-shadow: -3px -3px 6px var(--hi), 3px 3px 6px var(--shade)`): unanswered answer choices and the Daily puzzle card (a container, so never a hard shadow).
 - **Dimple** (`box-shadow: inset 4px 4px 8px var(--shade), inset -4px -4px 8px var(--hi)`): a flat dot pressed into the plate; text inputs use a 2px version.
 - **Raised dot** (`box-shadow: 4px 5px 0 var(--line)`): a raised dot; 3px 4px on medium cells, 2px 2px on small.
 - **Lifted card** (`box-shadow: 8px 10px 0 var(--line)`): the front letter card and flash cards.
@@ -357,25 +389,25 @@ The plate and its six dots in two columns of three, read 1 2 3 down the left and
 - **Cell row:** several cells read left to right that scale down together to stay on one line. The cell being written sits on a thick underline.
 
 ### Brailler Base and Keys (signature)
-The black base at the bottom of Home and of a write question, 1.75rem top corners, bleeding to the column edges. It holds six keys in Perkins order (3 2 1, a gap, 4 5 6), each 4.625rem tall and at least 44px wide, Press Paper with an ink-on-base rim and a key-edge shadow giving it height. A **pressed key** turns orange, drops its shadow and sinks 5px, so pressed and not pressed differ in depth, shadow and colour. Each key shows its dot number at 900 and its chord letter (F D S / J K L) in mono, which the Key letters setting can hide. While focus is inside, a dashed outline shows that chord typing is listening. Pressed keys keep their sunk position even with Less motion on, because that's state, not animation.
+The black base at the bottom of Home and of a write question, 1.75rem top corners, bleeding to the column edges, with square bottom corners at every width (it rests on the window edge or the footer). It holds six keys in Perkins order (3 2 1, a gap, 4 5 6), each 4.625rem tall and at least 44px wide, Press Paper with an ink-on-base rim and a key-edge shadow giving it height. A **pressed key** turns orange, drops its shadow and sinks 5px, so pressed and not pressed differ in depth, shadow and colour. Each key shows its dot number at 900 and its chord letter (F D S / J K L) in mono, which the Key letters setting can hide. While focus is inside, a dashed outline shows that chord typing is listening. Pressed keys keep their sunk position even with Less motion on, because that's state, not animation.
 
 ### Letter Cards
-An orange card, ink border, 1.25rem radius, lifted card shadow: mono corner labels, the letter in Card Letter type, and its dots embossed in ink beside it. On Home the front card sits on two fanned paper cards behind it and opens the deck. In High vis the shadow goes.
+An orange card, ink border, 1.25rem radius, lifted card shadow: mono corner labels, the letter in Card Letter type, and its dots embossed in ink beside it. On Home the front card sits on two fanned paper cards behind it and opens the deck. Its action is a small raised key at the bottom right: a paper pill with an ink rim and a 2px 3px hard ink shadow, pressed down with the card. In High vis the shadow goes.
 
 ### Answer Choices
 Four in a row, 4.5rem tall, 0.875rem radius, letters at 2rem 900, embossed softly at rest. **Right** turns orange with a hard ink shadow; **wrong** lies flat, a dashed rim with no emboss and its letter still in ink; each gets a small mark in the corner so the result isn't carried by colour.
 
 ### Option Cards and Lesson Cards
-Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, or the next open lesson, fills orange with ink text and a 4px hard shadow (no shadow in High vis, where the fill is black). This is **the one selected style**: course choices in Settings and the course toggle in Cards use it too. Theme cards are the exception: each shows a picture of its own theme, so the chosen one lifts on the shadow without filling (a doubled rim in High vis). A locked lesson has a dashed border and Pencil Grey text. Settings options use real radio and checkbox inputs, with the focus ring drawn on the whole card.
+Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, or the next open lesson, fills orange with ink text and a 4px hard shadow (no shadow in High vis, where the fill is black). This is **the one selected style**: course choices in Settings and the deck toggle in Cards (a look at another course's cards; it does not change the course) use it too. Theme cards are the exception: each shows a picture of its own theme, so the chosen one lifts on the shadow without filling (a doubled rim in High vis). A locked lesson has a dashed border and Pencil Grey text. Settings options use real radio and checkbox inputs, with the focus ring drawn on the whole card.
 
 ### Inputs / Fields
 3.5rem tall, 1rem radius, ink border, the page colour with a 2px dimple inset, 1.125rem at 700. The emailed code field uses mono at 1.625rem with wide letter spacing. **Invalid** shows a thicker, dashed border, never only a colour change.
 
 ### Mastery Pips (lesson progress)
-The frame's progress is the learning rule itself: one pip per letter of the lesson (up to 8), the letter in 900 above two small dots. Each right answer in a row raises one dot; two raised is learnt. Flat dots are dashed rings in Pencil Grey; raised dots are Raised-Dot Orange with a solid ink rim and a 1.5px 2px hard shadow (flat in High vis). A wrong answer lays the letter's dots flat again. A mono count ("2/5") follows, hidden under Bigger text when space is short. Screen readers get one progressbar whose value text is "2 of 5 letters learnt. c needs one more right answer." Longer sets ("Everything so far") keep a pill bar with an ink outline and an orange fill.
+The frame's progress is the learning rule itself: one pip per letter of the lesson (up to 8), the letter in 900 above two small dots. Each right answer raises one dot, in a row or not; two raised is learnt. Flat dots are dashed rings in Pencil Grey; raised dots are Raised-Dot Orange with a solid ink rim and a 1.5px 2px hard shadow (flat in High vis). A wrong answer never lowers a dot: the pip stays as it was, and a learnt letter stays learnt. Once learnt, a letter is no longer asked in that lesson, so the lesson ends when the last pip fills. A mono count ("2/5") follows, hidden under Bigger text when space is short. Screen readers get one progressbar whose value text is "2 of 5 letters learnt. c needs one more right answer." Longer sets ("Everything so far") keep a pill bar with an ink outline and an orange fill.
 
 ### Feedback Sheet and Stamp
-After an answer, a sheet rises from the bottom in the base's place with 1.75rem top corners, always on the page surface. **Right:** a solid ink border and an upward shade, a "GOT IT" stamp, and beside it the letter's pip with "One more for c" or "c learnt!" (the letter set as a letter chip, so a single letter never reads as a word). **Wrong:** a dashed ink border and no shade (flat, like everything dashed), a "NOT QUITE" stamp with a dashed rim, the explanation, and the compare view ("You chose / You wrote" beside "Answer"). Neither is loud: a mistake is a quiet, teaching moment. The rubber stamp is a 3px border, 0.375rem radius, uppercase 900, rotated −4°.
+After an answer, a sheet rises from the bottom in the base's place with 1.75rem top corners, always on the page surface. **Right:** a solid ink border and an upward shade, a "GOT IT" stamp, and beside it the letter's pip with "One more for c" or "c learnt!" (the letter set as a letter chip, so a single letter never reads as a word), then the points typed small in mono ("**+10** points"). **Wrong:** a dashed ink border and no shade (flat, like everything dashed), a "NOT QUITE" stamp with a dashed rim, beside it the letter's pip, unchanged, with "Two more for c", "Still one more for c" or "c still learnt" (letter chip, weight 700, quieter than the right note), then the compare view ("You chose / You wrote" beside "Answer"); each label sets its letter as a small letter chip: the answer raised orange, the wrong choice flat with a dashed rim, as it lies in the choices. From 48rem, a miss's stamp and pip stack beside the compare cells, with Next question below. The sheet says each thing once: the stamp, the pip and the compare cells carry the result, so the sentence in words is in the live region only ("Not quite. Dot 1 makes the letter a in English. You raised dot 6. Your right answer still counts. Get the letter a right once more to learn it."). Hints before an answer ("Raise at least one dot") are shown and spoken. Neither is loud: a mistake is a quiet, teaching moment. The rubber stamp is a 3px border, 0.375rem radius, uppercase 900, rotated −4°.
 
 ### Lesson Finish (the loud moment)
 Finishing a lesson is the loudest moment in the app, built only from Press parts. The heading becomes "You learnt 5 new letters"; the lesson's letters land in the room the question left as a row of raised orange cards (ink border, 0.875rem radius, 4px 5px hard shadow, each tilted within ±6°, the letter at 900 and its dots in ink, raised dots big and solid, flat ones thin rings). On the sheet a big "LESSON DONE" stamp (4px border, 1.75rem type) sits over typed totals (points, days in a row, the lesson now open), then Next lesson and two quiet ways out. Motion: the cards drop onto the deck (220ms, 35ms apart, from 1.5rem above at double tilt) and the stamp thunks down (200ms, 180ms in); everything is done by about 380ms and none of it plays under Less motion or `prefers-reduced-motion`. No confetti. The words are in the live region only: "Lesson done. You learnt a, b, c, d and e in this lesson, and Letters f to j is now open. You have 50 points."

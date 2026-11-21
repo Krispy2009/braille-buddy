@@ -1,20 +1,30 @@
 import type { ItemId } from "./braille";
 import { MAX_BOX, type Progress } from "./progress";
 
-/** Items in lower boxes come up more often: weight is 2 ** (4 - box). */
+/**
+ * Items in lower boxes come up more often: weight is 2 ** (4 - box). Items
+ * missed lately (`missed`) count double, since a miss no longer lowers the
+ * box of a letter that isn't learnt yet.
+ */
 export const pickNextItem = (
   items: readonly ItemId[],
   progress: Progress,
-  options: { previous?: ItemId; random?: () => number } = {}
+  options: {
+    previous?: ItemId;
+    random?: () => number;
+    missed?: readonly ItemId[];
+  } = {}
 ): ItemId => {
   if (items.length === 0) {
     throw new Error("pickNextItem needs at least one item");
   }
-  const { previous, random = Math.random } = options;
+  const { previous, random = Math.random, missed = [] } = options;
   const others = items.filter((item) => item !== previous);
   const candidates = others.length > 0 ? others : items;
   const weights = candidates.map(
-    (item) => 2 ** (MAX_BOX - (progress.letters[item]?.box ?? 0))
+    (item) =>
+      2 ** (MAX_BOX - (progress.letters[item]?.box ?? 0)) *
+      (missed.includes(item) ? 2 : 1)
   );
   const total = weights.reduce((sum, weight) => sum + weight, 0);
   let target = random() * total;
