@@ -341,6 +341,11 @@
         "name": "less-motion",
         "value": "none",
         "purpose": "data-motion=less removes all transitions and animations; pressed keys stay sunk as state."
+      },
+      {
+        "name": "lesson-finish",
+        "value": "220ms cubic-bezier(0.2, 0.9, 0.3, 1), 35ms stagger; stamp 200ms at 180ms",
+        "purpose": "A finished lesson's cards dropping onto the deck and the LESSON DONE stamp; done by ~380ms, off under Less motion and prefers-reduced-motion."
       }
     ],
     "breakpoints": [
@@ -421,9 +426,9 @@
       "name": "Answer Choices",
       "kind": "chip",
       "refersTo": "choice",
-      "description": "Four letter choices: embossed at rest, orange + hard shadow when right, ink when wrong.",
+      "description": "Four letter choices: embossed at rest, orange + hard shadow when right, flat with a dashed rim when wrong.",
       "html": "<div class=\"ds-choices\"><button class=\"ds-choice\">a</button><button class=\"ds-choice\" data-mark=\"right\">b<span>✓</span></button><button class=\"ds-choice\" data-mark=\"wrong\">k<span>✗</span></button><button class=\"ds-choice\">l</button></div>",
-      "css": ".ds-choices{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.625rem;padding:0.5rem;background:var(--bg)}.ds-choice{font-family:Commissioner,system-ui,sans-serif;position:relative;min-height:4.5rem;border:var(--line-width) solid var(--line);border-radius:0.875rem;background:var(--surface);color:var(--text);box-shadow:-3px -3px 6px var(--hi),3px 3px 6px var(--shade);font-size:2rem;font-weight:900;line-height:1;cursor:pointer;transition:transform 90ms ease}.ds-choice:active{transform:translate(2px,3px)}.ds-choice:focus-visible{outline:3px solid var(--text);outline-offset:3px}.ds-choice span{position:absolute;top:0.2rem;right:0.35rem;font-size:0.875rem}.ds-choice[data-mark=right]{background:var(--accent);color:var(--on-accent);box-shadow:3px 4px 0 var(--line)}.ds-choice[data-mark=wrong]{background:var(--base);color:var(--on-base);box-shadow:none}"
+      "css": ".ds-choices{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.625rem;padding:0.5rem;background:var(--bg)}.ds-choice{font-family:Commissioner,system-ui,sans-serif;position:relative;min-height:4.5rem;border:var(--line-width) solid var(--line);border-radius:0.875rem;background:var(--surface);color:var(--text);box-shadow:-3px -3px 6px var(--hi),3px 3px 6px var(--shade);font-size:2rem;font-weight:900;line-height:1;cursor:pointer;transition:transform 90ms ease}.ds-choice:active{transform:translate(2px,3px)}.ds-choice:focus-visible{outline:3px solid var(--text);outline-offset:3px}.ds-choice span{position:absolute;top:0.2rem;right:0.35rem;font-size:0.875rem}.ds-choice[data-mark=right]{background:var(--accent);color:var(--on-accent);box-shadow:3px 4px 0 var(--line)}.ds-choice[data-mark=wrong]{border-style:dashed;background:transparent;box-shadow:none}"
     },
     {
       "name": "Option Card",
@@ -448,6 +453,30 @@
       "description": "The screen frame: a round way-out button, then the title.",
       "html": "<div class=\"ds-frame\"><button class=\"ds-round\" aria-label=\"Back\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 18l-6-6 6-6\"/></svg></button><h2 class=\"ds-frame-title\">Lessons</h2></div>",
       "css": ".ds-frame{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;align-items:center;gap:0.75rem;min-height:2.75rem;padding:0.5rem;background:var(--bg);color:var(--text)}.ds-round{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;padding:0;border:var(--line-width) solid var(--line);border-radius:50%;background:transparent;color:var(--text);cursor:pointer}.ds-round:hover{background:var(--key)}.ds-round:focus-visible{outline:3px solid var(--text);outline-offset:3px}.ds-frame-title{margin:0;font-size:2rem;font-weight:900;letter-spacing:-0.02em;line-height:1.1}"
+    },
+    {
+      "name": "Mastery Pips",
+      "kind": "custom",
+      "refersTo": "progress-track",
+      "description": "Lesson progress as the rule: one pip per letter, two dots each; a right answer in a row raises one, two raised is learnt.",
+      "html": "<div class=\"ds-pips\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"3\" aria-valuenow=\"1\" aria-valuetext=\"1 of 3 letters learnt. b needs one more right answer.\"><span class=\"ds-pip\"><b>a</b><span class=\"ds-pd learnt\"><i></i><i></i></span></span><span class=\"ds-pip\"><b>b</b><span class=\"ds-pd half\"><i></i><i></i></span></span><span class=\"ds-pip\"><b>c</b><span class=\"ds-pd\"><i></i><i></i></span></span></div>",
+      "css": ".ds-pips{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;gap:0.625rem;padding:0.5rem;background:var(--bg);color:var(--text)}.ds-pip{display:flex;flex-direction:column;align-items:center;gap:0.25rem}.ds-pip b{font-size:0.875rem;font-weight:900;line-height:1}.ds-pd{display:flex;gap:0.1875rem}.ds-pd i{box-sizing:border-box;width:0.75rem;height:0.75rem;border:1.5px dashed var(--text-soft);border-radius:50%}.ds-pd.half i:first-child,.ds-pd.learnt i{border:1.5px solid var(--line);background:var(--accent);box-shadow:1.5px 2px 0 var(--line)}"
+    },
+    {
+      "name": "Feedback Sheet",
+      "kind": "custom",
+      "refersTo": "sheet",
+      "description": "After an answer: right is a solid-rimmed plate with a shade and a GOT IT stamp; wrong lies flat with a dashed rim and a dashed NOT QUITE stamp.",
+      "html": "<div class=\"ds-sheet\"><span class=\"ds-stamp\">Got it</span><p>Correct, plus 10 points.</p></div><div class=\"ds-sheet miss\"><span class=\"ds-stamp\">Not quite</span><p>Dots 1 and 4 make c in English.</p></div>",
+      "css": ".ds-sheet{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;margin:0 0 0.75rem;padding:1.25rem 1.375rem;border:var(--line-width) solid var(--line);border-radius:1.75rem;background:var(--surface);color:var(--text);box-shadow:0 -8px 18px var(--shade)}.ds-sheet.miss{border-style:dashed;box-shadow:none}.ds-sheet p{margin:0.75rem 0 0}.ds-stamp{display:inline-block;padding:0.125rem 0.625rem;border:3px solid currentColor;border-radius:0.375rem;font-size:1.25rem;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;transform:rotate(-4deg)}.ds-sheet.miss .ds-stamp{border-style:dashed}"
+    },
+    {
+      "name": "Lesson Finish Deck",
+      "kind": "custom",
+      "refersTo": "finish-card",
+      "description": "A finished lesson's letters as raised orange cards, each at a small tilt; they drop onto the deck in about 380ms with full motion on.",
+      "html": "<ul class=\"ds-finish\"><li style=\"--t:-6deg\"><b>a</b><span><i class=\"r\"></i><i></i><i></i><i></i><i></i><i></i></span></li><li style=\"--t:3deg\"><b>b</b><span><i class=\"r\"></i><i class=\"r\"></i><i></i><i></i><i></i><i></i></span></li><li style=\"--t:-2deg\"><b>c</b><span><i class=\"r\"></i><i></i><i></i><i class=\"r\"></i><i></i><i></i></span></li></ul>",
+      "css": ".ds-finish{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;justify-content:center;margin:0;padding:1rem;list-style:none;background:var(--bg)}.ds-finish li{display:flex;flex-direction:column;align-items:center;gap:0.625rem;width:5rem;margin-inline:-0.1875rem;padding:0.75rem 0.25rem 0.875rem;border:var(--line-width) solid var(--line);border-radius:0.875rem;background:var(--accent);color:var(--on-accent);box-shadow:4px 5px 0 var(--line);transform:rotate(var(--t))}.ds-finish b{font-size:2.75rem;font-weight:900;line-height:1}.ds-finish span{display:grid;grid-template-rows:repeat(3,0.625rem);grid-template-columns:repeat(2,0.625rem);grid-auto-flow:column;gap:0.1875rem}.ds-finish i{place-self:center;box-sizing:border-box;width:0.3125rem;height:0.3125rem;border:1.5px solid var(--on-accent);border-radius:50%}.ds-finish i.r{width:0.625rem;height:0.625rem;border:0;background:var(--on-accent)}"
     }
   ],
   "narrative": {

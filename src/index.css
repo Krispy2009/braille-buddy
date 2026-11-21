@@ -77,9 +77,12 @@ button {
   outline-offset: 3px;
 }
 
-/* Headings that take focus when a screen opens show no ring for it: the
-   focus is for screen readers, not a control to act on. */
-[tabindex="-1"]:focus:not(:focus-visible) {
+/* Headings that take focus when a screen opens or a question changes show
+   no ring for it: the focus is for screen readers, not a control to act on.
+   The browser counts focus moved after a key press as focus-visible, so the
+   ring is left off headings outright, not only for pointer focus. */
+[tabindex="-1"]:focus:not(:focus-visible),
+:is(h1, h2, h3)[tabindex="-1"]:focus {
   outline: none;
 }
 

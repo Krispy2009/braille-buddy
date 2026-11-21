@@ -190,8 +190,24 @@ components:
     backgroundColor: "{colors.raised-dot-orange}"
     textColor: "{colors.ink}"
   choice-wrong:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.press-paper}"
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+  progress-track:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+  sheet-right:
+    backgroundColor: "{colors.press-paper}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.base}"
+  sheet-wrong:
+    backgroundColor: "{colors.press-paper}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.base}"
+  finish-card:
+    backgroundColor: "{colors.raised-dot-orange}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.key}"
+    width: "5rem"
   option-card:
     rounded: "{rounded.control}"
     padding: "0.875rem 1rem"
@@ -297,7 +313,7 @@ Everything works from 320px wide. Cells and their dots shrink with the viewport,
 
 ## Elevation & Depth
 
-Two kinds of depth with two meanings. **Soft embossing** is the plate: paired light and dark blurred shadows (`--hi` and `--shade`) make a surface you press into or that's pressed out of the page. The cell plate, flat dot dimples, answer choices, the progress track and text inputs use it. **Hard offset ink shadows** mean raised: a solid unblurred shadow in `--line` stands under raised dots, letter cards, the selected option, the open lesson, a right answer and letter chips. Pressing moves the thing toward its shadow (translate 2–3px), and a pressed brailler key drops its shadow and sinks 5px. High vis is flat: both shadow kinds disappear and raised dots stand out by solid fill and solid rim alone.
+Two kinds of depth with two meanings. **Soft embossing** is the plate: paired light and dark blurred shadows (`--hi` and `--shade`) make a surface you press into or that's pressed out of the page. The cell plate, flat dot dimples, answer choices and text inputs use it. **Hard offset ink shadows** mean raised: a solid unblurred shadow in `--line` stands under raised dots, letter cards, the selected option, the open lesson, a right answer and letter chips. Pressing moves the thing toward its shadow (translate 2–3px), and a pressed brailler key drops its shadow and sinks 5px. High vis is flat: both shadow kinds disappear and raised dots stand out by solid fill and solid rim alone.
 
 ### Shadow Vocabulary
 - **Plate emboss** (`box-shadow: -8px -8px 16px var(--hi), 8px 8px 18px var(--shade)`): the full-size cell plate.
@@ -317,9 +333,9 @@ Two kinds of depth with two meanings. **Soft embossing** is the plate: paired li
 
 ## Shapes
 
-Generously rounded, chunky forms with ink outlines. Radii grow with the object: 3px on the slivers inside the little Settings pictures, a 0.375rem rubber stamp and keyboard keys, 0.5rem tiles (theme preview screens, small key pictures), 0.6rem letter chips, 0.75rem small cell plates and chord-pad rows, 0.875rem keys and choices, 1rem buttons and option cards (`--radius`), 1.25rem letter cards, 1.75rem top corners on the brailler base and feedback sheet, 1.875rem on the full cell plate. Dots, round buttons and the account button are circles, and the progress track is a pill. Every interactive shape carries a `--line-width` ink border (2px, 3px in High vis).
+Generously rounded, chunky forms with ink outlines. Radii grow with the object: 3px on the slivers inside the little Settings pictures, a 0.375rem rubber stamp and keyboard keys, 0.5rem tiles (theme preview screens, small key pictures), 0.6rem letter chips, 0.75rem small cell plates and chord-pad rows, 0.875rem keys and choices, 1rem buttons and option cards (`--radius`), 1.25rem letter cards, 1.75rem top corners on the brailler base and feedback sheet, 1.875rem on the full cell plate. Dots, round buttons and the account button are circles, and the progress track (when a lesson is too long for pips) is a pill. Every interactive shape carries a `--line-width` ink border (2px, 3px in High vis).
 
-Rims carry meaning. **Solid** is raised or available, **dashed** is flat, locked or invalid. A flat dot has a dashed rim, a locked lesson a dashed border, an invalid input a thicker dashed edge. The letter cards on Home are fanned at 8° and −5° behind the front card. The result stamp is rotated −4°, like a rubber stamp. Those are the only rotations.
+Rims carry meaning. **Solid** is raised or available, **dashed** is flat, locked or invalid. A flat dot has a dashed rim, a locked lesson a dashed border, an invalid input a thicker dashed edge, a wrong answer's sheet, choice and stamp a dashed rim. The letter cards on Home are fanned at 8° and −5° behind the front card, and a finished lesson's cards land within ±6°. The result stamp is rotated −4°, like a rubber stamp. Those are the only rotations.
 
 ## Components
 
@@ -347,7 +363,7 @@ The black base at the bottom of Home and of a write question, 1.75rem top corner
 An orange card, ink border, 1.25rem radius, lifted card shadow: mono corner labels, the letter in Card Letter type, and its dots embossed in ink beside it. On Home the front card sits on two fanned paper cards behind it and opens the deck. In High vis the shadow goes.
 
 ### Answer Choices
-Four in a row, 4.5rem tall, 0.875rem radius, letters at 2rem 900, embossed softly at rest. **Right** turns orange with a hard ink shadow, **wrong** turns ink with Paper text and no shadow, and each gets a small mark in the corner so the result isn't carried by colour.
+Four in a row, 4.5rem tall, 0.875rem radius, letters at 2rem 900, embossed softly at rest. **Right** turns orange with a hard ink shadow; **wrong** lies flat, a dashed rim with no emboss and its letter still in ink; each gets a small mark in the corner so the result isn't carried by colour.
 
 ### Option Cards and Lesson Cards
 Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, or the next open lesson, fills orange with ink text and a 4px hard shadow (no shadow in High vis, where the fill is black). This is **the one selected style**: course choices in Settings and the course toggle in Cards use it too. Theme cards are the exception: each shows a picture of its own theme, so the chosen one lifts on the shadow without filling (a doubled rim in High vis). A locked lesson has a dashed border and Pencil Grey text. Settings options use real radio and checkbox inputs, with the focus ring drawn on the whole card.
@@ -355,8 +371,14 @@ Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, 
 ### Inputs / Fields
 3.5rem tall, 1rem radius, ink border, the page colour with a 2px dimple inset, 1.125rem at 700. The emailed code field uses mono at 1.625rem with wide letter spacing. **Invalid** shows a thicker, dashed border, never only a colour change.
 
+### Mastery Pips (lesson progress)
+The frame's progress is the learning rule itself: one pip per letter of the lesson (up to 8), the letter in 900 above two small dots. Each right answer in a row raises one dot; two raised is learnt. Flat dots are dashed rings in Pencil Grey; raised dots are Raised-Dot Orange with a solid ink rim and a 1.5px 2px hard shadow (flat in High vis). A wrong answer lays the letter's dots flat again. A mono count ("2/5") follows, hidden under Bigger text when space is short. Screen readers get one progressbar whose value text is "2 of 5 letters learnt. c needs one more right answer." Longer sets ("Everything so far") keep a pill bar with an ink outline and an orange fill.
+
 ### Feedback Sheet and Stamp
-After an answer, a sheet rises from the bottom in the base's place with 1.75rem top corners: on the page surface with an ink border and an upward shade for a right answer. A rubber stamp (3px border, 0.375rem radius, uppercase 900, rotated −4°) gives the verdict, and a compare view puts the asked cell beside the written one.
+After an answer, a sheet rises from the bottom in the base's place with 1.75rem top corners, always on the page surface. **Right:** a solid ink border and an upward shade, a "GOT IT" stamp, and beside it the letter's pip with "One more for c" or "c learnt!". **Wrong:** a dashed ink border and no shade (flat, like everything dashed), a "NOT QUITE" stamp with a dashed rim, the explanation, and the compare view ("You chose / You wrote" beside "Answer"). Neither is loud: a mistake is a quiet, teaching moment. The rubber stamp is a 3px border, 0.375rem radius, uppercase 900, rotated −4°.
+
+### Lesson Finish (the loud moment)
+Finishing a lesson is the loudest moment in the app, built only from Press parts. The heading becomes "You learnt 5 new letters"; the lesson's letters land in the room the question left as a row of raised orange cards (ink border, 0.875rem radius, 4px 5px hard shadow, each tilted within ±6°, the letter at 900 and its dots in ink, raised dots big and solid, flat ones thin rings). On the sheet a big "LESSON DONE" stamp (4px border, 1.75rem type) sits over typed totals (points, days in a row, the lesson now open), then Next lesson and two quiet ways out. Motion: the cards drop onto the deck (220ms, 35ms apart, from 1.5rem above at double tilt) and the stamp thunks down (200ms, 180ms in); everything is done by about 380ms and none of it plays under Less motion or `prefers-reduced-motion`. No confetti. The words are in the live region only: "Lesson done. You learnt a, b, c, d and e in this lesson, and Letters f to j is now open. You have 50 points."
 
 ## Do's and Don'ts
 
@@ -368,6 +390,7 @@ After an answer, a sheet rises from the bottom in the base's place with 1.75rem 
 - **Do** set sizes in rem and breakpoints as container queries on `#root`, so Bigger text reflows the layout.
 - **Do** include a `forced-colors: active` fallback for any new control (ButtonText borders, Highlight for pressed).
 - **Do** make press feedback a short sink toward the shadow (2–5px, 90–100ms ease), and turn all transitions off under Less motion.
+- **Do** keep mistakes quiet and mastery loud: a wrong answer lies flat on paper with a dashed rim; the finished lesson gets the orange cards and the big stamp.
 
 ### Don't:
 - **Don't** use Raised-Dot Orange for decoration, links, warnings or headings: it means raised, pressed, chosen or right.

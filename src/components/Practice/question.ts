@@ -13,6 +13,7 @@ import {
 } from "../../game/braille";
 import { cellsInWords, dotsInWords, sameCells } from "../../game/cells";
 import type { Course, Lesson } from "../../courses";
+import { LEARNT_BOX } from "../../game/lessons";
 import { POINTS_PER_CORRECT, Progress } from "../../game/progress";
 import { pickDistractors, pickNextItem } from "../../game/review";
 
@@ -153,6 +154,19 @@ export const resultText = (item: ItemId, answer: Answer): string =>
     ? `Correct, plus ${POINTS_PER_CORRECT} points. ${rule(item)}`
     : `Not quite. ${rule(item)} ${mistakeText(item, answer)}`;
 
+/**
+ * What a right answer did for its letter, for the live region: halfway
+ * there, or learnt. Learnt means right twice in a row (LEARNT_BOX); later
+ * right answers on a learnt letter say nothing more.
+ */
+export const masteryText = (item: ItemId, box: number): string => {
+  const { letter, language } = parseItemId(item);
+  const name = spokenLetter(letter, language);
+  if (box === LEARNT_BOX - 1) return `Get ${name} right once more to learn it.`;
+  if (box === LEARNT_BOX) return `${capitalize(name)} is learnt now.`;
+  return "";
+};
+
 export type Finished = {
   lesson: Lesson;
   /** The lesson it opened, if any. */
@@ -161,17 +175,26 @@ export type Finished = {
   courseDone: boolean;
 };
 
-// Lesson titles never end a sentence either, since a title such as
-// "Letters a to e" ends on a single letter.
+/** "a, b, c, d and e", by their spoken names. */
+const listLetters = (letters: readonly string[], language: Language): string => {
+  const names = letters.map((letter) => spokenLetter(letter, language));
+  return names.length < 2
+    ? names.join("")
+    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+};
+
+// Lesson titles and letters never end a sentence either, since a title such
+// as "Letters a to e" ends on a single letter.
 export const finishedText = (
   course: Course,
   { lesson, next, courseDone }: Finished
 ): string => {
+  const learnt = `Lesson done. You learnt ${listLetters(lesson.letters, course.id)} in this lesson`;
   if (courseDone) {
-    return `You have finished ${lesson.title}, the last lesson in the ${course.name} course. Congratulations, you have learnt everything it teaches.`;
+    return `${learnt}, the last one in the ${course.name} course. Congratulations, you have learnt everything it teaches.`;
   }
   if (next) {
-    return `You have finished the lesson ${lesson.title}, and ${next.title} is now open.`;
+    return `${learnt}, and ${next.title} is now open.`;
   }
-  return `You have finished the lesson ${lesson.title}, well done.`;
+  return `${learnt}, well done.`;
 };

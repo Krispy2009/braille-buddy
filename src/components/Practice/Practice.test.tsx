@@ -285,7 +285,13 @@ describe("letter to dots", () => {
       await user.keyboard("{Enter}");
 
       expect(status()).toHaveTextContent(
-        "Correct, plus 10 points. Dot 1 makes a in English."
+        "Correct, plus 10 points. Dot 1 makes a in English. " +
+          "Get a right once more to learn it."
+      );
+      // The progress shows the rule: a is halfway, nothing learnt yet.
+      expect(learnt()).toHaveAttribute(
+        "aria-valuetext",
+        "0 of 5 letters learnt. a needs one more right answer."
       );
       const next = screen.getByRole("button", { name: "Next question" });
       expect(next).toHaveFocus();
@@ -304,7 +310,7 @@ describe("letter to dots", () => {
 
       await user.click(dotButton(dotEntry, 1));
       await user.click(dotButton(dotEntry, 4));
-      await user.click(screen.getByRole("button", { name: "Press it" }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
 
       expect(status()).toHaveTextContent(
         "Not quite. Dot 1 makes a in English. You raised dots 1 and 4."
@@ -331,7 +337,7 @@ describe("letter to dots", () => {
       await user.click(dotButton(dotEntry, 1));
       expect(dotButton(dotEntry, 1)).toHaveAttribute("aria-pressed", "true");
       expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "true");
-      await user.click(screen.getByRole("button", { name: "Press it" }));
+      await user.click(screen.getByRole("button", { name: "Check" }));
       expect(status()).toHaveTextContent(
         "Correct, plus 10 points. Dots 1 and 2 make b in English."
       );
@@ -355,11 +361,11 @@ describe("letter to dots", () => {
   test("checking an empty cell asks for a dot instead of marking it wrong", async () => {
     const { user } = setup();
     await start(user);
-    await user.click(screen.getByRole("button", { name: "Press it" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
     expect(status()).toHaveTextContent(
       "Raise at least one dot, then check your answer."
     );
-    expect(screen.getByRole("button", { name: "Press it" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Check" })).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
@@ -437,7 +443,7 @@ describe("letter to dots", () => {
     await user.tab();
     await user.tab();
     await user.tab();
-    expect(screen.getByRole("button", { name: "Press it" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Check" })).toHaveFocus();
     await user.keyboard("{Enter}");
     expect(status()).toHaveTextContent("Correct, plus 10 points.");
     // Answered from the Check button, so the next question focuses the prompt.
@@ -571,10 +577,24 @@ describe("Greek", () => {
     expect(within(prompt()).getByText("α")).toHaveAttribute("lang", "el");
 
     await user.keyboard("2");
-    await user.click(screen.getByRole("button", { name: "Press it" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
     expect(status()).toHaveTextContent(
       "Not quite. Dot 1 makes alpha in Greek. You raised dot 2."
     );
+  });
+});
+
+describe("learning a letter", () => {
+  test("the second right answer in a row says the letter is learnt", async () => {
+    save({ letters: boxes("english", ["a"], 1) });
+    const { user } = setup(0);
+    await start(user);
+    expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
+    await user.keyboard("1{Enter}");
+    expect(status()).toHaveTextContent(
+      "Correct, plus 10 points. Dot 1 makes a in English. A is learnt now."
+    );
+    expect(learnt()).toHaveAttribute("aria-valuetext", "1 of 5 letters learnt");
   });
 });
 
@@ -590,13 +610,19 @@ describe("finishing a lesson", () => {
     nearlyDone();
     const { user, unmount } = setup(0.5);
     await start(user, "Continue Letters a to e");
-    expect(learnt()).toHaveAttribute("aria-valuetext", "4 of 5 letters learnt");
+    expect(learnt()).toHaveAttribute(
+      "aria-valuetext",
+      "4 of 5 letters learnt. e needs one more right answer."
+    );
 
     await user.click(screen.getByRole("button", { name: "e" }));
     expect(status()).toHaveTextContent(
       "Correct, plus 10 points. Dots 1 and 5 make e in English. " +
-        "You have finished the lesson Letters a to e, and Letters f to j is now open."
+        "Lesson done. You learnt a, b, c, d and e in this lesson, and Letters f to j is now open. " +
+        "You have 10 points."
     );
+    // The lesson's letters land as cards, and the heading says what was learnt.
+    expect(prompt()).toHaveAccessibleName("You learnt 5 new letters");
     expect(status().textContent).not.toMatch(/(^|\s)\p{L}\./u);
     expect(learnt()).toHaveAttribute("aria-valuetext", "5 of 5 letters learnt");
     expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
@@ -675,7 +701,7 @@ describe("finishing a lesson", () => {
     await user.click(screen.getByRole("button", { name: "z" }));
 
     expect(status()).toHaveTextContent(
-      "You have finished the lesson Letters u to z, and Numbers 1 to 5 is now open."
+      "Lesson done. You learnt u, v, w, x, y and z in this lesson, and Numbers 1 to 5 is now open."
     );
     expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
   });
@@ -699,7 +725,7 @@ describe("finishing a lesson", () => {
 
     expect(status()).toHaveTextContent(
       "Closing bracket is written with dot 5, then dots 3, 4 and 5, in English. " +
-        "You have finished Hyphen to brackets, the last lesson in the English course. " +
+        "Lesson done. You learnt hyphen, colon, semicolon, dash, opening bracket and closing bracket in this lesson, the last one in the English course. " +
         "Congratulations, you have learnt everything it teaches."
     );
     expect(screen.queryByRole("button", { name: "Next lesson" })).not.toBeInTheDocument();
@@ -865,7 +891,7 @@ describe("numbers and punctuation: signs of several cells", () => {
     expect(screen.queryByRole("group", { name: "Cells of your answer" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Next cell" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Previous cell" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Press it" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Check" })).toBeInTheDocument();
   });
 
   test("the numbers open after the letters, named for screen readers", () => {
@@ -914,7 +940,7 @@ describe("numbers and punctuation: signs of several cells", () => {
     expect(screen.queryByRole("button", { name: "Next cell" })).not.toBeInTheDocument();
 
     await user.click(dotButton("cell", 1));
-    await user.click(screen.getByRole("button", { name: "Press it" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
     expect(status()).toHaveTextContent(
       "Correct, plus 10 points. Number 1 is written with dots 3, 4, 5 and 6, then dot 1, in English."
     );
@@ -947,7 +973,7 @@ describe("numbers and punctuation: signs of several cells", () => {
     await start(user, "Start Numbers 1 to 5");
     await user.click(cellButton(/^Cell 2 of 2/));
     await user.click(dotButton("cell", 1));
-    await user.click(screen.getByRole("button", { name: "Press it" }));
+    await user.click(screen.getByRole("button", { name: "Check" }));
     expect(status()).toHaveTextContent(
       "Raise at least one dot in cell 1, then check your answer."
     );

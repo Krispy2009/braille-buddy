@@ -95,7 +95,7 @@ test("choosing Brailler keys changes Explore and lessons at once and is saved", 
     "Write the letter a in braille"
   );
   await user.click(screen.getByRole("button", { name: "Dot 1, key F" }));
-  await user.click(screen.getByRole("button", { name: "Press it" }));
+  await user.click(screen.getByRole("button", { name: "Check" }));
   expect(screen.getByRole("status")).toHaveTextContent("Correct, plus 10 points.");
 
   // Remembered after a reload.

@@ -38,9 +38,11 @@ type ResultProps = {
   lang: string;
   letter?: string;
   spoken?: string;
+  /** No dots raised yet. */
+  blank?: boolean;
 };
 
-const Result = ({ label, lang, letter, spoken }: ResultProps) => (
+const Result = ({ label, lang, letter, spoken, blank }: ResultProps) => (
   <div className="result">
     <dt>{label}</dt>
     <dd>
@@ -56,12 +58,17 @@ const Result = ({ label, lang, letter, spoken }: ResultProps) => (
           {letter}
         </span>
       ) : (
-        <>
-          <span className="letter empty" aria-hidden="true">
-            –
-          </span>
-          <span className="sr-only">No letter</span>
-        </>
+        // Nothing raised yet is a dash; dots that spell nothing say so.
+        blank ? (
+          <>
+            <span className="letter empty" aria-hidden="true">
+              –
+            </span>
+            <span className="sr-only">No letter</span>
+          </>
+        ) : (
+          <span className="letter empty none">not a letter</span>
+        )
       )}
     </dd>
   </div>
@@ -147,6 +154,7 @@ export const Board = ({
                 lang={course.lang}
                 letter={letter}
                 spoken={spoken !== letter ? spoken : undefined}
+                blank={raisedDots(positions).length === 0}
               />
             );
           })}

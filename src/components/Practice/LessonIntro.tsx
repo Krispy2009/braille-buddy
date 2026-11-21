@@ -2,6 +2,7 @@ import React from "react";
 import type { Course, Lesson } from "../../courses";
 import { CloseIcon } from "../Icons/Icons";
 import { CardDeck } from "../Cards/CardDeck";
+import { entriesNoun } from "../../game/lessons";
 
 type LessonIntroProps = {
   course: Course;
@@ -21,6 +22,8 @@ export const LessonIntro = ({ course, lesson, letters, onStart, onBack }: Lesson
   const headingRef = React.useRef<HTMLHeadingElement>(null);
   React.useEffect(() => headingRef.current?.focus(), []);
   const noun = letters.length === 1 ? "card" : "cards";
+  // "letter", "number" or "sign", for the rule.
+  const item = entriesNoun(course, lesson.letters).slice(0, -1);
 
   return (
     <div className="screen lesson">
@@ -44,7 +47,10 @@ export const LessonIntro = ({ course, lesson, letters, onStart, onBack }: Lesson
           {lesson.title}
         </h2>
         <h3 className="task prompt">Meet the new {noun}</h3>
-        <p className="eyebrow">Look at each one first. Questions come next.</p>
+        <p className="lesson-note">
+          Look at each one first. Then get each {item} right twice in a row to
+          finish the lesson.
+        </p>
       </div>
       <CardDeck course={course} letters={letters} index={index} onIndex={setIndex} />
       <div className="meet-actions">
