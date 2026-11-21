@@ -51,6 +51,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* No one-word last lines: prompts and hints wrap so the last line keeps a
+   few words ("keys.", "next." left alone look like a mistake). */
+p,
+li,
+h1,
+h2,
+h3 {
+  text-wrap: pretty;
+}
+
 button,
 input {
   font: inherit;
@@ -293,7 +303,7 @@ button[aria-disabled="true"] {
 kbd {
   padding: 0 0.3em;
   border: 1px solid currentColor;
-  border-radius: 0.3rem;
+  border-radius: 0.375rem;
   font-family: var(--mono);
   font-size: 0.85em;
   font-weight: 700;

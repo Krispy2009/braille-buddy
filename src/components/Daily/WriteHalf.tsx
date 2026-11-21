@@ -38,6 +38,7 @@ import { CellRow } from "../Cell/CellRow";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
 import { Letter } from "../Practice/Letter";
+import { LetterLookup } from "./LetterLookup";
 import { Tries, TryRow } from "./Tries";
 import { Word } from "./Word";
 
@@ -203,6 +204,7 @@ export const WriteHalf = ({
       )}
 
       <Tries rows={rows} label="Your tries" />
+      {writing && <LetterLookup language={language} />}
 
       {finished && (
         <div className="daily-answer">

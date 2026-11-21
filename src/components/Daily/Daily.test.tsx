@@ -244,6 +244,25 @@ describe("Write it", () => {
   });
 });
 
+describe("looking up a letter", () => {
+  test("the alphabet is folded away under each part, with every letter's dots", async () => {
+    const { user } = open();
+    const summary = screen.getByText("Look up a letter's dots");
+    const lookup = summary.closest("details")!;
+    expect(lookup).not.toHaveAttribute("open");
+    await user.click(summary);
+    expect(lookup).toHaveAttribute("open");
+    expect(summary).toHaveTextContent("Hide the letters");
+    const letters = within(lookup).getAllByRole("listitem");
+    expect(letters).toHaveLength(26);
+    // The print letter, its cell (hidden from screen readers), its dots in words.
+    expect(letters[1]).toHaveTextContent(/^b.*: dots 1 and 2$/);
+
+    await finishRead(user);
+    expect(screen.getByText("Look up a letter's dots")).toBeInTheDocument();
+  });
+});
+
 describe("the result", () => {
   const finish = async (user: ReturnType<typeof userEvent.setup>) => {
     await finishRead(user);

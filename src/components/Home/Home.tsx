@@ -61,8 +61,9 @@ const LetterList = ({ letters, course }: { letters: string[]; course: Course }) 
 );
 
 /**
- * Home: the deck. The next card to learn is the hero, with one action to
- * press it; the lesson list, Explore and Settings are a quiet step away.
+ * Home: the deck. The next card to learn is the hero, and tapping it starts
+ * the lesson it belongs to; the same action waits on the black base. The
+ * card library, lesson list, Explore and Settings are a quiet step away.
  * Points and streak live here and in results, never next to a question.
  */
 export const Home = ({
@@ -105,14 +106,21 @@ export const Home = ({
   const isNew = !progress.letters[itemId(course.id, letter)];
   const number = String(allLetters.indexOf(letter) + 1).padStart(2, "0");
   const streak = currentStreak(progress, now());
+  // Plain words for the one action: start a lesson, carry on with one the
+  // player has begun, or mix everything once every lesson is done.
+  const started = lesson?.letters.some((each) => progress.letters[itemId(course.id, each)]);
+  const action = !lesson ? "Practise everything" : started ? "Keep going" : "Start lesson";
+  const start = () => onStart(lesson?.id);
 
   return (
     <div ref={root} className="screen home">
       <header className="home-header">
         <h1 className="wordmark">Braille Buddy</h1>
         <p className="home-stats">
-          <span aria-hidden="true">
-            day {streak} · {progress.points} pts
+          <span className="home-stats-shown" aria-hidden="true">
+            <span>day {streak}</span>
+            <span className="home-stats-split"> · </span>
+            <span>{progress.points} pts</span>
           </span>
           <span className="sr-only">
             Daily streak {streak} {streak === 1 ? "day" : "days"}, {progress.points} points
@@ -148,21 +156,14 @@ export const Home = ({
       <p className="eyebrow">
         {course.name} · {learntTotal} of {alphabet.length} letters learnt
       </p>
-      <p className="home-note">
-        Braille Buddy teaches the dot patterns of braille. Reading by touch
-        takes practice with real embossed braille, ideally with a braille
-        teacher or a local blindness organisation.
-      </p>
-
       <div className="deck">
         <span className="deck-card deck-back-1" aria-hidden="true" />
         <span className="deck-card deck-back-2" aria-hidden="true" />
         <button
           type="button"
           className="deck-card deck-front"
-          data-return="cards"
-          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}. Open the cards.`}
-          onClick={() => onCards(letter)}
+          aria-label={`Card ${Number(number)}: ${spokenLetter(letter, course.id)}, ${cellsInWords(cells)}. ${action}.`}
+          onClick={start}
         >
           <span className="deck-card-top" aria-hidden="true">
             <span>card {number}</span>
@@ -179,24 +180,30 @@ export const Home = ({
             </span>
           </span>
           <span className="deck-card-bottom" aria-hidden="true">
-            dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
+            <span>dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}</span>
+            <span className="deck-card-go">{!lesson ? "mix all" : started ? "keep going" : "start"}</span>
           </span>
         </button>
       </div>
 
       <p className="home-today">
         {!lesson ? (
-          <>Every card in {course.name} is pressed. Mix them all to keep them sharp.</>
+          <>You have done every lesson in {course.name}. Mix all the cards to keep them sharp.</>
         ) : toLearn.length > 0 ? (
           <>
             {countWord(toLearn.length)} new {toLearn.length === 1 ? "card" : "cards"} to
-            press today: <LetterList letters={toLearn} course={course} />.
+            learn today: <LetterList letters={toLearn} course={course} />.
           </>
         ) : (
           <>
             Finish {lesson.title}: <LetterList letters={lesson.letters} course={course} />.
           </>
         )}
+      </p>
+      <p className="home-note">
+        Braille Buddy teaches the dot patterns of braille. Reading by touch
+        takes practice with real embossed braille, ideally with a braille
+        teacher or a local blindness organisation.
       </p>
       {daily && (
         <section className="daily-card" aria-labelledby="daily-card-title">
@@ -258,9 +265,9 @@ export const Home = ({
             type="button"
             className="key-button"
             data-return="start"
-            onClick={() => onStart(lesson?.id)}
+            onClick={start}
           >
-            {lesson ? "Press new cards" : "Practise everything"}
+            {action}
           </button>
           <button
             type="button"

@@ -6,23 +6,25 @@
   padding-bottom: 0;
 }
 
+/* One row on any phone: the wordmark takes what is left and breaks between
+   its two words, and the stats stack, so the buttons never drop a line. */
 .home-header {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 0.5rem 0.625rem;
 }
 
 /* The wordmark: the name in spaced capitals. Written normally in the markup,
    so screen readers say "Braille Buddy", not the letters. */
 .wordmark {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   margin: 0;
   font-size: 1rem;
   font-weight: 900;
+  line-height: 1.15;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .home-stats {
@@ -30,13 +32,56 @@
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
-/* Keeps Account and Settings together at the right when the header wraps
-   on a narrow phone. */
-.home-account {
-  margin-left: auto;
+/* Day over points on a phone; one line once there is room. */
+.home-stats-shown {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.home-stats-split {
+  display: none;
+}
+
+@container page (min-width: 30rem) {
+  .home-stats-shown {
+    flex-direction: row;
+    white-space: pre;
+  }
+
+  .home-stats-split {
+    display: inline;
+  }
+}
+
+/* A 320px phone with Bigger text has no room for one row: the wordmark
+   takes its own line and the rest sit under it, buttons at the right. */
+@container page (max-width: 17.5rem) {
+  .home-header {
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    flex-basis: 100%;
+  }
+
+  .home-stats {
+    margin-right: auto;
+  }
+
+  .home-stats-shown {
+    align-items: flex-start;
+  }
+
+  /* The fanned cards are wider than this column: the whole deck a size
+     down, so nothing pokes past the page edge. */
+  .home > .deck {
+    zoom: 0.85;
+  }
 }
 
 /* Signed in: the account button is filled, like a raised dot. */
@@ -45,11 +90,13 @@
   color: var(--on-accent);
 }
 
+/* What the app does not teach, said plainly under the day's cards. */
 .home-note {
-  margin: 0.5rem 0 0;
+  margin: 0;
   font-size: 0.9375rem;
   line-height: 1.4;
   color: var(--text-soft);
+  text-wrap: pretty;
 }
 
 .home-headline {
@@ -104,12 +151,22 @@
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 8px 10px 0 var(--line);
+  transition: transform 90ms ease, box-shadow 90ms ease;
+}
+
+/* Pressing the card sinks it into the deck, like a key. */
+.deck-front:active {
+  transform: translate(4px, 5px);
+  box-shadow: 4px 5px 0 var(--line);
 }
 
 .deck-card-top,
 .deck-card-bottom {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  gap: 0.25rem 0.5rem;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -156,10 +213,18 @@
   background: var(--on-accent);
 }
 
+/* What tapping the card does, in a ring like a button's. */
+.deck-card-go {
+  padding: 0 0.5rem;
+  border: 2px solid var(--on-accent);
+  border-radius: 999px;
+}
+
 .home-today {
   margin: 0;
   font-size: 1rem;
   font-weight: 500;
+  text-wrap: pretty;
 }
 
 .home-links {
@@ -168,7 +233,7 @@
   margin: -0.25rem 0 0 -1rem;
 }
 
-/* The front card is a button: it opens the card library. */
+/* The front card is a button: it starts the lesson the card is in. */
 button.deck-front {
   font: inherit;
   text-align: inherit;
@@ -254,7 +319,7 @@ button.deck-front {
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 4px 5px 0 var(--accent);
+  box-shadow: 4px 5px 0 var(--line);
 }
 
 [data-theme="high-visibility"] .daily-card {
@@ -303,8 +368,8 @@ button.deck-front {
 /* ---- Wider windows --------------------------------------------------------
    Two columns: the words and the daily card on the left, the deck of cards
    on the right, and the black base running the full width underneath like
-   the front of a brailler. The deck sits between the note and today's line
-   in the DOM too, so reading order matches. */
+   the front of a brailler. The deck sits between the eyebrow and today's
+   line in the DOM too, so reading order matches. */
 
 @container page (min-width: 48rem) {
   .home {
@@ -324,7 +389,7 @@ button.deck-front {
     margin-bottom: 1rem;
   }
 
-  /* Rows 2 to 7 hold the headline down to the explore link. */
+  /* Rows 2 to 7 hold the headline down to the card links. */
   .home > .deck {
     grid-column: 2;
     grid-row: 2 / 8;

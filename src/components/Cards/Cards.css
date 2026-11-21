@@ -66,9 +66,22 @@
   min-height: 2.75rem;
 }
 
+/* The chosen course: the one selected style (see Settings' option cards). */
 .card-courses .outline-button[aria-pressed="true"] {
-  background: var(--base);
-  color: var(--on-base);
+  border-color: var(--line);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .card-courses .outline-button[aria-pressed="true"] {
+  box-shadow: none;
+}
+
+@media (forced-colors: active) {
+  .card-courses .outline-button[aria-pressed="true"] {
+    outline: 3px solid Highlight;
+  }
 }
 
 .card-hint {
@@ -102,6 +115,11 @@
 .card-index-button[aria-current="true"] {
   background: var(--accent);
   color: var(--on-accent);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .card-index-button[aria-current="true"] {
+  box-shadow: none;
 }
 
 .card-index-button:active {

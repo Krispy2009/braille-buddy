@@ -244,6 +244,8 @@ test('types a whole letter as a chord in the braille keyboard', async () => {
 });
 
 describe('Home and the screens it opens', () => {
+  const shownStats = () =>
+    screen.getByText((_, element) => element?.classList.contains('home-stats-shown') ?? false);
   const today = () => dayKey(new Date());
   const saveProgress = (data: object) =>
     localStorage.setItem(
@@ -263,14 +265,17 @@ describe('Home and the screens it opens', () => {
   test('a new player sees the deck: the next card, the day, the points and one action', () => {
     render(<App />);
     expect(screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })).toBeInTheDocument();
-    expect(screen.getByText('day 0 · 0 pts')).toHaveAttribute('aria-hidden', 'true');
+    // Shown as "day 0 · 0 pts", in two lines on a phone; said in words.
+    expect(shownStats()).toHaveTextContent('day 0 · 0 pts');
+    expect(shownStats()).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('Daily streak 0 days, 0 points')).toBeInTheDocument();
     expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Open the cards.' })).toBeInTheDocument();
-    expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
-      'Five new cards to press today: a, b, c, d, e.'
+    expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' })).toBeInTheDocument();
+    expect(screen.getByText(/new cards to learn today/)).toHaveTextContent(
+      'Five new cards to learn today: a, b, c, d, e.'
     );
-    expect(screen.getByRole('button', { name: 'Press new cards' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start lesson' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'All the cards' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Lessons' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Explore the cell' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
@@ -293,23 +298,24 @@ describe('Home and the screens it opens', () => {
       },
     });
     render(<App />);
-    expect(screen.getByText('day 4 · 120 pts')).toBeInTheDocument();
+    expect(shownStats()).toHaveTextContent('day 4 · 120 pts');
     expect(screen.getByText('Daily streak 4 days, 120 points')).toBeInTheDocument();
     expect(screen.getByText('English · 1 of 26 letters learnt')).toBeInTheDocument();
     // f is learnt, so the next card is g, seen once already.
-    expect(screen.getByRole('button', { name: 'Card 7: g, dots 1, 2, 4 and 5. Open the cards.' })).toHaveTextContent(
+    expect(screen.getByRole('button', { name: 'Card 7: g, dots 1, 2, 4 and 5. Keep going.' })).toHaveTextContent(
       'practise'
     );
-    expect(screen.getByText(/new cards to press today/)).toHaveTextContent(
-      'Four new cards to press today: g, h, i, j.'
+    expect(screen.getByText(/new cards to learn today/)).toHaveTextContent(
+      'Four new cards to learn today: g, h, i, j.'
     );
+    expect(screen.getByRole('button', { name: 'Keep going' })).toBeInTheDocument();
   });
 
-  test('Press new cards opens the next lesson; the way back passes the lesson list', async () => {
+  test('Start lesson opens the next lesson; the way back passes the lesson list', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0);
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('button', { name: 'Press new cards' }));
+    await user.click(screen.getByRole('button', { name: 'Start lesson' }));
     // New letters are met on their cards before any question.
     expect(screen.getByRole('heading', { level: 3, name: 'Meet the new cards' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Start practising' }));
@@ -333,6 +339,13 @@ describe('Home and the screens it opens', () => {
     vi.restoreAllMocks();
   });
 
+  test('the front card starts the next lesson too', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Meet the new cards' })).toBeInTheDocument();
+  });
+
   test('Lessons opens the lesson list with focus on its heading', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -351,7 +364,7 @@ describe('Home and the screens it opens', () => {
     });
     const user = userEvent.setup();
     render(<App />);
-    expect(screen.getByText(/Every card in English is pressed/)).toBeInTheDocument();
+    expect(screen.getByText(/You have done every lesson in English/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Practise everything' }));
     expect(
       screen.getByRole('heading', { level: 2, name: 'English: Everything so far' })
@@ -361,8 +374,8 @@ describe('Home and the screens it opens', () => {
   test('Greek cards are marked as Greek and named for screen readers', () => {
     localStorage.setItem('braille-buddy:practice-language', 'greek');
     render(<App />);
-    expect(screen.getByRole('button', { name: 'Card 1: alpha, dot 1. Open the cards.' })).toBeInTheDocument();
-    const today = screen.getByText(/new cards to press today/);
+    expect(screen.getByRole('button', { name: 'Card 1: alpha, dot 1. Start lesson.' })).toBeInTheDocument();
+    const today = screen.getByText(/new cards to learn today/);
     expect(within(today).getByText('β')).toHaveAttribute('lang', 'el');
     expect(today).toHaveTextContent(/alpha/);
   });
@@ -436,7 +449,7 @@ describe('Home and the screens it opens', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.keyboard('1{Enter}');
-    expect(screen.getByRole('button', { name: 'Press new cards' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start lesson' })).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

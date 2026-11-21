@@ -1,0 +1,526 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-21T06:35:58.770101+00:00",
+  "title": "Design System: Braille Buddy",
+  "extensions": {
+    "colorMeta": {
+      "raised-dot-orange": {
+        "role": "primary",
+        "displayName": "Raised-Dot Orange",
+        "canonical": "#ff5a1f",
+        "tonalRamp": [
+          "#3e1b0f",
+          "#6e2a12",
+          "#af380d",
+          "#ff4300",
+          "#f2764a",
+          "#eda68c",
+          "#f0cec1",
+          "#f9efec"
+        ]
+      },
+      "press-paper": {
+        "role": "neutral",
+        "displayName": "Press Paper",
+        "canonical": "#eceae4",
+        "tonalRamp": [
+          "#2a2822",
+          "#484438",
+          "#6c6550",
+          "#968b69",
+          "#ada58f",
+          "#c5c1b4",
+          "#dddbd5",
+          "#f3f3f1"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1a1a1a",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#5e5e5e",
+          "#808080",
+          "#9e9e9e",
+          "#bdbdbd",
+          "#d9d9d9",
+          "#f2f2f2"
+        ]
+      },
+      "pencil-grey": {
+        "role": "neutral",
+        "displayName": "Pencil Grey",
+        "canonical": "#5a5650",
+        "tonalRamp": [
+          "#282725",
+          "#42403d",
+          "#635f5a",
+          "#878178",
+          "#a39f99",
+          "#c0bdba",
+          "#dad9d7",
+          "#f3f2f2"
+        ]
+      },
+      "key-edge-grey": {
+        "role": "neutral",
+        "displayName": "Key-Edge Grey",
+        "canonical": "#a8a49a",
+        "tonalRamp": [
+          "#282724",
+          "#43413c",
+          "#646158",
+          "#898476",
+          "#a4a198",
+          "#c0beb9",
+          "#dbdad7",
+          "#f3f2f2"
+        ]
+      },
+      "paper-highlight": {
+        "role": "neutral",
+        "displayName": "Paper Highlight",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#5e5e5e",
+          "#808080",
+          "#9e9e9e",
+          "#bdbdbd",
+          "#d9d9d9",
+          "#f2f2f2"
+        ]
+      },
+      "paper-shade": {
+        "role": "neutral",
+        "displayName": "Paper Shade",
+        "canonical": "rgba(0, 0, 0, 0.18)"
+      },
+      "ink-theme-orange": {
+        "role": "primary",
+        "displayName": "Ink-theme Orange",
+        "canonical": "#ff7a45",
+        "tonalRamp": [
+          "#3e1c0f",
+          "#6e2c12",
+          "#af3c0d",
+          "#ff4900",
+          "#f27a4a",
+          "#eda88c",
+          "#f0cfc1",
+          "#f9efec"
+        ]
+      },
+      "ink-theme-night": {
+        "role": "neutral",
+        "displayName": "Ink-theme Night",
+        "canonical": "#17171a",
+        "tonalRamp": [
+          "#252528",
+          "#3d3d43",
+          "#595963",
+          "#787887",
+          "#9999a3",
+          "#babac0",
+          "#d7d7da",
+          "#f2f2f3"
+        ]
+      },
+      "ink-theme-surface": {
+        "role": "neutral",
+        "displayName": "Ink-theme Surface",
+        "canonical": "#1f1f23",
+        "tonalRamp": [
+          "#252528",
+          "#3d3d43",
+          "#595963",
+          "#787887",
+          "#9999a3",
+          "#babac0",
+          "#d7d7da",
+          "#f2f2f3"
+        ]
+      },
+      "ink-theme-key": {
+        "role": "neutral",
+        "displayName": "Ink-theme Key",
+        "canonical": "#2a2a2e",
+        "tonalRamp": [
+          "#252527",
+          "#3e3e42",
+          "#5b5b62",
+          "#7a7a85",
+          "#9a9aa2",
+          "#bababf",
+          "#d8d8da",
+          "#f2f2f3"
+        ]
+      },
+      "ink-theme-pencil": {
+        "role": "neutral",
+        "displayName": "Ink-theme Pencil",
+        "canonical": "#a9a49a",
+        "tonalRamp": [
+          "#282724",
+          "#43413c",
+          "#656158",
+          "#8a8375",
+          "#a5a097",
+          "#c1beb9",
+          "#dbd9d7",
+          "#f3f2f2"
+        ]
+      },
+      "brailler-black": {
+        "role": "neutral",
+        "displayName": "Brailler Black",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#5e5e5e",
+          "#808080",
+          "#9e9e9e",
+          "#bdbdbd",
+          "#d9d9d9",
+          "#f2f2f2"
+        ]
+      },
+      "signage-yellow": {
+        "role": "neutral",
+        "displayName": "Signage Yellow",
+        "canonical": "#ffd60a",
+        "tonalRamp": [
+          "#3e360f",
+          "#6e5e12",
+          "#af940d",
+          "#ffd400",
+          "#f2d64a",
+          "#eddd8c",
+          "#f0e8c1",
+          "#f9f7ec"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home headline only."
+      },
+      "card-letter": {
+        "displayName": "Card Letter",
+        "purpose": "The letter on a letter card."
+      },
+      "card-letter-long": {
+        "displayName": "Card Letter Long",
+        "purpose": "The card letter for long signs."
+      },
+      "result-letter": {
+        "displayName": "Result Letter",
+        "purpose": "A single letter shown as an answer: Board result, wide answer choices."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Screen titles in the frame."
+      },
+      "task": {
+        "displayName": "Task",
+        "purpose": "The question or instruction in hand."
+      },
+      "step": {
+        "displayName": "Step",
+        "purpose": "Account-flow step headings; dot numbers on full cells and brailler keys."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Section headings inside a screen: legends, subheadings, dialog titles, the stamp."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Lesson titles."
+      },
+      "option": {
+        "displayName": "Option",
+        "purpose": "Option names, feedback lines, the Daily answer."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "The primary action."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text and feedback."
+      },
+      "hint": {
+        "displayName": "Hint",
+        "purpose": "Hints and notes in Pencil Grey, table text, theme names."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "BRAILLE BUDDY on Home."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Mono eyebrow above a task."
+      },
+      "stat": {
+        "displayName": "Stat",
+        "purpose": "Streak, points, lesson state, card corners."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "The emailed sign-in code."
+      },
+      "key-letter": {
+        "displayName": "Key Letter",
+        "purpose": "Chord letters on brailler keys and other tiny marks."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plate-emboss",
+        "value": "-8px -8px 16px var(--hi), 8px 8px 18px var(--shade)",
+        "purpose": "The full-size cell plate."
+      },
+      {
+        "name": "choice-emboss",
+        "value": "-3px -3px 6px var(--hi), 3px 3px 6px var(--shade)",
+        "purpose": "Unanswered answer choices."
+      },
+      {
+        "name": "dimple",
+        "value": "inset 4px 4px 8px var(--shade), inset -4px -4px 8px var(--hi)",
+        "purpose": "A flat dot pressed into the plate; inputs use a 2px version."
+      },
+      {
+        "name": "raised-dot",
+        "value": "4px 5px 0 var(--line)",
+        "purpose": "A raised dot (3px 4px medium, 2px 2px small)."
+      },
+      {
+        "name": "lifted-card",
+        "value": "8px 10px 0 var(--line)",
+        "purpose": "Front letter card and flash cards."
+      },
+      {
+        "name": "lifted-control",
+        "value": "4px 4px 0 var(--line)",
+        "purpose": "The one selected style (option, course, course toggle, theme card), open lesson; none in High vis."
+      },
+      {
+        "name": "key-height",
+        "value": "inset -3px -4px 0 var(--key-edge), 0 5px 0 var(--key-edge)",
+        "purpose": "A brailler key at rest."
+      },
+      {
+        "name": "primary-lip",
+        "value": "0 5px 0 var(--accent)",
+        "purpose": "Orange lip under the primary button; 2px pressed."
+      },
+      {
+        "name": "sheet",
+        "value": "0 -8px 18px var(--shade)",
+        "purpose": "The feedback sheet rising from the bottom."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press",
+        "value": "90ms ease",
+        "purpose": "Buttons and keys sinking toward their shadow (2-5px)."
+      },
+      {
+        "name": "dot-toggle",
+        "value": "100ms ease",
+        "purpose": "A dot rising or sinking."
+      },
+      {
+        "name": "less-motion",
+        "value": "none",
+        "purpose": "data-motion=less removes all transitions and animations; pressed keys stay sunk as state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "48rem (container query on #root)"
+      },
+      {
+        "name": "desktop",
+        "value": "64rem (container query on #root)"
+      }
+    ],
+    "themes": [
+      {
+        "name": "Paper",
+        "dataTheme": "light"
+      },
+      {
+        "name": "Ink",
+        "dataTheme": "dark"
+      },
+      {
+        "name": "High vis",
+        "dataTheme": "high-visibility"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one solid action at the bottom of a screen: an ink slab on an orange lip.",
+      "html": "<button class=\"ds-btn-primary\">Start lesson</button>",
+      "css": ".ds-btn-primary{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:3.75rem;padding:0.5rem 1.25rem;border:var(--line-width) solid var(--line);border-radius:1rem;background:var(--base);color:var(--on-base);box-shadow:0 5px 0 var(--accent);font-size:1.1875rem;font-weight:900;cursor:pointer;transition:transform 90ms ease,box-shadow 90ms ease}.ds-btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 var(--accent)}.ds-btn-primary:focus-visible{outline:3px solid var(--text);outline-offset:3px}"
+    },
+    {
+      "name": "Key Button",
+      "kind": "button",
+      "refersTo": "button-key",
+      "description": "The main action on the black brailler base, styled as a big key.",
+      "html": "<div class=\"ds-base-wrap\"><button class=\"ds-btn-key\">Check</button></div>",
+      "css": ".ds-base-wrap{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;padding:1rem;background:var(--base);border-radius:1.75rem 1.75rem 0 0}.ds-btn-key{font-family:Commissioner,system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:3.5rem;padding:0.5rem 1.25rem;border:var(--line-width) solid var(--key);border-radius:0.875rem;background:var(--key);color:var(--text);box-shadow:inset -3px -4px 0 var(--key-edge);font-size:1.125rem;font-weight:900;cursor:pointer;transition:transform 90ms ease}.ds-btn-key:active{transform:translateY(3px)}.ds-btn-key:focus-visible{outline:3px solid var(--on-base);outline-offset:3px}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Underlined text for every lesser action.",
+      "html": "<button class=\"ds-btn-quiet\">Skip for now</button>",
+      "css": ".ds-btn-quiet{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:inline-flex;align-items:center;min-height:2.75rem;padding:0 1rem;border:0;background:transparent;color:var(--text);font-size:1rem;font-weight:700;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer}.ds-btn-quiet:focus-visible{outline:3px solid var(--text);outline-offset:3px}"
+    },
+    {
+      "name": "Braille Cell",
+      "kind": "custom",
+      "refersTo": "cell-plate",
+      "description": "The embossed plate with six toggle dots; raised = orange, solid rim, hard shadow; flat = dashed dimple.",
+      "html": "<div class=\"ds-cell\"><button class=\"ds-dot on\" aria-pressed=\"true\">1</button><button class=\"ds-dot\" aria-pressed=\"false\">2</button><button class=\"ds-dot\" aria-pressed=\"false\">3</button><button class=\"ds-dot on\" aria-pressed=\"true\">4</button><button class=\"ds-dot\" aria-pressed=\"false\">5</button><button class=\"ds-dot\" aria-pressed=\"false\">6</button></div>",
+      "css": ".ds-cell{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:inline-grid;grid-template-rows:repeat(3,auto);grid-auto-flow:column;gap:0.625rem 1.125rem;padding:1rem 1.375rem;border:var(--line-width) solid var(--line);border-radius:1.25rem;background:var(--surface);box-shadow:-8px -8px 16px var(--hi),8px 8px 18px var(--shade)}.ds-dot{font-family:Commissioner,system-ui,sans-serif;width:3rem;height:3rem;padding:0;border-radius:50%;border:var(--line-width) dashed var(--line);background:var(--surface);color:var(--text-soft);box-shadow:inset 4px 4px 8px var(--shade),inset -4px -4px 8px var(--hi);font-size:1.125rem;font-weight:900;cursor:pointer;transition:transform 100ms ease,box-shadow 100ms ease}.ds-dot.on{border-style:solid;background:var(--accent);color:var(--on-accent);box-shadow:3px 4px 0 var(--line)}.ds-dot:active{transform:translate(2px,3px)}.ds-dot:focus-visible{outline:3px solid var(--text);outline-offset:3px}"
+    },
+    {
+      "name": "Brailler Keys",
+      "kind": "custom",
+      "refersTo": "brailler-key",
+      "description": "Six Perkins-order keys on the black base; a pressed key turns orange and sinks 5px.",
+      "html": "<div class=\"ds-keys\"><div class=\"ds-hand\"><button class=\"ds-key\" aria-pressed=\"false\"><b>3</b><small>F</small></button><button class=\"ds-key\" aria-pressed=\"true\"><b>2</b><small>D</small></button><button class=\"ds-key\" aria-pressed=\"true\"><b>1</b><small>S</small></button></div><div class=\"ds-hand\"><button class=\"ds-key\" aria-pressed=\"false\"><b>4</b><small>J</small></button><button class=\"ds-key\" aria-pressed=\"false\"><b>5</b><small>K</small></button><button class=\"ds-key\" aria-pressed=\"false\"><b>6</b><small>L</small></button></div></div>",
+      "css": ".ds-keys{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;justify-content:center;gap:1rem;padding:1.25rem 1rem 1.5rem;background:var(--base);border-radius:1.75rem 1.75rem 0 0}.ds-hand{display:flex;gap:0.375rem}.ds-key{font-family:Commissioner,system-ui,sans-serif;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:0.1rem;width:3.25rem;height:4.625rem;padding:0;border:var(--line-width) solid var(--on-base);border-radius:0.875rem;background:var(--key);color:var(--text);box-shadow:inset -3px -4px 0 var(--key-edge),0 5px 0 var(--key-edge);cursor:pointer;transition:transform 90ms ease,box-shadow 90ms ease}.ds-key b{font-size:1.5rem;font-weight:900;line-height:1}.ds-key small{font-family:'Fira Mono',ui-monospace,monospace;font-size:0.75rem;font-weight:700}.ds-key[aria-pressed=true]{background:var(--accent);color:var(--on-accent);box-shadow:none;transform:translateY(5px)}.ds-key:focus-visible{outline:3px solid var(--on-base);outline-offset:3px}"
+    },
+    {
+      "name": "Letter Card",
+      "kind": "card",
+      "refersTo": "letter-card",
+      "description": "An orange card lifted on a hard ink shadow: the letter and its dots.",
+      "html": "<div class=\"ds-letter-card\"><div class=\"ds-lc-row\"><span>English</span><span>3 / 26</span></div><div class=\"ds-lc-mid\"><span class=\"ds-lc-letter\">c</span><span class=\"ds-lc-dots\"><i class=\"r\"></i><i></i><i></i><i class=\"r\"></i><i></i><i></i></span></div><div class=\"ds-lc-row\"><span>dots 1 4</span><span></span></div></div>",
+      "css": ".ds-letter-card{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;flex-direction:column;justify-content:space-between;width:13.75rem;height:17.5rem;padding:1.125rem 1.25rem;border:var(--line-width) solid var(--line);border-radius:1.25rem;background:var(--accent);color:var(--on-accent);box-shadow:8px 10px 0 var(--line)}.ds-lc-row{display:flex;justify-content:space-between;font-family:'Fira Mono',ui-monospace,monospace;font-size:0.8125rem;font-weight:700}.ds-lc-mid{display:flex;align-items:center;justify-content:space-between}.ds-lc-letter{font-size:6.5rem;font-weight:900;line-height:0.8}.ds-lc-dots{display:grid;grid-template-rows:repeat(3,1.375rem);grid-template-columns:repeat(2,1.375rem);grid-auto-flow:column;gap:0.625rem 0.75rem}.ds-lc-dots i{place-self:center;width:0.5rem;height:0.5rem;border:1.5px solid var(--on-accent);border-radius:50%;box-sizing:border-box}.ds-lc-dots i.r{width:1.375rem;height:1.375rem;border:0;background:var(--on-accent)}"
+    },
+    {
+      "name": "Answer Choices",
+      "kind": "chip",
+      "refersTo": "choice",
+      "description": "Four letter choices: embossed at rest, orange + hard shadow when right, ink when wrong.",
+      "html": "<div class=\"ds-choices\"><button class=\"ds-choice\">a</button><button class=\"ds-choice\" data-mark=\"right\">b<span>✓</span></button><button class=\"ds-choice\" data-mark=\"wrong\">k<span>✗</span></button><button class=\"ds-choice\">l</button></div>",
+      "css": ".ds-choices{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.625rem;padding:0.5rem;background:var(--bg)}.ds-choice{font-family:Commissioner,system-ui,sans-serif;position:relative;min-height:4.5rem;border:var(--line-width) solid var(--line);border-radius:0.875rem;background:var(--surface);color:var(--text);box-shadow:-3px -3px 6px var(--hi),3px 3px 6px var(--shade);font-size:2rem;font-weight:900;line-height:1;cursor:pointer;transition:transform 90ms ease}.ds-choice:active{transform:translate(2px,3px)}.ds-choice:focus-visible{outline:3px solid var(--text);outline-offset:3px}.ds-choice span{position:absolute;top:0.2rem;right:0.35rem;font-size:0.875rem}.ds-choice[data-mark=right]{background:var(--accent);color:var(--on-accent);box-shadow:3px 4px 0 var(--line)}.ds-choice[data-mark=wrong]{background:var(--base);color:var(--on-base);box-shadow:none}"
+    },
+    {
+      "name": "Option Card",
+      "kind": "card",
+      "refersTo": "option-card",
+      "description": "A settings choice; the selected one fills orange and lifts.",
+      "html": "<div class=\"ds-options\"><label class=\"ds-option\"><input type=\"radio\" name=\"ds-o\" checked> Tap one big cell</label><label class=\"ds-option\"><input type=\"radio\" name=\"ds-o\"> Six brailler keys</label></div>",
+      "css": ".ds-options{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:grid;gap:0.75rem;padding:0.5rem;background:var(--bg);color:var(--text)}.ds-option{display:flex;align-items:center;gap:0.875rem;min-height:2.75rem;padding:0.875rem 1rem;border:var(--line-width) solid var(--line);border-radius:1rem;font-size:1.0625rem;font-weight:900;cursor:pointer}.ds-option input{width:1.375rem;height:1.375rem;margin:0;accent-color:var(--line)}.ds-option:has(input:checked){background:var(--accent);color:var(--on-accent);box-shadow:4px 4px 0 var(--line)}.ds-option:has(input:focus-visible){outline:3px solid var(--text);outline-offset:3px}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A dimpled field; invalid gets a thicker dashed border.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"you@example.com\" aria-label=\"Email\">",
+      "css": ".ds-input{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;width:100%;min-height:3.5rem;padding:0 1rem;border:var(--line-width) solid var(--line);border-radius:1rem;background:var(--bg);color:var(--text);box-shadow:inset 2px 2px 4px var(--shade),inset -2px -2px 4px var(--hi);font-size:1.125rem;font-weight:700}.ds-input:focus-visible{outline:3px solid var(--text);outline-offset:2px}.ds-input[aria-invalid=true]{border-style:dashed;border-width:3px}"
+    },
+    {
+      "name": "Frame",
+      "kind": "nav",
+      "refersTo": "button-round",
+      "description": "The screen frame: a round way-out button, then the title.",
+      "html": "<div class=\"ds-frame\"><button class=\"ds-round\" aria-label=\"Back\"><svg viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 18l-6-6 6-6\"/></svg></button><h2 class=\"ds-frame-title\">Lessons</h2></div>",
+      "css": ".ds-frame{--bg:#eceae4;--surface:#eceae4;--text:#1a1a1a;--text-soft:#5a5650;--line:#1a1a1a;--accent:#ff5a1f;--on-accent:#1a1a1a;--base:#1a1a1a;--on-base:#eceae4;--key:#eceae4;--key-edge:#a8a49a;--hi:#ffffff;--shade:rgba(0,0,0,0.18);--line-width:2px;font-family:Commissioner,system-ui,sans-serif;display:flex;align-items:center;gap:0.75rem;min-height:2.75rem;padding:0.5rem;background:var(--bg);color:var(--text)}.ds-round{display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;padding:0;border:var(--line-width) solid var(--line);border-radius:50%;background:transparent;color:var(--text);cursor:pointer}.ds-round:hover{background:var(--key)}.ds-round:focus-visible{outline:3px solid var(--text);outline-offset:3px}.ds-frame-title{margin:0;font-size:2rem;font-weight:900;letter-spacing:-0.02em;line-height:1.1}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Press",
+    "overview": "Every screen is a sheet of paper with something pressed into it or out of it. The six-dot cell is a plate embossed out of the page. A raised dot stands up from it in orange with a hard ink shadow. A flat dot is a dimple pressed in, with a dashed rim. At the bottom sits a black brailler base, modelled on a Perkins brailler, whose keys physically sink when pressed. Type is bold ink and lines are ink. The only colour is the orange of things that are raised, pressed or right.\n\nThe feel is **chunky and friendly**. Targets are big and rounded so a child can't miss them, weight comes first and mechanics second. The screen is calm and uncluttered: one centred column on a phone, one solid action at the bottom, no timers. The depth is real and readable, never ornament. Each state difference shows up in shape, rim, depth and colour together, so it holds for colour-blind players, in forced colours and in the flat High vis theme.\n\nThree themes share one structure. **Paper** is warm grey paper and ink. **Ink** is a night version, with the brailler base a shade darker than the page. **High vis** is black on signage yellow, like tactile signage: flat, no soft shadows, thicker lines. The look must never drift toward a generic gamified app (gems, confetti, mascots, loud gradients), clinical or medical styling (pale blue, sterile portal forms), or soft neumorphism (grey on grey with soft shadows only and no ink lines).",
+    "keyCharacteristics": [
+      "One accent, Raised-Dot Orange, that always means raised, pressed, chosen or right.",
+      "Ink outlines on everything (2px; 3px in High vis).",
+      "Soft embossed shadows for surfaces you press into; hard offset ink shadows for things that are raised.",
+      "A black brailler base anchors the bottom of the screen.",
+      "Commissioner at 900 for anything you act on or read at a glance, Fira Mono for small typed labels.",
+      "No state carried by colour alone."
+    ],
+    "rules": [
+      {
+        "name": "The One Meaning Rule",
+        "body": "Orange means raised, pressed, chosen or right, and nothing else. Don't use it for decoration, links, warnings or headings.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tokens Only Rule",
+        "body": "Components reference the theme custom properties. A new colour goes into all three theme blocks in `tokens.css` first, or it doesn't ship.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink on Orange Rule",
+        "body": "Text on Raised-Dot Orange is always ink (`--on-accent`). White on orange fails contrast.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Weights Rule",
+        "body": "Text is either 500 (reading) or 900 (acting and glancing). 700 is reserved for secondary buttons, stats and keyboard keys.",
+        "section": "typography"
+      },
+      {
+        "name": "The Typed Label Rule",
+        "body": "Mono only for small context: eyebrows, counts, dot numbers on keys, codes. Never for headings or body.",
+        "section": "typography"
+      },
+      {
+        "name": "The Rem Rule",
+        "body": "Sizes are in rem, so the Bigger text setting (125% on the root) scales everything, including page widths.",
+        "section": "typography"
+      },
+      {
+        "name": "The Soft Is the Plate, Hard Is Raised Rule",
+        "body": "Blurred paired shadows only for surfaces you press into; a hard ink shadow only for something raised, chosen or right. Never blur a raised thing's shadow or harden a plate's.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Flat High Vis Rule",
+        "body": "In High vis, `--hi` and `--shade` are transparent and hard shadows are removed. Every state must still read from fill, rim and line weight alone.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do take every colour from the theme custom properties and check each new surface in Paper, Ink and High vis.",
+      "Do show every state in at least two of fill, rim style (solid or dashed), depth and shape, never colour alone.",
+      "Do keep tappable dots, keys and buttons at least 44px (2.75rem), and give each screen one solid primary action at the bottom.",
+      "Do use a hard ink offset shadow for things that are raised, chosen or right, and soft paired shadows only for the plate and dimples.",
+      "Do set sizes in rem and breakpoints as container queries on `#root`, so Bigger text reflows the layout.",
+      "Do include a `forced-colors: active` fallback for any new control (ButtonText borders, Highlight for pressed).",
+      "Do make press feedback a short sink toward the shadow (2–5px, 90–100ms ease), and turn all transitions off under Less motion."
+    ],
+    "donts": [
+      "Don't use Raised-Dot Orange for decoration, links, warnings or headings: it means raised, pressed, chosen or right.",
+      "Don't put white text on orange; use ink (`--on-accent`).",
+      "Don't drift toward a generic gamified app: no gems, confetti, mascots or loud gradients.",
+      "Don't drift toward clinical or medical styling: no pale-blue, sterile portal or charity-form look.",
+      "Don't drift toward soft neumorphism: never drop the ink outlines or rely on grey-on-grey soft shadows alone.",
+      "Don't add timers, countdowns or anything that pressures speed.",
+      "Don't add soft shadows or glows in High vis; it is flat, with thicker lines.",
+      "Don't rotate things beyond the fanned cards and the stamp."
+    ]
+  }
+}
