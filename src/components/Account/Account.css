@@ -27,7 +27,7 @@
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 4px 5px 0 var(--accent);
+  box-shadow: 4px 5px 0 var(--line);
 }
 
 [data-theme="high-visibility"] .account-card {

@@ -120,12 +120,44 @@ export const choicePrompt = (item: ItemId): string => {
 const capitalize = (text: string): string =>
   text.charAt(0).toUpperCase() + text.slice(1);
 
+/** "a, b, c, d and e", by their spoken names. */
+const listLetters = (letters: readonly string[], language: Language): string => {
+  const names = letters.map((letter) => spokenLetter(letter, language));
+  return names.length < 2
+    ? names.join("")
+    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+};
+
+/**
+ * Letters by name, as "the letter a" or "the letters a, b and c", so a single
+ * letter is never read as a word: "makes a in English" reads as an article,
+ * "get i right" as a pronoun. Numbers and signs already have word names
+ * ("number 7", "hyphen") and are listed as they are.
+ */
+export const namedLetters = (
+  letters: readonly string[],
+  language: Language
+): string => {
+  const list = listLetters(letters, language);
+  if (!letters.every((letter) => kindOfLetter(letter, language) === "letter")) {
+    return list;
+  }
+  // A no-break space keeps the noun and the first letter on one line.
+  const one = letters.length === 1 && [...letters[0]].length === 1;
+  return `${one ? "the letter" : "the letters"}\u00a0${list}`;
+};
+
+const named = (item: ItemId): string => {
+  const { letter, language } = parseItemId(item);
+  return namedLetters([letter], language);
+};
+
 // Every sentence ends on a word or a number, never a single letter: screen
 // readers read "d." as an abbreviation and run on into the next sentence.
 const rule = (item: ItemId): string => {
-  const { letter, language } = parseItemId(item);
+  const { language } = parseItemId(item);
   const cells = answerCells(item);
-  const name = spokenLetter(letter, language);
+  const name = named(item);
   if (!isLetter(item)) {
     return `${capitalize(name)} is written with ${cellsInWords(cells)}, in ${LANGUAGE_LABELS[language]}.`;
   }
@@ -144,7 +176,7 @@ const mistakeText = (item: ItemId, answer: Answer): string => {
   }
   const { language } = parseItemId(item);
   const chosen = cellsForLetter(answer.choice, language) ?? [CLEAR_CELL];
-  return `You chose ${spokenLetter(answer.choice, language)}, which is ${cellsInWords(
+  return `You chose ${namedLetters([answer.choice], language)}, which is ${cellsInWords(
     chosen
   )}.`;
 };
@@ -160,9 +192,8 @@ export const resultText = (item: ItemId, answer: Answer): string =>
  * right answers on a learnt letter say nothing more.
  */
 export const masteryText = (item: ItemId, box: number): string => {
-  const { letter, language } = parseItemId(item);
-  const name = spokenLetter(letter, language);
-  if (box === LEARNT_BOX - 1) return `Get ${name} right once more to learn it.`;
+  const name = named(item);
+  if (box === LEARNT_BOX - 1) return `One more right answer for ${name} to learn it.`;
   if (box === LEARNT_BOX) return `${capitalize(name)} is learnt now.`;
   return "";
 };
@@ -175,21 +206,13 @@ export type Finished = {
   courseDone: boolean;
 };
 
-/** "a, b, c, d and e", by their spoken names. */
-const listLetters = (letters: readonly string[], language: Language): string => {
-  const names = letters.map((letter) => spokenLetter(letter, language));
-  return names.length < 2
-    ? names.join("")
-    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
-};
-
 // Lesson titles and letters never end a sentence either, since a title such
 // as "Letters a to e" ends on a single letter.
 export const finishedText = (
   course: Course,
   { lesson, next, courseDone }: Finished
 ): string => {
-  const learnt = `Lesson done. You learnt ${listLetters(lesson.letters, course.id)} in this lesson`;
+  const learnt = `Lesson done. You learnt ${namedLetters(lesson.letters, course.id)} in this lesson`;
   if (courseDone) {
     return `${learnt}, the last one in the ${course.name} course. Congratulations, you have learnt everything it teaches.`;
   }

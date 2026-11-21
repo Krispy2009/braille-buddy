@@ -10,7 +10,6 @@ import {
   LANGUAGE_TAGS,
   parseItemId,
   raisedDots,
-  spokenLetter,
 } from "../../game/braille";
 import {
   CellEntry,
@@ -55,6 +54,7 @@ import {
   isRightCells,
   makeQuestion,
   masteryText,
+  namedLetters,
   Question,
   QuestionSource,
   resultText,
@@ -184,9 +184,10 @@ export const LessonPractice = ({
     Math.min(progress.letters[itemId(language, entry)]?.box ?? 0, LEARNT_BOX)
   );
   const learnt = inARow.filter((count) => count === LEARNT_BOX).length;
-  const halfway = source.letters
-    .filter((_, index) => inARow[index] === LEARNT_BOX - 1)
-    .map((entry) => spokenLetter(entry, language));
+  const halfway = source.letters.filter(
+    (_, index) => inARow[index] === LEARNT_BOX - 1
+  );
+  const halfwayNames = namedLetters(halfway, language);
   const noun = entriesNoun(course, source.letters);
   const answerDots = answerCells(question.item);
   // Numbers and two-cell signs are written one cell at a time.
@@ -342,7 +343,7 @@ export const LessonPractice = ({
           aria-valuenow={learnt}
           aria-valuetext={
             pips && halfway.length > 0
-              ? `${learnt} of ${total} ${noun} learnt. ${halfway.join(", ")} ${
+              ? `${learnt} of ${total} ${noun} learnt. ${halfwayNames.charAt(0).toUpperCase()}${halfwayNames.slice(1)} ${
                   halfway.length === 1 ? "needs" : "need"
                 } one more right answer.`
               : `${learnt} of ${total} ${noun} learnt`
@@ -496,11 +497,11 @@ export const LessonPractice = ({
                 <span>
                   {answeredBox === LEARNT_BOX ? (
                     <>
-                      <Letter letter={letter} language={language} /> learnt!
+                      <Letter letter={letter} language={language} className="letter-chip" /> learnt!
                     </>
                   ) : (
                     <>
-                      One more for <Letter letter={letter} language={language} />
+                      One more for <Letter letter={letter} language={language} className="letter-chip" />
                     </>
                   )}
                 </span>

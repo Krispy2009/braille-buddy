@@ -227,6 +227,12 @@
   text-wrap: pretty;
 }
 
+/* The letters stay on one line, so a list never breaks as "a, b, c," over
+   "d, e." */
+.home-today strong {
+  white-space: nowrap;
+}
+
 .home-links {
   display: flex;
   flex-wrap: wrap;
@@ -402,8 +408,10 @@ button.deck-front {
     font-size: 3.5rem;
   }
 
-  .home > .home-explore {
-    justify-self: start;
+  /* The eyebrow is the headline's caption; today's line starts a new
+     group under it, a clear step down. */
+  .home > .home-today {
+    margin-top: 0.625rem;
   }
 
   .home > .daily-card {

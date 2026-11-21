@@ -55,7 +55,7 @@ test("links to report a problem on GitHub", async () => {
   const user = userEvent.setup();
   render(<App />);
   await user.click(screen.getByRole("button", { name: "Accessibility" }));
-  expect(screen.getByRole("link", { name: /Report a problem on GitHub/ })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: /Report a problem on\sGitHub/ })).toHaveAttribute(
     "href",
     "https://github.com/Krispy2009/braille-buddy/issues/new"
   );

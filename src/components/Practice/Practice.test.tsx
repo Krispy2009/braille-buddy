@@ -285,13 +285,15 @@ describe("letter to dots", () => {
       await user.keyboard("{Enter}");
 
       expect(status()).toHaveTextContent(
-        "Correct, plus 10 points. Dot 1 makes a in English. " +
-          "Get a right once more to learn it."
+        "Correct, plus 10 points. Dot 1 makes the letter a in English. " +
+          "One more right answer for the letter a to learn it."
       );
+      // A lone a or i is named as a letter, never left to read as a word.
+      expect(status().textContent).not.toMatch(/(?<!letters?)\s[ai][\s.]/);
       // The progress shows the rule: a is halfway, nothing learnt yet.
       expect(learnt()).toHaveAttribute(
         "aria-valuetext",
-        "0 of 5 letters learnt. a needs one more right answer."
+        "0 of 5 letters learnt. The letter\u00a0a needs one more right answer."
       );
       const next = screen.getByRole("button", { name: "Next question" });
       expect(next).toHaveFocus();
@@ -313,7 +315,7 @@ describe("letter to dots", () => {
       await user.click(screen.getByRole("button", { name: "Check" }));
 
       expect(status()).toHaveTextContent(
-        "Not quite. Dot 1 makes a in English. You raised dots 1 and 4."
+        "Not quite. Dot 1 makes the letter a in English. You raised dots 1 and 4."
       );
       expect(screen.getByText("Answer")).toBeInTheDocument();
       expect(saved().points).toBe(0);
@@ -339,7 +341,7 @@ describe("letter to dots", () => {
       expect(dotButton(dotEntry, 2)).toHaveAttribute("aria-pressed", "true");
       await user.click(screen.getByRole("button", { name: "Check" }));
       expect(status()).toHaveTextContent(
-        "Correct, plus 10 points. Dots 1 and 2 make b in English."
+        "Correct, plus 10 points. Dots 1 and 2 make the letter b in English."
       );
       expect(saved().points).toBe(20);
     });
@@ -390,7 +392,7 @@ describe("letter to dots", () => {
     // b is dots 1 and 2.
     await user.keyboard("{f>}{d>}{/d}{/f}{Enter}");
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dots 1 and 2 make b in English."
+      "Correct, plus 10 points. Dots 1 and 2 make the letter b in English."
     );
     expect(saved().points).toBe(20);
   });
@@ -416,7 +418,7 @@ describe("letter to dots", () => {
 
     await user.keyboard("{f>}{d>}{/d}{/f}{Enter}");
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dots 1 and 2 make b in English."
+      "Correct, plus 10 points. Dots 1 and 2 make the letter b in English."
     );
     expect(saved().points).toBe(20);
   });
@@ -490,7 +492,7 @@ describe("dots to letter", () => {
 
     await user.click(screen.getByRole("button", { name: "c" }));
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dots 1 and 4 make c in English."
+      "Correct, plus 10 points. Dots 1 and 4 make the letter c in English."
     );
     expect(screen.getByRole("button", { name: "c" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "c" })).toHaveAttribute(
@@ -515,7 +517,7 @@ describe("dots to letter", () => {
     await user.keyboard("{Enter}");
 
     expect(status()).toHaveTextContent(
-      new RegExp(`^Not quite\\. Dots 1 and 4 make c in English\\. You chose ${chosen}, which is`)
+      new RegExp(`^Not quite\\. Dots 1 and 4 make the letter c in English\\. You chose the letter\\s${chosen}, which is`)
     );
     expect(first).toHaveAttribute("data-mark", "wrong");
     expect(screen.getByRole("button", { name: "c" })).toHaveAttribute(
@@ -548,7 +550,7 @@ test("never ends an announcement sentence on a single letter", async () => {
   await start(user);
   await user.click(screen.getByRole("button", { name: "e" }));
   const text = status().textContent ?? "";
-  expect(text).toMatch(/You chose e, which is dots 1 and 5\.$/);
+  expect(text).toMatch(/You chose the letter\se, which is dots 1 and 5\.$/);
   expect(text).not.toMatch(/(^|\s)\p{L}\./u);
 });
 
@@ -566,7 +568,7 @@ describe("Greek", () => {
 
     await user.click(choice);
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dots 1, 4 and 5 make delta in Greek."
+      "Correct, plus 10 points. Dots 1, 4 and 5 make the letter delta in Greek."
     );
   });
 
@@ -579,7 +581,7 @@ describe("Greek", () => {
     await user.keyboard("2");
     await user.click(screen.getByRole("button", { name: "Check" }));
     expect(status()).toHaveTextContent(
-      "Not quite. Dot 1 makes alpha in Greek. You raised dot 2."
+      "Not quite. Dot 1 makes the letter alpha in Greek. You raised dot 2."
     );
   });
 });
@@ -592,7 +594,7 @@ describe("learning a letter", () => {
     expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
     await user.keyboard("1{Enter}");
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dot 1 makes a in English. A is learnt now."
+      "Correct, plus 10 points. Dot 1 makes the letter a in English. The letter a is learnt now."
     );
     expect(learnt()).toHaveAttribute("aria-valuetext", "1 of 5 letters learnt");
   });
@@ -612,13 +614,13 @@ describe("finishing a lesson", () => {
     await start(user, "Continue Letters a to e");
     expect(learnt()).toHaveAttribute(
       "aria-valuetext",
-      "4 of 5 letters learnt. e needs one more right answer."
+      "4 of 5 letters learnt. The letter\u00a0e needs one more right answer."
     );
 
     await user.click(screen.getByRole("button", { name: "e" }));
     expect(status()).toHaveTextContent(
-      "Correct, plus 10 points. Dots 1 and 5 make e in English. " +
-        "Lesson done. You learnt a, b, c, d and e in this lesson, and Letters f to j is now open. " +
+      "Correct, plus 10 points. Dots 1 and 5 make the letter e in English. " +
+        "Lesson done. You learnt the letters a, b, c, d and e in this lesson, and Letters f to j is now open. " +
         "You have 10 points."
     );
     // The lesson's letters land as cards, and the heading says what was learnt.
@@ -701,7 +703,7 @@ describe("finishing a lesson", () => {
     await user.click(screen.getByRole("button", { name: "z" }));
 
     expect(status()).toHaveTextContent(
-      "Lesson done. You learnt u, v, w, x, y and z in this lesson, and Numbers 1 to 5 is now open."
+      "Lesson done. You learnt the letters u, v, w, x, y and z in this lesson, and Numbers 1 to 5 is now open."
     );
     expect(screen.getByRole("button", { name: "Next lesson" })).toHaveFocus();
   });

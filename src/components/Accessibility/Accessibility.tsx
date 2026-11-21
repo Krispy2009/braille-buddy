@@ -95,7 +95,7 @@ export const Accessibility = ({ onBack }: AccessibilityProps) => {
           If something does not work for you, please tell us which screen
           reader, browser and device you use and what happened.{" "}
           <a href={REPORT_URL} target="_blank" rel="noreferrer">
-            Report a problem on GitHub<span className="sr-only"> (opens in a new tab)</span>
+            Report a problem on&nbsp;GitHub<span className="sr-only"> (opens in a new tab)</span>
           </a>
         </p>
       </section>
