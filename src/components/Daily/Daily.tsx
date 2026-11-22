@@ -262,7 +262,6 @@ const DailyGame = ({
           read={attempts.read}
           write={attempts.write}
           earned={dailyPoints(read, write)}
-          points={progress.points}
           streak={currentStreak(progress, now())}
           onBack={onBack}
           headingRef={stepRef}

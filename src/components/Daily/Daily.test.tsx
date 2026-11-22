@@ -186,14 +186,15 @@ describe("Write it", () => {
     expect(onProgress.mock.calls[0][0]).toMatchObject({ points: 50, streak: 1, lastPlayed: "2026-11-15" });
     await user.click(screen.getByRole("button", { name: "See today's result" }));
     expect(screen.getByRole("heading", { level: 3, name: "Today's result" })).toHaveFocus();
-    expect(
-      screen.getByText("Braille Buddy daily, 15 Nov 2026 (English): Read it in 1 try, Write it in 1 try.")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("+50 points today · 50 points in all · 1 day in a row")
-    ).toBeInTheDocument();
-    expect(document.querySelector(".daily-grid")).toHaveAttribute("aria-hidden", "true");
-    expect(document.querySelector(".daily-grid")).toHaveTextContent("Read ⠿");
+    // One row per half: its word, the tries in words, and its row of the
+    // share grid (hidden from screen readers, which hear the words).
+    const [readRow, writeRow] = screen.getAllByRole("listitem");
+    expect(readRow).toHaveTextContent(new RegExp(`^Read it${english.read}, spelled .+in 1 try⠿⠀⠀$`));
+    expect(writeRow).toHaveTextContent(new RegExp(`^Write it${english.write}, spelled .+in 1 try⠿⠀⠀$`));
+    expect(readRow.querySelector(".daily-tally-cells")).toHaveAttribute("aria-hidden", "true");
+    // The date and course are in the eyebrow, not said again.
+    expect(screen.queryByText(/Braille Buddy daily/)).not.toBeInTheDocument();
+    expect(screen.getByText("+50 points today · 1 day in a row")).toBeInTheDocument();
   });
 
   test("a wrong try says which letters are right and goes to the first wrong one", async () => {
@@ -225,8 +226,9 @@ describe("Write it", () => {
     // Finishing counts, even without the word: points for playing and the read word.
     expect(onProgress.mock.calls[0][0]).toMatchObject({ points: 30, streak: 1 });
     await user.click(screen.getByRole("button", { name: "See today's result" }));
-    expect(screen.getByText(/Write it: answer shown after 3 tries\./)).toBeInTheDocument();
-    expect(document.querySelector(".daily-grid")).toHaveTextContent("Write ⠤⠤⠤");
+    const writeRow = screen.getAllByRole("listitem")[1];
+    expect(writeRow).toHaveTextContent("answer shown after 3 tries");
+    expect(writeRow.querySelector(".daily-tally-cells")).toHaveTextContent("⠤⠤⠤");
   });
 
   test("works from the keyboard alone: number keys and Enter", async () => {

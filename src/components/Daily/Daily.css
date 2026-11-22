@@ -190,33 +190,79 @@
   margin-top: auto;
 }
 
-.daily-share-card {
-  padding: 1rem 1.125rem;
-  border: var(--line-width) solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: 4px 5px 0 var(--line);
-}
-
-[data-theme="high-visibility"] .daily-share-card {
-  box-shadow: none;
-}
-
-.daily-summary {
+/* The result: one row per half, a dotted rule between them as in Settings.
+   The name, the word and the tries read as one line; the half's row of the
+   share grid sits at the end, big, so the screen looks like what is shared.
+   Columns line up across the two rows. */
+.daily-tally {
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daily-tally-row {
+  display: grid;
+  grid-template-columns: 4.75rem auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.75rem;
+  min-height: 4rem;
+  border-bottom: 2px dotted var(--key-edge);
+}
+
+.daily-tally-row:last-child {
+  border-bottom: 0;
+}
+
+.daily-tally-name {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
-.daily-grid {
-  margin: 0.75rem 0 0;
+.daily-tally-tries {
+  color: var(--text-soft);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.daily-tally-cells {
   font-family: var(--mono);
   font-size: 2rem;
-  line-height: 1.2;
+  line-height: 1;
   white-space: pre;
 }
 
-.daily-words {
+.daily-points {
   margin: 0;
+}
+
+/* Too narrow for one line (a small phone with Bigger text): name and word
+   on top, the tries and cells under them. */
+@container page (max-width: 22rem) {
+  .daily-tally-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name word cells"
+      "tries tries cells";
+    row-gap: 0.25rem;
+    padding-block: 0.625rem;
+  }
+
+  .daily-tally-name {
+    grid-area: name;
+  }
+
+  .daily-tally-word {
+    grid-area: word;
+  }
+
+  .daily-tally-tries {
+    grid-area: tries;
+  }
+
+  .daily-tally-cells {
+    grid-area: cells;
+  }
 }
 
 .daily-actions .help {
@@ -226,7 +272,6 @@
 
 @media (forced-colors: active) {
   .daily-place,
-  .daily-share-card,
   .daily-input {
     border-color: CanvasText;
   }
