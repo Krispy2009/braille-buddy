@@ -38,6 +38,7 @@ import { CellRow } from "../Cell/CellRow";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
 import { Letter } from "../Practice/Letter";
+import { LetterLookup } from "./LetterLookup";
 import { Tries, TryRow } from "./Tries";
 import { Word } from "./Word";
 
@@ -151,6 +152,8 @@ export const WriteHalf = ({
     onSubmit: submit,
     enabled: writing,
     keyShortcuts,
+    // Escape leaves the puzzle (Daily), Backspace clears.
+    escapeClears: false,
   });
 
   const rows: TryRow[] = tries.map((guess) => {
@@ -203,6 +206,7 @@ export const WriteHalf = ({
       )}
 
       <Tries rows={rows} label="Your tries" />
+      {writing && <LetterLookup language={language} />}
 
       {finished && (
         <div className="daily-answer">

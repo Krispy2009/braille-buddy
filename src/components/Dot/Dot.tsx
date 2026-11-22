@@ -31,10 +31,6 @@ const DotButton = styled.button<{ $on: boolean }>`
   -webkit-tap-highlight-color: transparent;
   transition: transform 100ms ease, box-shadow 100ms ease;
 
-  &:is(span) {
-    cursor: default;
-  }
-
   border: var(--line-width) ${({ $on }) => ($on ? "solid" : "dashed")} var(--line);
   color: ${({ $on }) => ($on ? "var(--on-accent)" : "var(--text-soft)")};
   background: ${({ $on }) => ($on ? "var(--accent)" : "var(--surface)")};
@@ -42,6 +38,13 @@ const DotButton = styled.button<{ $on: boolean }>`
     $on
       ? "var(--dot-lift-x, 4px) var(--dot-lift-y, 5px) 0 var(--line)"
       : "inset 4px 4px 8px var(--shade), inset -4px -4px 8px var(--hi)"};
+
+  /* A picture of a dot, not a button: a flat dot is a dashed ring printed
+     on the plate, not a dimple to press. A raised one still stands up. */
+  &:is(span) {
+    cursor: default;
+    ${({ $on }) => !$on && "box-shadow: none; background: transparent;"}
+  }
 
   &:is(button):active {
     transform: translate(2px, 3px);

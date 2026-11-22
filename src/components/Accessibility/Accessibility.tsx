@@ -6,6 +6,7 @@ import {
   KNOWN_GAPS,
   REPORT_URL,
   TEST_RESULTS,
+  WHAT_IT_TEACHES,
 } from "./content";
 import "./Accessibility.css";
 
@@ -15,7 +16,7 @@ type AccessibilityProps = {
 };
 
 /**
- * A plain reading page: a goal, what is built in, an honest test table, the
+ * A plain reading page: what the app teaches, a goal, what is built in, an honest test table, the
  * known gaps and how to report a problem. Focus lands on the page heading
  * when it opens, as on Settings.
  */
@@ -29,10 +30,20 @@ export const Accessibility = ({ onBack }: AccessibilityProps) => {
         <button type="button" className="round-button" aria-label="Back" onClick={onBack}>
           <BackIcon />
         </button>
-        <h2 ref={headingRef} tabIndex={-1} className="frame-title">
+      </header>
+      <div className="prompt-block">
+        <p className="eyebrow">About Braille Buddy</p>
+        <h2 ref={headingRef} tabIndex={-1} className="task">
           Accessibility
         </h2>
-      </header>
+      </div>
+
+      <section aria-labelledby="a11y-teaches">
+        <h3 id="a11y-teaches">What Braille Buddy teaches</h3>
+        {WHAT_IT_TEACHES.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </section>
 
       <section aria-labelledby="a11y-goal">
         <h3 id="a11y-goal">Our goal</h3>
@@ -95,7 +106,7 @@ export const Accessibility = ({ onBack }: AccessibilityProps) => {
           If something does not work for you, please tell us which screen
           reader, browser and device you use and what happened.{" "}
           <a href={REPORT_URL} target="_blank" rel="noreferrer">
-            Report a problem on GitHub<span className="sr-only"> (opens in a new tab)</span>
+            Report a problem on&nbsp;GitHub<span className="sr-only"> (opens in a new tab)</span>
           </a>
         </p>
       </section>

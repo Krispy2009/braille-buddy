@@ -19,6 +19,14 @@ const openSettings = async (user: ReturnType<typeof userEvent.setup>) =>
 const back = async (user: ReturnType<typeof userEvent.setup>) =>
   user.click(screen.getByRole("button", { name: "Back" }));
 
+/** A lesson's new cards come first: Next card through them, then practise. */
+const meetTheCards = async (user: ReturnType<typeof userEvent.setup>) => {
+  while (!screen.queryByRole("button", { name: "Start practising" })) {
+    await user.click(screen.getByRole("button", { name: "Next card" }));
+  }
+  await user.click(screen.getByRole("button", { name: "Start practising" }));
+};
+
 const entryGroup = () => screen.getByRole("group", { name: "Entering dots" });
 const courseGroup = () => screen.getByRole("group", { name: "Course" });
 const comfortGroup = () => screen.getByRole("group", { name: "Comfort" });
@@ -32,7 +40,7 @@ test("Settings is its own screen with dot entry, theme, comfort and course", asy
 
   expect(screen.getByRole("heading", { level: 2, name: "Settings" })).toHaveFocus();
   // Nothing from Home comes along.
-  expect(screen.queryByRole("button", { name: "Press new cards" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Start lesson" })).not.toBeInTheDocument();
 
   const radios = within(entryGroup()).getAllByRole("radio");
   expect(radios.map((radio) => radio.getAttribute("value"))).toEqual(["cell", "keys"]);
@@ -89,13 +97,13 @@ test("choosing Brailler keys changes Explore and lessons at once and is saved", 
 
   // random() = 0 asks "write the letter a".
   vi.spyOn(Math, "random").mockReturnValue(0);
-  await user.click(screen.getByRole("button", { name: "Press new cards" }));
-  await user.click(screen.getByRole("button", { name: "Start practising" }));
+  await user.click(screen.getByRole("button", { name: "Start lesson" }));
+  await meetTheCards(user);
   expect(screen.getByRole("heading", { level: 3 })).toHaveAccessibleName(
     "Write the letter a in braille"
   );
   await user.click(screen.getByRole("button", { name: "Dot 1, key F" }));
-  await user.click(screen.getByRole("button", { name: "Press it" }));
+  await user.click(screen.getByRole("button", { name: "Check" }));
   expect(screen.getByRole("status")).toHaveTextContent("Correct, plus 10 points.");
 
   // Remembered after a reload.
@@ -172,8 +180,8 @@ test("the comfort switches take effect at once and are saved", async () => {
 
   // The key letters go from the keys, but stay in their names.
   await back(user);
-  await user.click(screen.getByRole("button", { name: "Press new cards" }));
-  await user.click(screen.getByRole("button", { name: "Start practising" }));
+  await user.click(screen.getByRole("button", { name: "Start lesson" }));
+  await meetTheCards(user);
   const keys = screen.getByRole("application", { name: "Brailler keys" });
   expect(keys).toHaveClass("no-letters");
   expect(screen.getByRole("button", { name: "Dot 1, key F" })).toBeInTheDocument();

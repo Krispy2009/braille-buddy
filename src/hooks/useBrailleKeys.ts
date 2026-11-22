@@ -6,8 +6,14 @@ export type BrailleKeysOptions = {
   onToggleDot: (dot: DotKey) => void;
   /** A chord was completed: the full set of dots pressed together. Replaces the cell contents. */
   onChord: (cell: CellType) => void;
-  /** Escape or Backspace. */
+  /** Backspace, and Escape unless `escapeClears` is false. */
   onClear: () => void;
+  /**
+   * False where Escape closes the screen instead (a lesson, the daily
+   * puzzle), so it never means two things. Backspace always clears.
+   * Default true.
+   */
+  escapeClears?: boolean;
   /** Enter. Optional (practice mode uses it to submit an answer). */
   onSubmit?: () => void;
   /** When false, no listeners are attached. Default true. */
@@ -90,6 +96,7 @@ export const useBrailleKeys = ({
   enabled = true,
   keyShortcuts = true,
   chordArea,
+  escapeClears = true,
 }: BrailleKeysOptions): void => {
   // Effect events always see the latest callbacks without being effect
   // dependencies, so new callback identities never re-attach the listeners.
@@ -197,7 +204,7 @@ export const useBrailleKeys = ({
       }
       if (keyShortcuts && /^[1-6]$/.test(event.key)) {
         toggleDot(`dot${event.key}` as DotKey);
-      } else if (event.key === "Escape" || event.key === "Backspace") {
+      } else if (event.key === "Backspace" || (escapeClears && event.key === "Escape")) {
         resetChord();
         clear();
       }
@@ -222,5 +229,5 @@ export const useBrailleKeys = ({
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [enabled, keyShortcuts, chordArea]);
+  }, [enabled, keyShortcuts, chordArea, escapeClears]);
 };

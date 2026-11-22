@@ -6,6 +6,7 @@ import {
   CLEAR_CELL,
   DotKey,
   itemId,
+  ItemId,
   kindOfLetter,
   LANGUAGE_TAGS,
   parseItemId,
@@ -29,29 +30,42 @@ import {
 import {
   completeLesson,
   entriesNoun,
-  isLetterLearnt,
+  LEARNT_BOX,
   lessonStates,
   metLetters,
 } from "../../game/lessons";
-import { currentStreak, Progress, recordAnswer } from "../../game/progress";
+import {
+  currentStreak,
+  POINTS_PER_CORRECT,
+  Progress,
+  recordAnswer,
+} from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
+import { useEscape } from "../../hooks/useEscape";
 import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
-import { Cell } from "../Cell/Cell";
+import { Cell, MarkIcon } from "../Cell/Cell";
 import { CellRow } from "../Cell/CellRow";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
 import { CloseIcon } from "../Icons/Icons";
 import { Choices } from "./Choices";
+import { FinishDeck } from "./FinishDeck";
 import { Letter } from "./Letter";
+import { daysInARow, daysWord } from "./Score";
 import {
   Answer,
   answerCells,
   choicePrompt,
+  choiceTask,
+  dotMarks,
   Finished,
   finishedText,
   isRightCells,
   makeQuestion,
+  masteryText,
+  missText,
+  namedLetters,
   Question,
   QuestionSource,
   resultText,
@@ -67,10 +81,16 @@ type LessonPracticeProps = {
   progress: Progress;
   onProgress: (next: Progress) => void;
   onBack: () => void;
+  /** The finished lesson's "Back to lessons". Leave out to use onBack. */
+  onLessons?: () => void;
   onStartLesson: (lesson: Lesson) => void;
   random: () => number;
   now: () => Date;
 };
+
+/** More letters than this get a plain bar instead of one pip each. */
+const MAX_PIPS = 8;
+const PIP_STATES = ["new", "half", "learnt"] as const;
 
 type FocusTarget = "heading" | "prompt" | "next" | "pad" | "finish";
 
@@ -83,7 +103,7 @@ const sourceFor = (
 ): QuestionSource => {
   const met = metLetters(course, progress);
   return lesson
-    ? { language: course.id, letters: lesson.letters, others: met }
+    ? { language: course.id, letters: lesson.letters, others: met, untilLearnt: true }
     : { language: course.id, letters: met, others: [] };
 };
 
@@ -119,6 +139,7 @@ export const LessonPractice = ({
   progress,
   onProgress,
   onBack,
+  onLessons = onBack,
   onStartLesson,
   random,
   now,
@@ -136,6 +157,9 @@ export const LessonPractice = ({
   const [answer, setAnswer] = React.useState<Answer | null>(null);
   const [finished, setFinished] = React.useState<Finished | null>(null);
   const [status, setStatus] = React.useState("");
+  // Letters missed in this run and not answered right since: they come up
+  // more often, since a miss doesn't lower a letter that isn't learnt yet.
+  const [missed, setMissed] = React.useState<ItemId[]>([]);
   // Opening the screen moves focus to its heading, so a screen reader says
   // which lesson this is before anything else.
   const [focusRequest, setFocusRequest] = React.useState<{
@@ -171,9 +195,16 @@ export const LessonPractice = ({
   const writing = asking && question.kind === "dots";
   const withKeys = writing && dotEntry === "keys";
   const title = lesson ? lesson.title : "Everything so far";
-  const learnt = source.letters.filter((entry) =>
-    isLetterLearnt(progress, itemId(language, entry))
-  ).length;
+  // Right answers per letter, up to the two that make it learnt: the rule
+  // itself, drawn as the progress. A miss never takes one away.
+  const inARow = source.letters.map((entry) =>
+    Math.min(progress.letters[itemId(language, entry)]?.box ?? 0, LEARNT_BOX)
+  );
+  const learnt = inARow.filter((count) => count === LEARNT_BOX).length;
+  const halfway = source.letters.filter(
+    (_, index) => inARow[index] === LEARNT_BOX - 1
+  );
+  const halfwayNames = namedLetters(halfway, language);
   const noun = entriesNoun(course, source.letters);
   const answerDots = answerCells(question.item);
   // Numbers and two-cell signs are written one cell at a time.
@@ -186,12 +217,20 @@ export const LessonPractice = ({
     onProgress(outcome.progress);
     setAnswer(result);
     setFinished(outcome.finished ?? null);
+    setMissed((current) => [
+      ...current.filter((item) => item !== question.item),
+      ...(result.correct ? [] : [question.item]),
+    ]);
     // The result goes to the live region only. Focus moves to a button whose
     // name doesn't repeat it, so nothing is read twice.
+    const box = answered.letters[question.item]?.box ?? 0;
+    const mastery = result.correct
+      ? masteryText(question.item, box)
+      : missText(question.item, box);
     setStatus(
       outcome.finished
-        ? `${resultText(question.item, result)} ${finishedText(course, outcome.finished)}`
-        : resultText(question.item, result)
+        ? `${resultText(question.item, result)} ${finishedText(course, outcome.finished)} You have ${outcome.progress.points} points, ${daysInARow(currentStreak(outcome.progress, now()))}.`
+        : [resultText(question.item, result), mastery].filter(Boolean).join(" ")
     );
     setFocusRequest({ target: outcome.finished ? "finish" : "next" });
   };
@@ -250,7 +289,7 @@ export const LessonPractice = ({
   };
 
   const goNext = () => {
-    const next = makeQuestion(source, progress, question.item, random);
+    const next = makeQuestion(source, progress, question.item, random, missed);
     setQuestion(next);
     setEntry(startEntry(answerCells(next.item).length));
     setAnswer(null);
@@ -277,28 +316,50 @@ export const LessonPractice = ({
     onClear: () => writing && setEntry(clearCurrentCell),
     onSubmit: () => (asking ? submit() : goNext()),
     keyShortcuts,
+    // Escape closes the lesson, like the close button; Backspace clears.
+    escapeClears: false,
   });
+  useEscape(onBack);
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
   const total = source.letters.length;
+  // One pip per letter while they fit in the frame; "Everything so far" can
+  // hold a whole alphabet, so it keeps a plain bar.
+  const pips = total <= MAX_PIPS;
+  const answeredBox = progress.letters[question.item]?.box ?? 0;
   const right = answer?.correct === true;
-  const wrong = answer !== null && !answer.correct;
   const kind = kindOfLetter(letter, language);
+  const finishedCount = finished?.lesson.letters.length ?? 0;
+  const finishedNoun = finished ? entriesNoun(course, finished.lesson.letters) : noun;
+  const streak = currentStreak(progress, now());
   // The cell label is part of what the dots describe, so a screen reader
   // hears "Cell 1 of 2" with the question.
   const describedBy = multi ? `${promptId} ${cellLabelId}` : promptId;
+  // A miss compares what was given with the answer, dot by dot: extra dots
+  // crossed on the given side, missed ones ringed on the answer's.
+  const givenCells =
+    answer?.kind === "dots"
+      ? answer.cells
+      : answer?.kind === "letter"
+        ? (cellsForLetter(answer.choice, language) ?? [CLEAR_CELL])
+        : [];
+  const marks = dotMarks(givenCells, answerDots);
+  const marked = (kind: "extra" | "missed") =>
+    (kind === "extra" ? marks.given : marks.answer).some(
+      (cell) => Object.keys(cell).length > 0
+    );
 
   // The action area is one element throughout, so the live region inside it
   // is never remounted: while writing it is the brailler base (or a plain
   // row), once answered it becomes the feedback sheet.
   const actionClass = answer
-    ? `action sheet ${right ? "sheet-right" : "sheet-wrong base"}`
+    ? `action sheet ${right ? "sheet-right" : "sheet-wrong"}${finished ? " sheet-finish" : ""}`
     : withKeys
       ? "action base brailler-base"
       : "action";
 
-  // On the black base the main button is a key; elsewhere it is black.
-  const mainButton = wrong ? "key-button" : "primary-button";
+  // Both sheets are paper, so the main button is the black one on either.
+  const mainButton = "primary-button";
 
   return (
     <div className="screen lesson">
@@ -306,7 +367,7 @@ export const LessonPractice = ({
         <button
           type="button"
           className="round-button"
-          aria-label="Back to lessons"
+          aria-label="Close lesson"
           onClick={onBack}
         >
           <CloseIcon />
@@ -318,12 +379,33 @@ export const LessonPractice = ({
           aria-valuemin={0}
           aria-valuemax={total}
           aria-valuenow={learnt}
-          aria-valuetext={`${learnt} of ${total} ${noun} learnt`}
+          aria-valuetext={
+            pips && halfway.length > 0
+              ? `${learnt} of ${total} ${noun} learnt. ${halfwayNames.charAt(0).toUpperCase()}${halfwayNames.slice(1)} ${
+                  halfway.length === 1 ? "needs" : "need"
+                } one more right answer.`
+              : `${learnt} of ${total} ${noun} learnt`
+          }
+          data-pips={pips || undefined}
         >
-          <span
-            className="progress-fill"
-            style={{ width: `${total ? (learnt / total) * 100 : 0}%` }}
-          />
+          {pips ? (
+            source.letters.map((entry, index) => (
+              <span key={entry} className="pip" aria-hidden="true">
+                <span className="pip-letter" lang={LANGUAGE_TAGS[language]}>
+                  {entry}
+                </span>
+                <span className="pip-dots" data-state={PIP_STATES[inARow[index]]}>
+                  <span className="pip-dot" />
+                  <span className="pip-dot" />
+                </span>
+              </span>
+            ))
+          ) : (
+            <span
+              className="progress-fill"
+              style={{ width: `${total ? (learnt / total) * 100 : 0}%` }}
+            />
+          )}
         </div>
         <span className="progress-count" aria-hidden="true">
           {learnt}/{total}
@@ -342,7 +424,11 @@ export const LessonPractice = ({
           {title}
         </h2>
         <h3 id={promptId} ref={promptRef} tabIndex={-1} className="task prompt">
-          {question.kind === "dots" ? (
+          {finished ? (
+            `You learnt ${finishedCount} new ${
+              finishedCount === 1 ? finishedNoun.slice(0, -1) : finishedNoun
+            }`
+          ) : question.kind === "dots" ? (
             kind === "letter" ? (
               <>
                 Write the {[...letter].length > 1 ? "letters" : "letter"}{" "}
@@ -359,58 +445,71 @@ export const LessonPractice = ({
               </>
             )
           ) : (
-            choicePrompt(question.item)
+            // The cell is the question, so the dots aren't printed: shown
+            // "Which letter is this?", heard "Which letter has dots 1 and
+            // 4?" (the cell is hidden from screen readers). One name, so
+            // the heading and the choices it labels are read as one question.
+            <>
+              <span aria-hidden="true">{choiceTask(question.item)}</span>
+              <span className="sr-only">{choicePrompt(question.item)}</span>
+            </>
           )}
         </h3>
       </div>
 
-      <div className="hero">
-        {writing && multi && (
-          <>
-            <p id={cellLabelId} className="eyebrow cell-position">
-              {entryLabel(entry)}
-            </p>
+      {finished ? (
+        <div className="hero">
+          <FinishDeck letters={finished.lesson.letters} language={language} />
+        </div>
+      ) : (
+        <div className="hero">
+          {writing && multi && (
+            <>
+              <p id={cellLabelId} className="eyebrow cell-position">
+                {entryLabel(entry)}
+              </p>
+              <CellRow
+                cells={entry.cells}
+                current={entry.current}
+                onSelect={(index) => goToCell(moveToCell(entry, index))}
+                label="Cells of your answer"
+              />
+            </>
+          )}
+          {writing && !withKeys ? (
+            <Cell positions={positions} onClick={toggleDot} describedBy={describedBy} />
+          ) : writing ? (
+            <Cell positions={positions} size="medium" />
+          ) : (
             <CellRow
-              cells={entry.cells}
-              current={entry.current}
-              onSelect={(index) => goToCell(moveToCell(entry, index))}
-              label="Cells of your answer"
+              cells={question.kind === "dots" ? entry.cells : answerDots}
+              // After the answer the cells make room for the feedback sheet.
+              size="medium"
             />
-          </>
-        )}
-        {writing && !withKeys ? (
-          <Cell positions={positions} onClick={toggleDot} describedBy={describedBy} />
-        ) : writing ? (
-          <Cell positions={positions} size="medium" />
-        ) : (
-          <CellRow
-            cells={question.kind === "dots" ? entry.cells : answerDots}
-            // After the answer the cells make room for the feedback sheet.
-            size="medium"
-          />
-        )}
-        {question.kind === "letter" && (
-          <Choices
-            choices={question.choices}
-            language={language}
-            answer={letter}
-            chosen={answer?.kind === "letter" ? answer.choice : undefined}
-            labelledBy={promptId}
-            onChoose={choose}
-          />
-        )}
-        {writing && !withKeys && keyShortcuts && (
-          <ChordPad ref={padRef} canSubmit describedBy={describedBy} />
-        )}
-        {withKeys && (
-          <>
-            <p className="eyebrow keys-hint" aria-hidden="true">
-              tap keys one by one or together
-            </p>
-            <BraillerKeysHelp id={keysHelpId} canSubmit shortcuts={keyShortcuts} />
-          </>
-        )}
-      </div>
+          )}
+          {question.kind === "letter" && (
+            <Choices
+              choices={question.choices}
+              language={language}
+              answer={letter}
+              chosen={answer?.kind === "letter" ? answer.choice : undefined}
+              labelledBy={promptId}
+              onChoose={choose}
+            />
+          )}
+          {writing && !withKeys && keyShortcuts && (
+            <ChordPad ref={padRef} canSubmit describedBy={describedBy} />
+          )}
+          {withKeys && (
+            <>
+              <p className="eyebrow keys-hint" aria-hidden="true">
+                tap one key, or several at once
+              </p>
+              <BraillerKeysHelp id={keysHelpId} canSubmit shortcuts={keyShortcuts} />
+            </>
+          )}
+        </div>
+      )}
 
       <div className={actionClass}>
         {withKeys && (
@@ -427,53 +526,115 @@ export const LessonPractice = ({
         {/* Shown, not announced: the result in words follows. */}
         {answer && (
           <div className="sheet-head" aria-hidden="true">
-            {right ? (
-              <span className="stamp">
-                {answer.kind === "dots" ? "Pressed it" : "Got it"}
-              </span>
+            {finished ? (
+              <span className="stamp stamp-done">Lesson done</span>
             ) : (
-              <span className="cross">
-                <CloseIcon />
+              <span className={right ? "stamp" : "stamp stamp-miss"}>
+                {right ? "Got it" : "Not quite"}
+              </span>
+            )}
+            {/* What the answer did for its letter. A miss shows the pip
+                unchanged: nothing earned is taken away. */}
+            {!finished && (!right || answeredBox <= LEARNT_BOX) && (
+              <span className="mastery-note">
+                <span
+                  className="pip-dots"
+                  data-state={PIP_STATES[Math.min(answeredBox, LEARNT_BOX)]}
+                >
+                  <span className="pip-dot" />
+                  <span className="pip-dot" />
+                </span>
+                <span>
+                  {answeredBox >= LEARNT_BOX ? (
+                    <>
+                      <Letter letter={letter} language={language} className="letter-chip" />{" "}
+                      {right ? "learnt!" : "still learnt"}
+                    </>
+                  ) : (
+                    <>
+                      {right ? "One" : answeredBox === 0 ? "Two" : "Still one"} more for{" "}
+                      <Letter letter={letter} language={language} className="letter-chip" />
+                    </>
+                  )}
+                </span>
               </span>
             )}
           </div>
         )}
-        <p role="status" className="feedback">
+        {/* The points are the one thing the stamp and the pip don't show. */}
+        {right && !finished && (
+          <p className="sheet-points" aria-hidden="true">
+            <b>+{POINTS_PER_CORRECT}</b> points
+          </p>
+        )}
+        {/* Once answered, the result in full is for screen readers only: the
+            stamp, the pip and the compare cells show it. Before that the
+            region shows hints such as "Raise at least one dot". It stays the
+            same element throughout, so it is never remounted. */}
+        <p role="status" className={answer ? "feedback sr-only" : "feedback"}>
           {status}
         </p>
         {answer && !answer.correct && (
           <div className="compare" aria-hidden="true">
-            <div className="compare-side">
-              <span className="compare-label">
-                {answer.kind === "dots" ? (
-                  "You pressed"
-                ) : (
-                  <>
-                    You chose{" "}
-                    <span lang={LANGUAGE_TAGS[language]}>{answer.choice}</span>
-                  </>
+            <div className="compare-cells">
+              <div className="compare-side">
+                <span className="compare-label">
+                  {answer.kind === "dots" ? (
+                    "You wrote"
+                  ) : (
+                    // Each letter set as a chip, so a lone a or i never reads
+                    // as a word: the choice flat and dashed, as it lies in the
+                    // row above, the answer raised.
+                    <>
+                      You chose{" "}
+                      <Letter
+                        letter={answer.choice}
+                        language={language}
+                        className="letter-chip compare-chip compare-chip-miss"
+                      />
+                    </>
+                  )}
+                </span>
+                <CellRow cells={givenCells} size="small" marks={marks.given} />
+              </div>
+              <div className="compare-side">
+                <span className="compare-label">
+                  Answer{" "}
+                  <Letter letter={letter} language={language} className="letter-chip compare-chip" />
+                </span>
+                <CellRow cells={answerDots} size="small" marks={marks.answer} />
+              </div>
+            </div>
+            {/* A key to the marks, only those shown. */}
+            {(marked("extra") || marked("missed")) && (
+              <p className="compare-key">
+                {marked("extra") && (
+                  <span>
+                    <MarkIcon mark="extra" /> extra
+                  </span>
                 )}
-              </span>
-              <CellRow
-                cells={
-                  answer.kind === "dots"
-                    ? answer.cells
-                    : (cellsForLetter(answer.choice, language) ?? [CLEAR_CELL])
-                }
-                size="small"
-              />
-            </div>
-            <div className="compare-side">
-              <span className="compare-label">
-                Answer <span lang={LANGUAGE_TAGS[language]}>{letter}</span>
-              </span>
-              <CellRow cells={answerDots} size="small" />
-            </div>
+                {marked("missed") && (
+                  <span>
+                    <MarkIcon mark="missed" /> missed
+                  </span>
+                )}
+              </p>
+            )}
           </div>
         )}
         {finished && (
-          <p className="eyebrow totals">
-            Lesson done · {progress.points} pts · day {currentStreak(progress, now())}
+          <p className="finish-totals" aria-hidden="true">
+            <span>
+              <b>{progress.points}</b> points
+            </span>
+            <span>
+              <b>{streak}</b> {daysWord(streak)}
+            </span>
+            {nextLesson && (
+              <span>
+                <b>{nextLesson.title}</b> open
+              </span>
+            )}
           </p>
         )}
         {finished && nextLesson && (
@@ -493,7 +654,7 @@ export const LessonPractice = ({
                 ref={nextLesson ? undefined : finishRef}
                 type="button"
                 className={nextLesson ? "quiet-button" : mainButton}
-                onClick={onBack}
+                onClick={onLessons}
               >
                 Back to lessons
               </button>
@@ -515,7 +676,7 @@ export const LessonPractice = ({
                 className={withKeys ? "key-button" : "primary-button"}
                 onClick={submit}
               >
-                {isLastCell(entry) ? "Press it" : "Next cell"}
+                {isLastCell(entry) ? "Check" : "Next cell"}
               </button>
               {multi && entry.current > 0 && (
                 <button

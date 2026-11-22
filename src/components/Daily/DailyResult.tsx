@@ -5,6 +5,7 @@ import {
   shareMessage,
   shareSummary,
 } from "../../daily/daily";
+import { daysInARow } from "../Practice/Score";
 import { Word } from "./Word";
 
 type DailyResultProps = {
@@ -88,7 +89,7 @@ export const DailyResult = ({
         </pre>
       </div>
       <p className="eyebrow">
-        +{earned} pts today · {points} pts in all · day {streak}
+        +{earned} points today · {points} points in all · {daysInARow(streak)}
       </p>
       <p className="daily-words">
         Today's words: <Word word={puzzle.read} language={puzzle.course} /> to read and{" "}

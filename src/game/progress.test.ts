@@ -61,14 +61,23 @@ describe("recordAnswer", () => {
     expect(progress.letters[A].correct).toBe(8);
   });
 
-  test("wrong answer keeps points and drops the box to 0", () => {
+  test("a wrong answer keeps points and drops a well-known letter back to just learnt", () => {
     let progress = emptyProgress();
     for (let i = 0; i < 3; i++) {
       progress = recordAnswer(progress, A, true, at(2026, 3, 10));
     }
     const next = recordAnswer(progress, A, false, at(2026, 3, 10));
     expect(next.points).toBe(3 * POINTS_PER_CORRECT);
-    expect(next.letters[A]).toEqual({ correct: 3, wrong: 1, box: 0 });
+    expect(next.letters[A]).toEqual({ correct: 3, wrong: 1, box: 2 });
+  });
+
+  test("a wrong answer never takes away a right answer before learnt", () => {
+    const once = recordAnswer(emptyProgress(), A, true, at(2026, 3, 10));
+    const missed = recordAnswer(once, A, false, at(2026, 3, 10));
+    expect(missed.letters[A]).toEqual({ correct: 1, wrong: 1, box: 1 });
+    // Right twice, not in a row, is learnt.
+    const twice = recordAnswer(missed, A, true, at(2026, 3, 10));
+    expect(twice.letters[A].box).toBe(2);
   });
 
   test("a first wrong answer creates stats and starts a streak", () => {

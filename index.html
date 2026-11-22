@@ -31,6 +31,21 @@
         var root = document.documentElement;
         root.dataset.theme = theme;
 
+        // Bigger text and less motion too, so rem container queries are right
+        // from the first paint. Keep in sync with the effect in src/App.tsx.
+        // Less motion follows the device until it is saved, as in src/game/settings.ts.
+        var saved = {};
+        try {
+          saved = JSON.parse(localStorage.getItem("braille-buddy:settings") || "{}") || {};
+          if (saved.version !== 1) saved = {};
+        } catch (e) {}
+        var lessMotion =
+          typeof saved.lessMotion === "boolean"
+            ? saved.lessMotion
+            : !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        root.dataset.text = saved.biggerText === true ? "bigger" : "normal";
+        root.dataset.motion = lessMotion ? "less" : "full";
+
         // Match the browser/status bar to the page colour (--bg in
         // src/theme/tokens.css), also when the theme switcher changes the theme later.
         var colors = { light: "#eceae4", dark: "#17171a", "high-visibility": "#ffd60a" };

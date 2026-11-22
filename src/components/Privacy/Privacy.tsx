@@ -23,10 +23,13 @@ export const Privacy = ({ accounts, onBack }: PrivacyProps) => {
         <button type="button" className="round-button" aria-label="Back" onClick={onBack}>
           <BackIcon />
         </button>
-        <h2 ref={headingRef} tabIndex={-1} className="frame-title">
+      </header>
+      <div className="prompt-block">
+        <p className="eyebrow">About Braille Buddy</p>
+        <h2 ref={headingRef} tabIndex={-1} className="task">
           Privacy
         </h2>
-      </header>
+      </div>
 
       <section aria-labelledby="privacy-no-account">
         <h3 id="privacy-no-account">Playing without an account</h3>

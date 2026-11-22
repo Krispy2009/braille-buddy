@@ -173,7 +173,7 @@ export const BraillerKeysHelp = ({
           On a keyboard, <kbd>Tab</kbd> moves between the keys and{" "}
           <kbd>Space</kbd> raises or lowers a dot. Letter and number key
           shortcuts are off in Settings.
-          {canSubmit && " Press the Press it button to check your answer."}
+          {canSubmit && " Then use the Check button to check your answer."}
         </p>
       </div>
     );

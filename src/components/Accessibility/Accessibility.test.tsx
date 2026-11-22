@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../../App";
-import { TEST_RESULTS } from "./content";
+import { TEST_RESULTS, WHAT_IT_TEACHES } from "./content";
 
 beforeEach(() => localStorage.clear());
 
@@ -10,6 +10,7 @@ const expectPage = () => {
   expect(
     screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)
   ).toEqual([
+    "What Braille Buddy teaches",
     "Our goal",
     "What is built in",
     "Screen reader test results",
@@ -55,8 +56,41 @@ test("links to report a problem on GitHub", async () => {
   const user = userEvent.setup();
   render(<App />);
   await user.click(screen.getByRole("button", { name: "Accessibility" }));
-  expect(screen.getByRole("link", { name: /Report a problem on GitHub/ })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: /Report a problem on\sGitHub/ })).toHaveAttribute(
     "href",
     "https://github.com/Krispy2009/braille-buddy/issues/new"
   );
+});
+
+test("says plainly what the app teaches: dot patterns, not reading by touch", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Accessibility" }));
+  const section = screen.getByRole("region", { name: "What Braille Buddy teaches" });
+  WHAT_IT_TEACHES.forEach((line) => expect(section).toHaveTextContent(line));
+  expect(section).toHaveTextContent(/dot patterns of braille/);
+  expect(section).toHaveTextContent(/does not teach you to read braille with your fingers/);
+  expect(section).toHaveTextContent(/braille teacher or a local blindness organisation/);
+});
+
+test("after a first lesson, the note leaves Home and stays on this page", async () => {
+  localStorage.setItem(
+    "braille-buddy:progress",
+    JSON.stringify({
+      version: 1,
+      points: 100,
+      streak: 1,
+      bestStreak: 1,
+      lastPlayed: null,
+      letters: {},
+      completedLessons: { english: ["a-e"] },
+    })
+  );
+  const user = userEvent.setup();
+  render(<App />);
+  expect(screen.queryByText(/teaches the dot patterns of braille/)).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Accessibility" }));
+  expect(
+    screen.getByRole("region", { name: "What Braille Buddy teaches" })
+  ).toHaveTextContent(/teaches the dot patterns of braille/);
 });

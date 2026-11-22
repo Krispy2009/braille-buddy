@@ -51,6 +51,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* No one-word last lines: prompts and hints wrap so the last line keeps a
+   few words ("keys.", "next." left alone look like a mistake). */
+p,
+li,
+h1,
+h2,
+h3 {
+  text-wrap: pretty;
+}
+
 button,
 input {
   font: inherit;
@@ -67,9 +77,12 @@ button {
   outline-offset: 3px;
 }
 
-/* Headings that take focus when a screen opens show no ring for it: the
-   focus is for screen readers, not a control to act on. */
-[tabindex="-1"]:focus:not(:focus-visible) {
+/* Headings that take focus when a screen opens or a question changes show
+   no ring for it: the focus is for screen readers, not a control to act on.
+   The browser counts focus moved after a key press as focus-visible, so the
+   ring is left off headings outright, not only for pointer focus. */
+[tabindex="-1"]:focus:not(:focus-visible),
+:is(h1, h2, h3)[tabindex="-1"]:focus {
   outline: none;
 }
 
@@ -124,14 +137,6 @@ button {
   min-height: 2.75rem;
 }
 
-.frame-title {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-
 .round-button {
   display: inline-flex;
   flex: none;
@@ -151,7 +156,12 @@ button {
   height: 1.15rem;
 }
 
-/* Prompt: a small typed label for context, then the task in bold. */
+/* Prompt: under the frame on every screen, a small typed label for context,
+   then the task (or the screen's title) in bold. */
+.prompt-block {
+  margin-top: 1.5rem;
+}
+
 .eyebrow {
   margin: 0;
   font-family: var(--mono);
@@ -167,6 +177,7 @@ button {
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* A letter set in type: an orange card with a hard shadow. */
@@ -293,7 +304,7 @@ button[aria-disabled="true"] {
 kbd {
   padding: 0 0.3em;
   border: 1px solid currentColor;
-  border-radius: 0.3rem;
+  border-radius: 0.375rem;
   font-family: var(--mono);
   font-size: 0.85em;
   font-weight: 700;
@@ -324,10 +335,6 @@ kbd {
   }
 
   .task {
-    font-size: 2.25rem;
-  }
-
-  .frame-title {
     font-size: 2.25rem;
   }
 }

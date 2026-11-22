@@ -3,6 +3,7 @@ import { DailyPuzzle, hintText, letterMarks, MAX_TRIES, wordCells, wordLetters }
 import { LANGUAGE_TAGS } from "../../game/braille";
 import { dotsInWords } from "../../game/cells";
 import { CellRow } from "../Cell/CellRow";
+import { LetterLookup } from "./LetterLookup";
 import { Tries, TryRow } from "./Tries";
 import { Word } from "./Word";
 
@@ -83,6 +84,7 @@ export const ReadHalf = ({
       </ol>
 
       <Tries rows={rows} label="Your tries" />
+      {!finished && <LetterLookup language={language} />}
 
       {finished ? (
         <p className="daily-answer">

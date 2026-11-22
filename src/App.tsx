@@ -128,7 +128,6 @@ function App() {
         <Cards
           course={course}
           letter={view.letter}
-          onLanguageChange={changeLanguage}
           onHome={() => home("cards")}
         />
       );
@@ -158,6 +157,9 @@ function App() {
           onProgress={changeProgress}
           start={view.start}
           onHome={() => home("lessons")}
+          // A lesson opened from Home closes back to Home, on the button
+          // that started it.
+          onClose={() => home("start")}
           onChangeCourse={() =>
             setView({
               screen: "settings",

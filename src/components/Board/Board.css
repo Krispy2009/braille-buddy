@@ -1,4 +1,4 @@
-/* One card per course: the letter the cell makes, or a dash. */
+/* One card per course: the letter the cell makes, or "not a letter". */
 .results {
   display: flex;
   justify-content: center;
@@ -15,6 +15,10 @@
   border: var(--line-width) solid var(--line);
   border-radius: 0.875rem;
   box-shadow: 3px 4px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .result {
+  box-shadow: none;
 }
 
 .result dt {
@@ -39,6 +43,16 @@
   color: var(--text-soft);
 }
 
+/* Said in words, set small on the letter's line so the card keeps its size. */
+.result .letter.none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.75rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
 @media (forced-colors: active) {
   .result {
     border: 1px solid CanvasText;
@@ -50,4 +64,12 @@
   .board {
     max-width: var(--page-medium);
   }
+}
+
+/* Tapping the cell, Clear dots is the only action and belongs to the cell:
+   it follows the content instead of dropping to the bottom of a tall phone.
+   With brailler keys the base still sits at the bottom. */
+.board > .action:not(.base) {
+  margin-top: 0;
+  padding-top: 1rem;
 }

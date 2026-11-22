@@ -288,6 +288,14 @@ describe("number keys, clear and submit", () => {
     expect(onClear).toHaveBeenCalledTimes(2);
   });
 
+  test("with escapeClears off, only Backspace clears (Escape closes the screen)", async () => {
+    const { user, onClear } = setup({ escapeClears: false });
+    await user.keyboard("{Escape}");
+    expect(onClear).not.toHaveBeenCalled();
+    await user.keyboard("{Backspace}");
+    expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
   test("Backspace mid-chord clears and cancels the chord", async () => {
     const { user, onClear, onChord } = setup();
     await user.keyboard("{f>}{Backspace}{/f}");

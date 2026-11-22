@@ -1,9 +1,5 @@
 /* ---- Lesson list ---------------------------------------------------------- */
 
-.prompt-block {
-  margin-top: 1.5rem;
-}
-
 .lessons {
   gap: 1rem;
 }
@@ -35,13 +31,7 @@
   color: var(--text-soft);
 }
 
-.score div {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.score dd {
-  margin: 0;
+.score b {
   font-weight: 700;
   color: var(--text);
 }
@@ -70,6 +60,10 @@
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 4px 5px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .lesson-card[data-state="open"] {
+  box-shadow: none;
 }
 
 .lesson-card[data-state="locked"] {
@@ -136,24 +130,91 @@
 
 /* ---- A question ------------------------------------------------------------ */
 
+/* Progress is the rule itself: one pip per letter, two dots each, one dot
+   raised per right answer in a row. Two raised dots: learnt. A wrong answer
+   lays them flat again. */
 .progress-track {
   flex: 1;
-  height: 0.625rem;
+  min-width: 0;
+  height: 0.875rem;
+  border: var(--line-width) solid var(--line);
   border-radius: 999px;
   background: var(--surface);
-  box-shadow: inset 2px 2px 3px var(--shade), inset -2px -2px 3px var(--hi);
   overflow: hidden;
 }
 
 .progress-fill {
   display: block;
   height: 100%;
-  background: var(--text);
+  background: var(--accent);
   transition: width 300ms ease;
 }
 
-[data-theme="high-visibility"] .progress-track {
-  border: 2px solid var(--line);
+.progress-track[data-pips] {
+  display: flex;
+  flex: 0 1 auto;
+  gap: 0.625rem;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.pip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.pip-letter {
+  font-size: 0.875rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.pip-dots {
+  display: flex;
+  gap: 0.1875rem;
+}
+
+.pip-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1.5px dashed var(--text-soft);
+  border-radius: 50%;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pip-dots[data-state="half"] .pip-dot:first-child,
+.pip-dots[data-state="learnt"] .pip-dot {
+  border: 1.5px solid var(--line);
+  background: var(--accent);
+  box-shadow: 1.5px 2px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .pip-dots .pip-dot {
+  box-shadow: none;
+}
+
+/* A wide frame has room: pips a step bigger, so their letters read. */
+@container page (min-width: 48rem) {
+  .pip-letter {
+    font-size: 1.0625rem;
+  }
+
+  .pip-dot {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+/* With Bigger text a six-letter lesson's pips need the whole frame; the
+   count only repeats them. */
+:root[data-text="bigger"] .progress-track[data-pips] + .progress-count {
+  display: none;
 }
 
 .progress-count {
@@ -166,6 +227,14 @@
   margin: 0;
 }
 
+/* The intro's instructions: reading text, a clear step below the heading. */
+.lesson-note {
+  max-width: 34ch;
+  margin: 0.75rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+}
+
 .hero {
   display: flex;
   flex-direction: column;
@@ -174,12 +243,21 @@
   margin-top: 1.75rem;
 }
 
+/* Pressing several on-screen keys at once only works by touch. */
 .keys-hint {
+  display: none;
   text-align: center;
 }
 
-/* Letter cards to pick from. Right turns orange and lifts; wrong turns
-   black; each also gets a mark, so colour is never the only sign. */
+@media (any-pointer: coarse) {
+  .keys-hint {
+    display: block;
+  }
+}
+
+/* Letter cards to pick from. Right turns orange and lifts; wrong lies flat
+   with a dashed rim; each also gets a mark, so colour is never the only
+   sign. */
 .choices {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -216,12 +294,19 @@
 .choice[data-mark="right"] {
   background: var(--accent);
   color: var(--on-accent);
-  box-shadow: 3px 4px 0 var(--line);
+  box-shadow: 3px 3px 0 var(--line);
 }
 
+/* High vis is flat: the right choice reads from its black fill and mark. */
+[data-theme="high-visibility"] .choice[data-mark="right"] {
+  box-shadow: none;
+}
+
+/* The wrong pick lies flat: dashed rim, no emboss, its letter kept in ink
+   so it can still be read next to the right one. */
 .choice[data-mark="wrong"] {
-  background: var(--base);
-  color: var(--on-base);
+  border-style: dashed;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -280,22 +365,61 @@
   padding-inline: var(--gutter);
 }
 
-.sheet-right {
+/* Both verdicts land on paper. A right answer is a plate rising from the
+   bottom: solid rim, soft shade. A miss lies flat: a dashed rim and no
+   shade, the same mark a flat dot or a locked lesson carries. Neither is
+   louder than the other; the loud moment is finishing a lesson. */
+.sheet-right,
+.sheet-wrong {
   border: var(--line-width) solid var(--line);
   border-bottom: 0;
   background: var(--surface);
+  color: var(--text);
+}
+
+.sheet-right {
   box-shadow: 0 -8px 18px var(--shade);
 }
 
-.sheet .feedback {
-  text-align: start;
-  font-size: 1.0625rem;
+.sheet-wrong {
+  border-style: dashed;
+}
+
+/* A right answer's points, typed small like the finished lesson's totals. */
+.sheet-points {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+}
+
+.sheet-points b {
+  font-weight: 700;
 }
 
 .sheet-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 1rem;
+}
+
+/* What the answer did for its letter: the letter's pip, then words. */
+.mastery-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 900;
+}
+
+/* The chip's hard shadow would fill the word space after it. */
+.mastery-note .letter-chip {
+  margin-inline-end: 0.2em;
+}
+
+/* After a miss the note is quieter: the pip as it was, in a lighter hand. */
+.sheet-wrong .mastery-note {
+  font-weight: 700;
 }
 
 /* A rubber stamp, slightly crooked. */
@@ -311,38 +435,111 @@
   transform: rotate(-4deg);
 }
 
-.cross {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-
-.cross svg {
-  width: 1.1rem;
-  height: 1.1rem;
+/* The miss gets the same stamp in a softer hand: ink, the rim dashed like
+   everything flat, so it says "not yet" rather than "wrong". */
+.stamp-miss {
+  border-style: dashed;
 }
 
 /* Wrong answers: the dots pressed next to the right ones. */
 .compare {
+  /* The unit of the compare cells: 1rem, less on a narrow phone with Bigger
+     text, so the two cells always stay side by side. */
+  --cu: min(1rem, calc((100vw - 2 * var(--gutter) - 2rem) / 13));
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+/* The two cells always side by side; a label wraps before they do. */
+.compare-cells {
+  display: flex;
+  gap: 1.25rem;
+}
+
+/* Bigger text already scales the cells up: they stay the size they are with
+   normal text, so the sheet doesn't grow twice. */
+:root[data-text="bigger"] .compare {
+  --cu: min(0.875rem, calc((100vw - 2 * var(--gutter) - 2rem) / 13));
 }
 
 .compare-side {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.375rem;
 }
 
+/* As tall as a label with a chip, so "You wrote" lines up with "Answer". */
 .compare-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.625rem;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
+}
+
+/* The letter in each label, as a small chip like the pip note's. */
+.compare-chip {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+/* The wrong choice lies flat, as its choice does: dashed, no fill. */
+.compare-chip-miss {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+/* The compare cells, a size up from small so the marks on their dots read
+   on a phone, with room between the dots for the rings. Every size is a
+   multiple of --cu, which a row of several cells shrinks to fit. */
+.compare .cell.small,
+.compare .cell-row .cell.small {
+  --dot-size: calc(1.875 * var(--cu, 1rem));
+  --dot-font-size: calc(0.8125 * var(--cu, 1rem));
+  gap: calc(0.875 * var(--cu, 1rem));
+  padding: calc(0.75 * var(--cu, 1rem)) calc(0.875 * var(--cu, 1rem));
+  border-radius: calc(0.875 * var(--cu, 1rem));
+}
+
+.compare .cell-row.small {
+  --cell-em: 6.375;
+}
+
+/* The key to the marks: each drawn as on the dots, then its word. Beside
+   the cells, one above the other; under them, when the sheet is too narrow,
+   side by side. */
+.compare-key {
+  display: flex;
+  flex: 1 1 4.75rem;
+  flex-wrap: wrap;
+  align-self: flex-end;
+  align-content: flex-end;
+  gap: 0.625rem 1.25rem;
+  margin: 0;
+  padding-bottom: 0.25rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.compare-key > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.compare-key .mark-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .sheet-next {
@@ -366,12 +563,388 @@
   flex: 1 1 100%;
 }
 
-.sheet-wrong .eyebrow {
-  color: var(--on-base);
-}
-
 .sheet .quiet-button {
   align-self: center;
+}
+
+/* When the window is short, the sheet still keeps clear of the choices'
+   hard shadows instead of touching them. */
+.hero:has(+ .sheet) {
+  margin-bottom: 0.75rem;
+}
+
+/* Focus lands on the sheet's main button; scrolling it into view takes the
+   sheet's foot along, so the button never sits on the window's edge. */
+.sheet button {
+  scroll-margin-bottom: 6rem;
+}
+
+/* Bigger text on a phone: an answered question tightens above the sheet,
+   so Next question and the finished lesson's ways out stay in reach. */
+:root[data-text="bigger"] .lesson:has(.sheet) .prompt-block {
+  margin-top: 0.75rem;
+}
+
+:root[data-text="bigger"] .lesson:has(.sheet) .hero {
+  margin-top: 1rem;
+  gap: 0.75rem;
+}
+
+:root[data-text="bigger"] .sheet {
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+:root[data-text="bigger"] .hero:has(.finish-deck) {
+  margin-bottom: 0.75rem;
+}
+
+/* Bigger text with the brailler keys on a phone: the question, the hint and
+   the whole base (keys, Check, Clear dots) still fit one screen, so the
+   spacing above the base tightens instead of pushing Clear dots off. */
+:root[data-text="bigger"] .lesson:has(.brailler-base) .prompt-block {
+  margin-top: 0.75rem;
+}
+
+:root[data-text="bigger"] .lesson:has(.brailler-base) .hero {
+  margin-top: 1rem;
+  gap: 0.5rem;
+}
+
+:root[data-text="bigger"] .brailler-base {
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+/* Bigger text on any phone: the question sits a little closer to the frame
+   and the cell to the question, so Check and Clear dots share the first
+   screen with the cell on a tall phone too. */
+@container page (max-width: 47.99rem) {
+  :root[data-text="bigger"] .screen.lesson .prompt-block {
+    margin-top: 0.75rem;
+  }
+
+  :root[data-text="bigger"] .screen.lesson .hero {
+    margin-top: 1rem;
+  }
+
+  /* "LESSON DONE" stays on one line on a phone: the stamp a size down. */
+  :root[data-text="bigger"] .stamp-done {
+    font-size: 1.375rem;
+    white-space: nowrap;
+  }
+}
+
+/* Bigger text on a short phone (under 700px tall: a 320 × 568 or 375 × 667
+   phone, or any phone turned sideways). The whole question has to fit one
+   screen with its answer: the choices, or the cell with Check and Clear
+   dots. So the frame tightens: the course and lesson line goes (it stays
+   for screen readers, and the pips show the lesson's letters), the task is
+   a step smaller, and the cell is smaller while every tappable dot stays at
+   least 44px with its number at 1.25rem. The same holds for the intro, the
+   answer sheets and the finished lesson. */
+@container page (max-width: 47.99rem) {
+  @media (max-height: 43.75rem) {
+    :root[data-text="bigger"] .screen.lesson .prompt-block {
+      margin-top: 0.5rem;
+    }
+
+    :root[data-text="bigger"] .screen.lesson .lesson-heading {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    :root[data-text="bigger"] .screen.lesson .task {
+      margin-top: 0;
+      font-size: 1.625rem;
+      line-height: 1.05;
+    }
+
+    :root[data-text="bigger"] .screen.lesson .hero {
+      margin-top: 0.75rem;
+      gap: 0.625rem;
+    }
+
+    /* The tappable cell: 44px dots at the least (2.5rem here), closer
+       together, on a slimmer plate. */
+    :root[data-text="bigger"] .lesson .hero > .cell:not(.medium):not(.small) {
+      --dot-size: max(44px, 2.5rem);
+      --dot-font-size: 1.25rem;
+      gap: 0.5rem 1.25rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 1.25rem;
+    }
+
+    /* The cell being asked about (a picture, not buttons), and the cell
+       written with the brailler keys, a size down the same way. */
+    :root[data-text="bigger"] .lesson .hero .cell-row .cell.medium {
+      --dot-size: calc(2.5 * var(--cu));
+      --dot-font-size: calc(1 * var(--cu));
+      gap: calc(0.5 * var(--cu)) calc(1 * var(--cu));
+      padding: calc(0.75 * var(--cu)) calc(1.125 * var(--cu));
+    }
+
+    :root[data-text="bigger"] .lesson .hero > .cell.medium {
+      --dot-size: 2.5rem;
+      --dot-font-size: 1rem;
+      gap: 0.5rem 1rem;
+      padding: 0.75rem 1.125rem;
+    }
+
+    /* With the brailler keys the cell only shows what the keys raised
+       (nothing on it is tapped or read), so it can go a step smaller. */
+    :root[data-text="bigger"] .lesson:has(.brailler-base) .hero > .cell.medium {
+      --dot-size: 2rem;
+      --dot-font-size: 0.875rem;
+      gap: 0.375rem 0.875rem;
+      padding: 0.625rem 1rem;
+    }
+
+    /* The keys a little shorter (still far over 44px), and Clear dots
+       beside Check on the base, as with the tapped cell. */
+    :root[data-text="bigger"] .lesson .brailler-key {
+      height: 4rem;
+    }
+
+    :root[data-text="bigger"] .screen.lesson .brailler-base {
+      flex-flow: row wrap;
+      justify-content: center;
+    }
+
+    :root[data-text="bigger"] .lesson .brailler-base > :not(.key-button, .quiet-button) {
+      flex-basis: 100%;
+    }
+
+    :root[data-text="bigger"] .lesson .brailler-base > .key-button {
+      flex: 1 1 auto;
+      width: auto;
+      padding-inline: 1rem;
+    }
+
+    :root[data-text="bigger"] .lesson .brailler-base > .quiet-button {
+      flex: none;
+      margin-top: 0;
+      padding-inline: 0.5rem;
+    }
+
+    :root[data-text="bigger"] .lesson .choice {
+      min-height: 3.5rem;
+    }
+
+    :root[data-text="bigger"] .screen.lesson .action {
+      gap: 0.5rem;
+      padding-top: 0.75rem;
+    }
+
+    :root[data-text="bigger"] .lesson .action > .primary-button {
+      min-height: 3.25rem;
+    }
+
+    /* Writing by tapping the cell: Clear dots beside Check, not under it,
+       so both are on the first screen. Previous cell (a number's second
+       cell) takes a row of its own. */
+    :root[data-text="bigger"] .screen.lesson .action:not(.sheet, .base) {
+      flex-flow: row wrap;
+      align-items: stretch;
+    }
+
+    :root[data-text="bigger"] .lesson .action:not(.sheet, .base) > .feedback,
+    :root[data-text="bigger"] .lesson .action:not(.sheet, .base) > .outline-button {
+      flex-basis: 100%;
+    }
+
+    /* Each at its own width first, so a longer label ("Next cell") moves
+       Clear dots to the next row instead of squeezing onto two lines. */
+    :root[data-text="bigger"] .lesson .action:not(.sheet, .base) > .primary-button {
+      flex: 1 1 auto;
+      width: auto;
+      padding-inline: 1rem;
+    }
+
+    :root[data-text="bigger"] .lesson .action:not(.sheet, .base) > .quiet-button {
+      flex: none;
+      padding-inline: 0.5rem;
+    }
+
+    /* After a miss: the sheet a little slimmer, the stamp and the pip note
+       a step down so they take less room above the compare cells. */
+    :root[data-text="bigger"] .lesson .sheet {
+      padding-bottom: 1rem;
+    }
+
+    :root[data-text="bigger"] .lesson .sheet .stamp:not(.stamp-done) {
+      font-size: 1.125rem;
+    }
+
+    :root[data-text="bigger"] .lesson .mastery-note {
+      font-size: 1rem;
+    }
+
+    :root[data-text="bigger"] .lesson .sheet button {
+      scroll-margin-bottom: 1rem;
+    }
+
+    /* A finished lesson: smaller cards, so the cards, the stamp and Next
+       lesson share the first screen. */
+    :root[data-text="bigger"] .finish-card {
+      gap: 0.375rem;
+      padding: 0.5rem 0.25rem 0.625rem;
+    }
+
+    :root[data-text="bigger"] .finish-letter {
+      font-size: 2.125rem;
+    }
+
+    :root[data-text="bigger"] .finish-totals {
+      margin-bottom: 0.125rem;
+    }
+  }
+}
+
+/* ---- A finished lesson ------------------------------------------------------
+   The loudest moment in the app, made of Press parts only: the lesson's
+   letters land on the deck as raised orange cards with their dots, and a
+   big stamp comes down on the sheet. No confetti. The motion is short and
+   physical, and only plays with full motion on (see the bottom). */
+
+/* The deck sits in the middle of the room the question left. */
+.hero:has(.finish-deck) {
+  flex: 1;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.finish-deck {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  /* A little more room on the right, where the hard shadows fall, so the
+     row looks centred and the last card stays clear of the column edge. */
+  padding: 0 0.875rem 0 0.625rem;
+  list-style: none;
+}
+
+/* Cards share the row, overlapping a little, so a six-letter lesson still
+   fits a phone on one line. */
+.finish-card {
+  display: flex;
+  flex: 0 1 5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  margin-inline: -0.1875rem;
+  padding: 0.75rem 0.25rem 0.875rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: 0.875rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 4px 5px 0 var(--line);
+  transform: rotate(var(--tilt));
+}
+
+.finish-letter {
+  font-size: 2.75rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.finish-cells {
+  display: flex;
+  gap: 0.375rem;
+}
+
+/* Raised dots solid ink, flat ones a thin ring: size and fill differ, as
+   on the Home deck. */
+.finish-dots {
+  display: grid;
+  grid-template-rows: repeat(3, 0.625rem);
+  grid-template-columns: repeat(2, 0.625rem);
+  grid-auto-flow: column;
+  gap: 0.1875rem;
+}
+
+.finish-dot {
+  place-self: center;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border: 1.5px solid var(--on-accent);
+  border-radius: 50%;
+}
+
+.finish-dot.raised {
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 0;
+  background: var(--on-accent);
+}
+
+/* The verdict for the whole lesson: the same rubber stamp, bigger. */
+.sheet-finish .sheet-head {
+  justify-content: center;
+  padding-block: 0.25rem 0.125rem;
+}
+
+.stamp-done {
+  padding: 0.125rem 0.875rem;
+  border-width: 4px;
+  font-size: 1.75rem;
+}
+
+/* Points and streak, typed small under the stamp. */
+.finish-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.125rem 1rem;
+  margin: 0 0 0.375rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.finish-totals b {
+  font-weight: 700;
+}
+
+[data-theme="high-visibility"] .finish-card {
+  box-shadow: none;
+}
+
+@keyframes finish-land {
+  from {
+    opacity: 0;
+    transform: translateY(-1.5rem) rotate(calc(var(--tilt) * 2)) scale(1.06);
+    box-shadow: 10px 14px 0 transparent;
+  }
+}
+
+@keyframes stamp-thunk {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.5);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-4deg) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="less"]) .finish-card {
+    animation: finish-land 220ms cubic-bezier(0.2, 0.9, 0.3, 1) backwards;
+    animation-delay: calc(var(--order) * 35ms);
+  }
+
+  :root:not([data-motion="less"]) .stamp-done {
+    animation: stamp-thunk 200ms cubic-bezier(0.3, 0.7, 0.4, 1) 180ms backwards;
+  }
 }
 
 /* ---- Wider windows ---------------------------------------------------------- */
@@ -417,6 +990,14 @@
     font-size: 2.5rem;
   }
 
+  .finish-card {
+    flex-basis: 6.25rem;
+  }
+
+  .finish-letter {
+    font-size: 3.5rem;
+  }
+
   .brailler-base,
   .sheet {
     margin: auto 0 0;
@@ -425,6 +1006,42 @@
 
   .sheet-right {
     border-bottom: var(--line-width) solid var(--line);
+  }
+
+  .sheet-wrong {
+    border-bottom: var(--line-width) dashed var(--line);
+  }
+
+  /* A miss on a wide sheet: the stamp and pip beside the compare cells,
+     not above them, so Next question stays on a laptop's first screen. */
+  .sheet-wrong {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem 2rem;
+  }
+
+  .sheet-wrong > .sheet-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .sheet-wrong > .sheet-next {
+    grid-column: 1 / -1;
+  }
+
+  /* Room enough: the key always stands beside the cells, and the cells
+     take a smaller unit, since the sheet sits under the choices. */
+  .compare {
+    --cu: 0.875rem;
+    flex-wrap: nowrap;
+  }
+
+  .compare-key {
+    flex: none;
+    flex-direction: column;
   }
 
   .sheet-links > .primary-button,
@@ -452,5 +1069,32 @@
   .lesson-card[data-state="open"],
   .choice[data-mark="right"] {
     border-width: 3px;
+  }
+
+  .sheet-wrong,
+  .choice[data-mark="wrong"] {
+    border-style: dashed;
+  }
+
+  .finish-card {
+    border: 3px solid CanvasText;
+  }
+
+  .finish-dot {
+    border-color: CanvasText;
+  }
+
+  .finish-dot.raised {
+    background: CanvasText;
+  }
+
+  /* Mastery pips: a raised pip dot is filled, a flat one a dashed ring. */
+  .pip-dot {
+    border-color: CanvasText;
+  }
+
+  .pip-dots[data-state="half"] .pip-dot:first-child,
+  .pip-dots[data-state="learnt"] .pip-dot {
+    background: CanvasText;
   }
 }

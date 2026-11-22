@@ -5,11 +5,21 @@
 
 export const REPORT_URL = "https://github.com/Krispy2009/braille-buddy/issues/new";
 
+/**
+ * What the app can and cannot teach (PRODUCT.md, principle 1). Home says it
+ * until a first lesson is done; this page keeps it for good. Plain enough for
+ * a child to read on their own.
+ */
+export const WHAT_IT_TEACHES: string[] = [
+  "Braille Buddy teaches the dot patterns of braille: which dots make each letter, number and sign.",
+  "It does not teach you to read braille with your fingers. Reading by touch takes practice with real braille, printed with dots you can feel. A braille teacher or a local blindness organisation can help you learn it.",
+];
+
 export const GOAL =
   "Braille Buddy aims to meet WCAG 2.2 level AA. It has not been independently audited yet, so this page says what is built in, what has been tested with assistive technology, and what is still missing.";
 
 export const BUILT_IN: string[] = [
-  "Play entirely from the keyboard, with a visible focus outline.",
+  "Play entirely from the keyboard, with a visible focus outline. Escape leaves a lesson or the daily puzzle, like its close button; Backspace clears the dots.",
   "Labels for screen readers on every control, with results and feedback announced.",
   "Three themes: Paper, Ink and High vis, following your system's colour scheme and contrast setting until you choose.",
   "Bigger text, which scales the whole interface.",
@@ -41,6 +51,6 @@ export const TEST_RESULTS: TestResult[] = [
 
 export const KNOWN_GAPS: string[] = [
   "No screen reader testing has been done yet (see the table above), so there may be problems this page does not list.",
-  "Braille Buddy teaches the dot patterns on screen. It does not drive a refreshable braille display or produce tactile output.",
+  "Braille Buddy shows braille on the screen only. It does not send braille to a refreshable braille display, and it cannot make braille you can feel.",
   "The page has not had an independent accessibility audit.",
 ];

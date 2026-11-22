@@ -117,7 +117,7 @@ export const ChordPad = ({
         onBlur={() => setActive(false)}
       >
         <span aria-hidden="true">
-          {active ? "Chord typing is on:" : "Keyboard works too:"}
+          {active ? "Chord typing is on:" : "Keyboard: hold keys together"}
         </span>
         <Keys aria-hidden="true">
           {KEYS.map((label) => (

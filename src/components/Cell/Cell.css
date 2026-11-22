@@ -35,6 +35,13 @@
   box-shadow: none;
 }
 
+/* A read-only cell is a picture of the plate, printed on the page rather
+   than embossed out of it: no soft emboss, no dimples, so it never looks
+   like the cell you tap. Its raised dots still stand up on their shadow. */
+.cell.read-only {
+  box-shadow: none;
+}
+
 @media (forced-colors: active) {
   .cell {
     border: 1px solid CanvasText;
@@ -117,5 +124,81 @@
 @media (forced-colors: active) {
   .cell-row-button[aria-current="true"] {
     border-bottom-color: CanvasText;
+  }
+}
+
+/* Marked dots, on a wrong answer's compare cells. Drawn in ink on paper, so
+   they read in every theme, High vis included, and never by colour: a
+   crossed badge on a dot raised that shouldn't be ("extra"), a thick ring
+   round a dot that should have been raised ("missed"), like a teacher's
+   marks. Orange stays for raised. MarkIcon draws the same marks in a key. */
+.dot-slot {
+  position: relative;
+  display: inline-grid;
+}
+
+.dot-slot > .mark-icon {
+  position: absolute;
+  top: calc(var(--dot-size) * -0.26);
+  right: calc(var(--dot-size) * -0.26);
+  width: calc(var(--dot-size) * 0.66);
+  height: calc(var(--dot-size) * 0.66);
+}
+
+.mark-icon {
+  display: block;
+  overflow: visible;
+  fill: none;
+  stroke: var(--line);
+  stroke-linecap: round;
+}
+
+.mark-badge {
+  fill: var(--surface);
+  stroke-width: 2.5;
+}
+
+.mark-cross {
+  stroke-width: 3;
+}
+
+.mark-ring {
+  stroke-width: 3;
+}
+
+.mark-dot {
+  fill: var(--accent);
+  stroke-width: 2;
+}
+
+[data-theme="high-visibility"] .mark-badge {
+  stroke-width: 3;
+}
+
+.dot-slot[data-mark="missed"]::after {
+  content: "";
+  position: absolute;
+  inset: calc(-0.1875rem - var(--line-width) - 1px);
+  border: calc(var(--line-width) + 1px) solid var(--line);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .dot-slot[data-mark="missed"]::after {
+    border-color: CanvasText;
+  }
+
+  .mark-icon {
+    forced-color-adjust: none;
+    stroke: CanvasText;
+  }
+
+  .mark-badge {
+    fill: Canvas;
+  }
+
+  .mark-dot {
+    fill: CanvasText;
   }
 }

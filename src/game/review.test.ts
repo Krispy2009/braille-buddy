@@ -64,6 +64,15 @@ describe("pickNextItem", () => {
     expect(pick(0.999999)).toBe(C);
   });
 
+  test("letters missed lately count double", () => {
+    // A and B are both box 0 (16 each); B was missed, so 32; total 48.
+    const pick = (value: number) =>
+      pickNextItem([A, B], emptyProgress(), { random: () => value, missed: [B] });
+    expect(pick(15.9 / 48)).toBe(A);
+    expect(pick(16 / 48)).toBe(B);
+    expect(pick(0.999999)).toBe(B);
+  });
+
   test("items without stats count as box 0", () => {
     const progress = withBoxes({ [B]: 4 });
     // A has weight 16, B has weight 1.

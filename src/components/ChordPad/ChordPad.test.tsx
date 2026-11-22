@@ -86,7 +86,7 @@ test("number keys work inside and outside the pad", async () => {
 test("shows when chord typing is on", async () => {
   const { user, pad } = setup();
   expect(pad).toHaveAttribute("data-active", "false");
-  expect(screen.getByText("Keyboard works too:")).toBeInTheDocument();
+  expect(screen.getByText("Keyboard: hold keys together")).toBeInTheDocument();
 
   await user.tab();
   await user.tab();
