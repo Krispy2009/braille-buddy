@@ -15,6 +15,22 @@
    control reached with Tab is scrolled clear of it, never under it. */
 html:has(.home) {
   scroll-padding-bottom: 10rem;
+  /* Phone: the page's colour (--bg) from far above the top, so the top
+     rubber-band stays paper, and the base's black everywhere below, so the
+     bottom edge, the overscroll and Safari's bottom bar are the footer's
+     black, with no line where the footer ends. */
+  background-color: var(--base);
+  background-image: linear-gradient(var(--bg), var(--bg));
+  background-repeat: no-repeat;
+  background-position: 0 -100vh;
+  background-size: 100% calc(100% + 100vh);
+}
+
+/* Tablet and up: the footer ends as an object with paper below it. */
+@media (min-width: 48rem) {
+  html:has(.home) {
+    background: var(--bg);
+  }
 }
 
 /* One row on any phone: the wordmark takes what is left and breaks between
@@ -486,10 +502,11 @@ button.deck-front {
 .site-footer {
   flex: 1 0 auto;
   width: min(100%, var(--page));
-  margin: 0 auto;
-  /* The same side padding as the base, so the rule lines up with its
+  /* One pixel under the base, so a fractional edge can't show a seam. */
+  margin: -1px auto 0;
+  /* The same side padding as the base, so the links line up with its
      buttons. */
-  padding: 0.25rem 1.125rem calc(1.75rem + env(safe-area-inset-bottom, 0px));
+  padding: calc(0.25rem + 1px) 1.125rem calc(1.75rem + env(safe-area-inset-bottom, 0px));
   font-size: 0.875rem;
   text-align: center;
 }
@@ -506,10 +523,7 @@ button.deck-front {
   justify-content: center;
   column-gap: 0.5rem;
   margin: 0 0 0.25rem;
-  /* The two links line up with the base's buttons, a hairline rule apart
-     from them, like a seam on the brailler's front. */
   padding-top: 0.5rem;
-  border-top: 1px solid color-mix(in srgb, var(--on-base) 25%, transparent);
 }
 
 .site-footer .quiet-button {
