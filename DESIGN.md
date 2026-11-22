@@ -23,10 +23,10 @@ colors:
 typography:
   display:
     fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(2.25rem, 11vw, 2.875rem)"
+    fontSize: "clamp(1.75rem, 8.5vw, 2.25rem)"
     fontWeight: 900
-    lineHeight: 0.95
-    letterSpacing: "-0.03em"
+    lineHeight: 1
+    letterSpacing: "-0.025em"
   card-letter:
     fontFamily: "Commissioner, system-ui, sans-serif"
     fontSize: "6.5rem"
@@ -44,16 +44,16 @@ typography:
     lineHeight: 1.1
   display-wide:
     fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "3.5rem"
+    fontSize: "2.75rem"
     fontWeight: 900
-    lineHeight: 0.95
-    letterSpacing: "-0.03em"
+    lineHeight: 1
+    letterSpacing: "-0.025em"
   display-widest:
     fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "4.5rem"
+    fontSize: "3.5rem"
     fontWeight: 900
-    lineHeight: 0.95
-    letterSpacing: "-0.03em"
+    lineHeight: 1
+    letterSpacing: "-0.025em"
   finish-letter:
     fontFamily: "Commissioner, system-ui, sans-serif"
     fontSize: "2.75rem"
@@ -338,7 +338,7 @@ The player can swap Orange for **Cobalt** or **Mint** (Settings → Accent). The
 **Character:** Commissioner at heavy weights gives friendly, sturdy letterforms with full Greek support. Fira Mono reads like small text typed on a brailler label. Both are self-hosted, so the app looks the same offline, in only the Latin and Greek subsets and at only weights 500, 700 and 900.
 
 ### Hierarchy
-- **Display** (900, clamp 2.25–2.875rem, line-height 0.95, -0.03em): the Home headline. Sized so "Every letter." fits a 320px phone on one line. Steps up to **Display Wide** (3.5rem) from 48rem and **Display Widest** (4.5rem) from 64rem.
+- **Display** (900, clamp 1.75–2.25rem, line-height 1, -0.025em): the Home headline, two short sentences each on its own line, sized so "You know 12 letters." fits a 390px phone on one line (on a smaller one a sentence wraps, balanced). Steps up to **Display Wide** (2.75rem) from 48rem and **Display Widest** (3.5rem) from 64rem.
 - **Card Letter** (900, 6.5rem, line-height 0.8): the letter on a letter card. **Card Letter Long** (4rem) for long signs.
 - **Result Letter** (900, 2.5rem, 1.1): a single letter shown as an answer: the Board result, answer choices from 48rem wide.
 - **Finish Letter** (900, 2.75rem, 1; 3.5rem from 48rem): the letter on a finished lesson's dealt cards. **Stamp Done** (900, 1.75rem, uppercase): the big "LESSON DONE" stamp. **Compact steps** (Bigger text on a short phone only): Stamp Done Compact 1.375rem, Finish Letter Compact 2.125rem, Card Letter Compact 5rem (Long 3.25rem) on the intro card, Dot Numeral Compact 1.25rem on the tappable cell.
@@ -368,7 +368,7 @@ Text wraps `pretty` (paragraphs, list items, headings), so no line ends on one l
 
 ## Layout
 
-A single centred column on a phone (`--page`, 30rem), with a 1.375rem gutter, filling the window height up to 56rem so the bottom action is never a screen away from what it belongs to. On Home the brailler base sticks to the bottom of the window until the page reaches it, so its one action is always in the first screen; a plain note on what the app does not teach shows under today's line until the first lesson is done, then lives on the Accessibility page (today's line reads "N new cards to learn today" until the player has played today, then "N new cards up next"; once a lesson is begun, "N cards left to learn"; after the last lesson, "You have finished every lesson in English. Practise everything to keep every card fresh."); on a phone it is only its two buttons (the card above already shows the letter's dots, so the row of keys that can't be pressed shows only from 48rem, where the base runs the full width), and focus scrolls clear of it. Today's Daily puzzle is one outlined row under today's line: "Daily puzzle", its state in mono ("New today", "Started", or "Done today" as a raised accent pill with a tick), and a forward chevron; the whole row is the button, named "Daily puzzle, new today". Its explanation and result live on the Daily screen. On a 320px phone with Bigger text the state drops under the title. With Bigger text on a short phone it doesn't stick at all: it sits at the end of the page with its buttons stacked, and the front card, whole in the first screen, is the way in. Each screen runs top to bottom. First the **frame**: the way out (a round button) on the left, then progress. The way out returns to where the screen was opened from: a lesson started on Home closes to Home, one started from the list closes to the list. A question asking which letter or sign a cell is reads "Which letter is this?" on screen; screen readers hear the dots ("Which letter has dots 1 and 4?"), since the cell is hidden from them. The way out is labelled "Close lesson"; the finished lesson's "Back to lessons" always goes to the list. Next a **prompt**: a mono eyebrow, then the task in heavy type. Then the content: a cell, choices or a card. Last the **action** at the bottom, which is one primary button, the brailler base, or a feedback sheet that bleeds to the column edges with rounded top corners.
+A single centred column on a phone (`--page`, 30rem), with a 1.375rem gutter, filling the window height up to 56rem so the bottom action is never a screen away from what it belongs to. On Home the headline says where the player is, never a slogan: "Start with a. It's just one dot." (a new player, with the first letter's dot count), "You know 5 letters. Next up: f.", "You've made a start. Next up: a." (a lesson begun, nothing learnt yet), "Done for today. Next up: f." (a lesson finished today), and "You know all 26. Keep them fresh." or "Every lesson done. Keep them fresh." at the end. When it gives the count, its caption says what is left ("English · 21 to go") instead of repeating it; otherwise the caption keeps "English · 5 of 26 letters learnt". The letter is set with its language and named for screen readers (alpha). The brailler base sticks to the bottom of the window until the page reaches it, so its one action is always in the first screen; a plain note on what the app does not teach shows under today's line until the first lesson is done, then lives on the Accessibility page (today's line reads "N new cards to learn today" until the player has played today, then "N new cards up next"; once a lesson is begun, "N cards left to learn"; after the last lesson, "You have finished every lesson in English. Practise everything to keep every card fresh."); on a phone it is only its two buttons (the card above already shows the letter's dots, so the row of keys that can't be pressed shows only from 48rem, where the base runs the full width), and focus scrolls clear of it. Today's Daily puzzle is one outlined row under today's line: "Daily puzzle", its state in mono ("New today", "Started", or "Done today" as a raised accent pill with a tick), and a forward chevron; the whole row is the button, named "Daily puzzle, new today". Its explanation and result live on the Daily screen. On a 320px phone with Bigger text the state drops under the title. With Bigger text on a short phone it doesn't stick at all: it sits at the end of the page with its buttons stacked, and the front card, whole in the first screen, is the way in. Each screen runs top to bottom. First the **frame**: the way out (a round button) on the left, then progress. The way out returns to where the screen was opened from: a lesson started on Home closes to Home, one started from the list closes to the list. A question asking which letter or sign a cell is reads "Which letter is this?" on screen; screen readers hear the dots ("Which letter has dots 1 and 4?"), since the cell is hidden from them. The way out is labelled "Close lesson"; the finished lesson's "Back to lessons" always goes to the list. Next a **prompt**: a mono eyebrow, then the task in heavy type. Then the content: a cell, choices or a card. Last the **action** at the bottom, which is one primary button, the brailler base, or a feedback sheet that bleeds to the column edges with rounded top corners.
 
 Breakpoints are **container queries on `#root`** in rem, not media queries on the window, so Bigger text needs a wider window before a screen splits. From 48rem the gutter grows to 2rem and tasks get bigger. Screens with a task in hand stay a single, roomier column. Home and Lessons spread out at 48rem and 64rem (`--page-medium` 44rem, `--page-measure` 46rem for reading pages, `--page-wide` 72rem). DOM order never changes, so reading and Tab order match what's on screen.
 

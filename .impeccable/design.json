@@ -228,7 +228,7 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Home headline only."
+        "purpose": "Home headline only: two short sentences about where the player is."
       },
       "card-letter": {
         "displayName": "Card Letter",
