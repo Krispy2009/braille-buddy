@@ -191,3 +191,105 @@
     margin-top: 0;
   }
 }
+
+/* Previous card beside the one main button, which turns to the next card
+   and, on the last card, starts practising. */
+.meet-turn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.625rem;
+  align-items: stretch;
+}
+
+.meet-turn.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.meet-turn .outline-button {
+  min-height: 3.75rem;
+  padding: 0.25rem 0.875rem;
+}
+
+.meet-turn .outline-button:disabled {
+  opacity: 0.4;
+}
+
+/* Both labels share one cell, so the button is as big as the longer one
+   whichever is showing: nothing moves when it changes. */
+.meet-main {
+  display: inline-grid;
+}
+
+.meet-label {
+  grid-area: 1 / 1;
+}
+
+.meet-label[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+/* Room for the quiet Start practising that appears when going back over
+   cards already seen, so the buttons above never jump. */
+.meet-quiet {
+  display: flex;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+
+/* Too narrow for both side by side (small phones, Bigger text): the main
+   button gets the whole width, under Previous card. */
+@container page (max-width: 24rem) {
+  .meet-turn {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Bigger text on a short phone (under 700px tall): the card a size down and
+   the buttons closer under it, so a card and the button that turns it fit
+   one screen together (the heading tightens in Practice.css). */
+@container page (max-width: 47.99rem) {
+  @media (max-height: 43.75rem) {
+    :root[data-text="bigger"] .lesson .lesson-note {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    :root[data-text="bigger"] .lesson .card-deck {
+      margin-top: 0.75rem;
+    }
+
+    :root[data-text="bigger"] .lesson .flash-card {
+      min-height: 12rem;
+      padding: 0.875rem 1rem;
+    }
+
+    :root[data-text="bigger"] .lesson .flash-letter {
+      font-size: 5rem;
+    }
+
+    :root[data-text="bigger"] .lesson .flash-letter[data-long] {
+      font-size: 3.25rem;
+    }
+
+    :root[data-text="bigger"] .meet-actions {
+      padding-top: 0.75rem;
+    }
+
+    :root[data-text="bigger"] .meet-turn .outline-button,
+    :root[data-text="bigger"] .meet-turn .primary-button {
+      min-height: 3.25rem;
+    }
+  }
+}
+
+/* Under the card it is about. The arrow keys only help with a keyboard. */
+.meet-hint {
+  text-align: center;
+}
+
+@media (pointer: coarse) {
+  .meet-hint {
+    display: none;
+  }
+}

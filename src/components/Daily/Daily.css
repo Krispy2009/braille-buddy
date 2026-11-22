@@ -5,8 +5,13 @@
   gap: 0.75rem;
 }
 
-.daily-date {
-  margin-top: 0.25rem;
+/* 1.5rem under the frame, as on every screen, with the 0.75rem gap. */
+.daily-prompt-block {
+  margin-top: 0.75rem;
+}
+
+.daily-heading {
+  margin: 0;
 }
 
 .daily-half {
@@ -16,8 +21,10 @@
   gap: 0.75rem;
 }
 
+/* The half's task sits under the screen's eyebrow as a lesson's question
+   does (0.375rem), so it takes back part of the screen's 0.75rem gap. */
 .daily-half > .task {
-  margin-top: 0.5rem;
+  margin-top: -0.375rem;
 }
 
 .daily-prompt {

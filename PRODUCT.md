@@ -20,7 +20,7 @@ The Greek course is meant mainly for learners in **Greece and Cyprus**.
 
 ## Product Purpose
 
-Braille Buddy teaches the dot patterns of the braille alphabet in English and Greek: which dots make which letter, number or punctuation mark. It does **not** teach reading by touch, and it says so plainly (issue #27). Learning to read by touch needs real embossed braille, ideally with a braille teacher or a local blindness organisation.
+Braille Buddy teaches the dot patterns of the braille alphabet in English and Greek: which dots make which letter, number or punctuation mark. It does **not** teach reading by touch, and it says so plainly (issue #27): on Home until a first lesson is done, and always on the Accessibility page. Learning to read by touch needs real embossed braille, ideally with a braille teacher or a local blindness organisation.
 
 Success means a learner comes back day after day, works through a course a few letters at a time, and can recognise and write every letter's dots.
 
@@ -60,7 +60,7 @@ Neighbouring products are Braillito (paid, phone-first, tap the dots, 38 languag
 ## Evidence on Hand
 
 - Braille source check for every letter, pair, number and punctuation mark: `docs/braille-sources.md`. Confidence is "matches secondary sources, independently consistent"; the Greek chapter of World Braille Usage has not been read, and ηυ's teaching status is still to be checked with KEAT or the Cyprus School for the Blind.
-- Accessibility page content: `src/components/Accessibility/content.ts`. Goal WCAG 2.2 AA, **not independently audited**, screen reader test table all "Not tested yet".
+- Accessibility page content (including what the app teaches): `src/components/Accessibility/content.ts`. Goal WCAG 2.2 AA, **not independently audited**, screen reader test table all "Not tested yet".
 - **None yet:** user testimonials, player numbers, test results with blind players, teacher or organisation endorsements. Do not invent them.
 
 ## Product Principles

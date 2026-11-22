@@ -42,8 +42,9 @@ import {
 } from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
 import { useBrailleKeys } from "../../hooks/useBrailleKeys";
+import { useEscape } from "../../hooks/useEscape";
 import { BraillerKeys, BraillerKeysHelp } from "../BraillerKeys/BraillerKeys";
-import { Cell } from "../Cell/Cell";
+import { Cell, MarkIcon } from "../Cell/Cell";
 import { CellRow } from "../Cell/CellRow";
 import { ChordPad } from "../ChordPad/ChordPad";
 import { ClearButton } from "../ClearButton/ClearButton";
@@ -51,10 +52,13 @@ import { CloseIcon } from "../Icons/Icons";
 import { Choices } from "./Choices";
 import { FinishDeck } from "./FinishDeck";
 import { Letter } from "./Letter";
+import { daysInARow, daysWord } from "./Score";
 import {
   Answer,
   answerCells,
   choicePrompt,
+  choiceTask,
+  dotMarks,
   Finished,
   finishedText,
   isRightCells,
@@ -225,7 +229,7 @@ export const LessonPractice = ({
       : missText(question.item, box);
     setStatus(
       outcome.finished
-        ? `${resultText(question.item, result)} ${finishedText(course, outcome.finished)} You have ${outcome.progress.points} points.`
+        ? `${resultText(question.item, result)} ${finishedText(course, outcome.finished)} You have ${outcome.progress.points} points, ${daysInARow(currentStreak(outcome.progress, now()))}.`
         : [resultText(question.item, result), mastery].filter(Boolean).join(" ")
     );
     setFocusRequest({ target: outcome.finished ? "finish" : "next" });
@@ -312,7 +316,10 @@ export const LessonPractice = ({
     onClear: () => writing && setEntry(clearCurrentCell),
     onSubmit: () => (asking ? submit() : goNext()),
     keyShortcuts,
+    // Escape closes the lesson, like the close button; Backspace clears.
+    escapeClears: false,
   });
+  useEscape(onBack);
 
   const nextLesson = finished && !finished.courseDone ? finished.next : undefined;
   const total = source.letters.length;
@@ -328,6 +335,19 @@ export const LessonPractice = ({
   // The cell label is part of what the dots describe, so a screen reader
   // hears "Cell 1 of 2" with the question.
   const describedBy = multi ? `${promptId} ${cellLabelId}` : promptId;
+  // A miss compares what was given with the answer, dot by dot: extra dots
+  // crossed on the given side, missed ones ringed on the answer's.
+  const givenCells =
+    answer?.kind === "dots"
+      ? answer.cells
+      : answer?.kind === "letter"
+        ? (cellsForLetter(answer.choice, language) ?? [CLEAR_CELL])
+        : [];
+  const marks = dotMarks(givenCells, answerDots);
+  const marked = (kind: "extra" | "missed") =>
+    (kind === "extra" ? marks.given : marks.answer).some(
+      (cell) => Object.keys(cell).length > 0
+    );
 
   // The action area is one element throughout, so the live region inside it
   // is never remounted: while writing it is the brailler base (or a plain
@@ -425,7 +445,14 @@ export const LessonPractice = ({
               </>
             )
           ) : (
-            choicePrompt(question.item)
+            // The cell is the question, so the dots aren't printed: shown
+            // "Which letter is this?", heard "Which letter has dots 1 and
+            // 4?" (the cell is hidden from screen readers). One name, so
+            // the heading and the choices it labels are read as one question.
+            <>
+              <span aria-hidden="true">{choiceTask(question.item)}</span>
+              <span className="sr-only">{choicePrompt(question.item)}</span>
+            </>
           )}
         </h3>
       </div>
@@ -549,40 +576,50 @@ export const LessonPractice = ({
         </p>
         {answer && !answer.correct && (
           <div className="compare" aria-hidden="true">
-            <div className="compare-side">
-              <span className="compare-label">
-                {answer.kind === "dots" ? (
-                  "You wrote"
-                ) : (
-                  // Each letter set as a chip, so a lone a or i never reads
-                  // as a word: the choice flat and dashed, as it lies in the
-                  // row above, the answer raised.
-                  <>
-                    You chose{" "}
-                    <Letter
-                      letter={answer.choice}
-                      language={language}
-                      className="letter-chip compare-chip compare-chip-miss"
-                    />
-                  </>
+            <div className="compare-cells">
+              <div className="compare-side">
+                <span className="compare-label">
+                  {answer.kind === "dots" ? (
+                    "You wrote"
+                  ) : (
+                    // Each letter set as a chip, so a lone a or i never reads
+                    // as a word: the choice flat and dashed, as it lies in the
+                    // row above, the answer raised.
+                    <>
+                      You chose{" "}
+                      <Letter
+                        letter={answer.choice}
+                        language={language}
+                        className="letter-chip compare-chip compare-chip-miss"
+                      />
+                    </>
+                  )}
+                </span>
+                <CellRow cells={givenCells} size="small" marks={marks.given} />
+              </div>
+              <div className="compare-side">
+                <span className="compare-label">
+                  Answer{" "}
+                  <Letter letter={letter} language={language} className="letter-chip compare-chip" />
+                </span>
+                <CellRow cells={answerDots} size="small" marks={marks.answer} />
+              </div>
+            </div>
+            {/* A key to the marks, only those shown. */}
+            {(marked("extra") || marked("missed")) && (
+              <p className="compare-key">
+                {marked("extra") && (
+                  <span>
+                    <MarkIcon mark="extra" /> extra
+                  </span>
                 )}
-              </span>
-              <CellRow
-                cells={
-                  answer.kind === "dots"
-                    ? answer.cells
-                    : (cellsForLetter(answer.choice, language) ?? [CLEAR_CELL])
-                }
-                size="small"
-              />
-            </div>
-            <div className="compare-side">
-              <span className="compare-label">
-                Answer{" "}
-                <Letter letter={letter} language={language} className="letter-chip compare-chip" />
-              </span>
-              <CellRow cells={answerDots} size="small" />
-            </div>
+                {marked("missed") && (
+                  <span>
+                    <MarkIcon mark="missed" /> missed
+                  </span>
+                )}
+              </p>
+            )}
           </div>
         )}
         {finished && (
@@ -591,7 +628,7 @@ export const LessonPractice = ({
               <b>{progress.points}</b> points
             </span>
             <span>
-              <b>{streak}</b> {streak === 1 ? "day" : "days"} in a row
+              <b>{streak}</b> {daysWord(streak)}
             </span>
             {nextLesson && (
               <span>

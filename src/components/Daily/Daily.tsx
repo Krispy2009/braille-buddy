@@ -23,6 +23,7 @@ import type { CellType } from "../../game/braille";
 import { cellsInWords } from "../../game/cells";
 import { currentStreak, Progress, recordDailyPuzzle } from "../../game/progress";
 import type { DotEntry } from "../../game/settings";
+import { useEscape } from "../../hooks/useEscape";
 import { BackIcon } from "../Icons/Icons";
 import { DailyResult } from "./DailyResult";
 import { ReadHalf } from "./ReadHalf";
@@ -58,7 +59,7 @@ export const Daily = (props: DailyProps) => {
   const [puzzle] = React.useState(() => dailyPuzzle(props.course.id, props.now()));
   if (!puzzle) {
     return (
-      <DailyFrame onBack={props.onBack}>
+      <DailyFrame onBack={props.onBack} context={props.course.name}>
         <p>There is no daily puzzle for {props.course.name} yet.</p>
       </DailyFrame>
     );
@@ -66,13 +67,21 @@ export const Daily = (props: DailyProps) => {
   return <DailyGame {...props} puzzle={puzzle} />;
 };
 
+/**
+ * The frame holds only the way out, as on every screen. The heading is the
+ * screen's eyebrow, "Daily puzzle · English · Saturday 21 November", and each
+ * half's task follows it, as a lesson's heading and question do.
+ */
 const DailyFrame = ({
   onBack,
   headingRef,
+  context,
   children,
 }: {
   onBack: () => void;
   headingRef?: React.RefObject<HTMLHeadingElement | null>;
+  /** The course, and the day: said after "Daily puzzle". */
+  context: React.ReactNode;
   children: React.ReactNode;
 }) => {
   const ownRef = React.useRef<HTMLHeadingElement>(null);
@@ -80,16 +89,25 @@ const DailyFrame = ({
   React.useEffect(() => {
     if (!headingRef) ownRef.current?.focus();
   }, [headingRef]);
+  // Escape goes back, like the Back button. Not from a field with typing in it.
+  useEscape(onBack);
   return (
     <div className="screen daily">
       <header className="frame">
         <button type="button" className="round-button" aria-label="Back" onClick={onBack}>
           <BackIcon />
         </button>
-        <h2 ref={ref} tabIndex={-1} className="frame-title">
-          Daily puzzle
-        </h2>
       </header>
+      <div className="prompt-block daily-prompt-block">
+        <h2 ref={ref} tabIndex={-1} className="eyebrow daily-heading">
+          <span>
+            Daily puzzle
+            <span className="sr-only">:</span>
+          </span>{" "}
+          <span aria-hidden="true">· </span>
+          {context}
+        </h2>
+      </div>
       {children}
     </div>
   );
@@ -200,10 +218,17 @@ const DailyGame = ({
   };
 
   return (
-    <DailyFrame onBack={onBack} headingRef={headingRef}>
-      <p className="eyebrow daily-date">
-        {course.name} · {formatDay(puzzle.day)}
-      </p>
+    <DailyFrame
+      onBack={onBack}
+      headingRef={headingRef}
+      context={
+        <>
+          {course.name}
+          <span className="sr-only">,</span> <span aria-hidden="true">· </span>
+          {formatDay(puzzle.day)}
+        </>
+      }
+    >
       {step === "read" && (
         <ReadHalf
           puzzle={puzzle}

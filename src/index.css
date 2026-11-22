@@ -137,14 +137,6 @@ button {
   min-height: 2.75rem;
 }
 
-.frame-title {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-
 .round-button {
   display: inline-flex;
   flex: none;
@@ -164,7 +156,12 @@ button {
   height: 1.15rem;
 }
 
-/* Prompt: a small typed label for context, then the task in bold. */
+/* Prompt: under the frame on every screen, a small typed label for context,
+   then the task (or the screen's title) in bold. */
+.prompt-block {
+  margin-top: 1.5rem;
+}
+
 .eyebrow {
   margin: 0;
   font-family: var(--mono);
@@ -180,6 +177,7 @@ button {
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* A letter set in type: an orange card with a hard shadow. */
@@ -337,10 +335,6 @@ kbd {
   }
 
   .task {
-    font-size: 2.25rem;
-  }
-
-  .frame-title {
     font-size: 2.25rem;
   }
 }

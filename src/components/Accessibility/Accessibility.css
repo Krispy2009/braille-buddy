@@ -3,6 +3,11 @@
   padding-bottom: 2rem;
 }
 
+/* 1.5rem under the frame, as on every screen, with the gap. */
+.accessibility > .prompt-block {
+  margin-top: 0.25rem;
+}
+
 .accessibility section {
   display: flex;
   flex-direction: column;

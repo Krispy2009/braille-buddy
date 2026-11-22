@@ -97,10 +97,13 @@ export const Settings = ({
         <button type="button" className="round-button" aria-label="Back" onClick={onBack}>
           <BackIcon />
         </button>
-        <h2 ref={headingRef} tabIndex={-1} className="frame-title">
+      </header>
+      <div className="prompt-block">
+        <p className="eyebrow">Saved on this device</p>
+        <h2 ref={headingRef} tabIndex={-1} className="task">
           Settings
         </h2>
-      </header>
+      </div>
 
       <fieldset className="setting">
         <legend className="setting-legend">Entering dots</legend>

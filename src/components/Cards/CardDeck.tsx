@@ -19,6 +19,13 @@ type CardDeckProps = {
   onIndex: (index: number) => void;
   /** On the card, so the screen can move focus to it. */
   ref?: React.Ref<HTMLDivElement>;
+  /**
+   * Previous and Next under the card. A screen with its own turning buttons
+   * (the lesson intro) leaves them out.
+   */
+  turnButtons?: boolean;
+  /** Said after the card, in the same announcement. */
+  note?: string;
 };
 
 /** How far a finger has to travel sideways to turn the card. */
@@ -29,7 +36,15 @@ const SWIPE = 40;
  * Previous and Next. Arrow keys and a swipe turn the card as well, so there
  * are three ways to flick and none of them is the only one.
  */
-export const CardDeck = ({ course, letters, index, onIndex, ref }: CardDeckProps) => {
+export const CardDeck = ({
+  course,
+  letters,
+  index,
+  onIndex,
+  ref,
+  turnButtons = true,
+  note,
+}: CardDeckProps) => {
   const swipeFrom = React.useRef<number | null>(null);
   const letter = letters[index];
   const cells = cellsForLetter(letter, course.id) ?? [CLEAR_CELL];
@@ -91,27 +106,29 @@ export const CardDeck = ({ course, letters, index, onIndex, ref }: CardDeckProps
         {/* Said once per card: the letter, then where its dots are. */}
         <span className="sr-only" role="status">
           Card {index + 1} of {letters.length}: {spokenLetter(letter, course.id)},{" "}
-          {cellsInWords(cells)}.
+          {cellsInWords(cells)}.{note && ` ${note}`}
         </span>
       </div>
-      <div className="card-turn">
-        <button
-          type="button"
-          className="outline-button"
-          disabled={first}
-          onClick={() => go(index - 1)}
-        >
-          Previous card
-        </button>
-        <button
-          type="button"
-          className="outline-button"
-          disabled={last}
-          onClick={() => go(index + 1)}
-        >
-          Next card
-        </button>
-      </div>
+      {turnButtons && (
+        <div className="card-turn">
+          <button
+            type="button"
+            className="outline-button"
+            disabled={first}
+            onClick={() => go(index - 1)}
+          >
+            Previous card
+          </button>
+          <button
+            type="button"
+            className="outline-button"
+            disabled={last}
+            onClick={() => go(index + 1)}
+          >
+            Next card
+          </button>
+        </div>
+      )}
     </div>
   );
 };

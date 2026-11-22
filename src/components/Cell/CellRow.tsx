@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { CellType } from "../../game/braille";
 import { cellLabel, dotsInWords } from "../../game/cells";
 import { Cell } from "./Cell";
+import type { CellProps } from "./Cell";
 import "./Cell.css";
 
 type CellRowProps = {
@@ -16,6 +17,8 @@ type CellRowProps = {
   onSelect?: (index: number) => void;
   /** Name of the group of cell buttons. Only used with `onSelect`. */
   label?: string;
+  /** Read-only rows only: dots to mark in each cell, see `Cell`. */
+  marks?: readonly CellProps["marks"][];
 };
 
 /**
@@ -29,15 +32,18 @@ export const CellRow = ({
   current,
   onSelect,
   label = "Cells",
+  marks,
 }: CellRowProps) => {
   const className = `cell-row ${size}`;
   const style = { "--cells": cells.length } as CSSProperties;
   if (!onSelect) {
-    if (cells.length === 1) return <Cell positions={cells[0]} size={size} />;
+    if (cells.length === 1) {
+      return <Cell positions={cells[0]} size={size} marks={marks?.[0]} />;
+    }
     return (
       <div className={className} style={style} aria-hidden="true">
         {cells.map((cell, index) => (
-          <Cell key={index} positions={cell} size={size} />
+          <Cell key={index} positions={cell} size={size} marks={marks?.[index]} />
         ))}
       </div>
     );

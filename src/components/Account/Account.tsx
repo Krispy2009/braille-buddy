@@ -425,10 +425,13 @@ export const Account = ({
         <button type="button" className="round-button" aria-label="Back" onClick={onBack}>
           <BackIcon />
         </button>
-        <h2 ref={titleRef} tabIndex={-1} className="frame-title">
+      </header>
+      <div className="prompt-block">
+        <p className="eyebrow">Optional, never needed to play</p>
+        <h2 ref={titleRef} tabIndex={-1} className="task">
           Account
         </h2>
-      </header>
+      </div>
 
       {/* Always on the page, so a new message is announced when it appears. */}
       <p role="status" className="account-status">

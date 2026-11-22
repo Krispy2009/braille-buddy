@@ -91,8 +91,10 @@ const finishRead = async (user: ReturnType<typeof userEvent.setup>) => {
 describe("Read it", () => {
   test("opens with focus on the heading and shows the word as cells, said in words", () => {
     open();
-    expect(screen.getByRole("heading", { level: 2, name: "Daily puzzle" })).toHaveFocus();
-    expect(screen.getByText("English · 15 Nov 2026")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /^Daily puzzle: English, / })).toHaveFocus();
+    expect(screen.getByRole("heading", { level: 2 })).toHaveAccessibleName(
+      "Daily puzzle: English, 15 Nov 2026"
+    );
     expect(screen.getByRole("heading", { level: 3, name: "Read it" })).toBeInTheDocument();
     expect(screen.getByText("Part 1 of 2 · try 1 of 3")).toBeInTheDocument();
     const words = screen.getByRole("list", { name: "The cells in words" });
@@ -187,7 +189,9 @@ describe("Write it", () => {
     expect(
       screen.getByText("Braille Buddy daily, 15 Nov 2026 (English): Read it in 1 try, Write it in 1 try.")
     ).toBeInTheDocument();
-    expect(screen.getByText("+50 pts today · 50 pts in all · day 1")).toBeInTheDocument();
+    expect(
+      screen.getByText("+50 points today · 50 points in all · 1 day in a row")
+    ).toBeInTheDocument();
     expect(document.querySelector(".daily-grid")).toHaveAttribute("aria-hidden", "true");
     expect(document.querySelector(".daily-grid")).toHaveTextContent("Read ⠿");
   });
@@ -304,7 +308,7 @@ describe("the result", () => {
     const onProgress = vi.fn();
     open({ onProgress });
     expect(screen.getByRole("heading", { level: 3, name: "Today's result" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: "Daily puzzle" })).toHaveFocus();
+    expect(screen.getByRole("heading", { level: 2, name: /^Daily puzzle: English, / })).toHaveFocus();
     expect(onProgress).not.toHaveBeenCalled();
   });
 
@@ -322,7 +326,9 @@ describe("Greek", () => {
 
   test("follows the course: Greek words, typed with or without accents", async () => {
     const { user } = open({ language: "greek" });
-    expect(screen.getByText("Greek · 15 Nov 2026")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2 })).toHaveAccessibleName(
+      "Daily puzzle: Greek, 15 Nov 2026"
+    );
     expect(input()).toHaveAttribute("lang", "el");
     // An accent on the first vowel, as a player might type it.
     const accented = greek.read.replace(/[αεηιουω]/, (vowel) => `${vowel}́`).normalize("NFC");

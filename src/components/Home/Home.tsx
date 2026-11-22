@@ -14,6 +14,7 @@ import { isLetterLearnt, lessonStates } from "../../game/lessons";
 import { currentStreak, dayKey, Progress } from "../../game/progress";
 import { GearIcon, PersonIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
+import { daysInARow } from "../Practice/Score";
 import { cellsInWords } from "../../game/cells";
 import type { DailyStatus } from "../../daily/storage";
 import "./Home.css";
@@ -62,9 +63,10 @@ const LetterList = ({ letters, course }: { letters: string[]; course: Course }) 
 
 /**
  * Home: the deck. The next card to learn is the hero, and tapping it starts
- * the lesson it belongs to; the same action waits on the black base. The
- * card library, lesson list, Explore and Settings are a quiet step away.
- * Points and streak live here and in results, never next to a question.
+ * the lesson it belongs to; the same action, in the same words, waits on the
+ * black base. The card library and Explore share one quiet row; the lesson
+ * list and Settings are a step away. Points and streak live here and in
+ * results, never next to a question.
  */
 export const Home = ({
   course,
@@ -111,22 +113,34 @@ export const Home = ({
   const started = lesson?.letters.some((each) => progress.letters[itemId(course.id, each)]);
   const action = !lesson ? "Practise everything" : started ? "Keep going" : "Start lesson";
   const start = () => onStart(lesson?.id);
+  // What the app does not teach is said on Home until the player finishes a
+  // first lesson (in any course): by then they have read it, and it stays on
+  // the Accessibility page for good.
+  const showNote = !Object.values(progress.completedLessons).some((done) => done.length > 0);
+  // On a wide window the deck sits beside the headline down to the quiet
+  // links: headline, eyebrow, today's line and the links, plus the note and
+  // the daily card when they show.
+  const deckRows = 4 + (showNote ? 1 : 0) + (daily ? 1 : 0);
   // After a lesson finished today, the next one's cards are up next, not
   // today's task: the day's practice is already done.
   const playedToday = progress.lastPlayed === dayKey(now());
 
   return (
-    <div ref={root} className="screen home">
+    <div
+      ref={root}
+      className="screen home"
+      style={{ "--home-deck-rows": deckRows } as React.CSSProperties}
+    >
       <header className="home-header">
         <h1 className="wordmark">Braille Buddy</h1>
         <p className="home-stats">
           <span className="home-stats-shown" aria-hidden="true">
-            <span>day {streak}</span>
+            <span>{progress.points} points</span>
             <span className="home-stats-split"> · </span>
-            <span>{progress.points} pts</span>
+            <span>{daysInARow(streak)}</span>
           </span>
           <span className="sr-only">
-            Daily streak {streak} {streak === 1 ? "day" : "days"}, {progress.points} points
+            {progress.points} points, {daysInARow(streak)}
           </span>
         </p>
         {account && onAccount && (
@@ -184,7 +198,7 @@ export const Home = ({
           </span>
           <span className="deck-card-bottom" aria-hidden="true">
             <span>dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}</span>
-            <span className="deck-card-go">{!lesson ? "mix all" : started ? "keep going" : "start"}</span>
+            <span className="deck-card-go">{action}</span>
           </span>
         </button>
       </div>
@@ -204,11 +218,13 @@ export const Home = ({
           </>
         )}
       </p>
-      <p className="home-note">
-        Braille Buddy teaches the dot patterns of braille. Reading by touch
-        takes practice with real embossed braille, ideally with a braille
-        teacher or a local blindness organisation.
-      </p>
+      {showNote && (
+        <p className="home-note">
+          Braille Buddy teaches the dot patterns of braille. Reading by touch
+          takes practice with real embossed braille, ideally with a braille
+          teacher or a local blindness organisation.
+        </p>
+      )}
       {daily && (
         <section className="daily-card" aria-labelledby="daily-card-title">
           <div className="daily-card-head">

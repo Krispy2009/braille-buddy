@@ -69,9 +69,10 @@ html:has(.home) {
   }
 }
 
-/* A 320px phone with Bigger text has no room for one row: the wordmark
-   takes its own line and the rest sit under it, buttons at the right. */
-@container page (max-width: 17.5rem) {
+/* A small phone has no room for one row next to "12 days in a row": the
+   wordmark takes its own line and the rest sit under it, buttons at the
+   right. */
+@container page (max-width: 23rem) {
   .home-header {
     flex-wrap: wrap;
   }
@@ -80,14 +81,25 @@ html:has(.home) {
     flex-basis: 100%;
   }
 
+  /* With Bigger text even this row can be too narrow for "12 days in a
+     row": the stats take what the buttons leave and break between words. */
   .home-stats {
-    margin-right: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
   }
 
   .home-stats-shown {
     align-items: flex-start;
   }
 
+  .home-stats-shown > span {
+    text-wrap: balance;
+  }
+}
+
+/* A 320px phone with Bigger text: the deck a size down too. */
+@container page (max-width: 17.5rem) {
   /* The fanned cards are wider than this column: the whole deck a size
      down, so nothing pokes past the page edge. */
   .home > .deck {
@@ -101,7 +113,8 @@ html:has(.home) {
   color: var(--on-accent);
 }
 
-/* What the app does not teach, said plainly under the day's cards. */
+/* What the app does not teach, said plainly under the day's cards until
+   the first lesson is done; after that it lives on the Accessibility page. */
 .home-note {
   margin: 0;
   font-size: 0.9375rem;
@@ -250,6 +263,8 @@ html:has(.home) {
   box-shadow: none;
 }
 
+[data-theme="high-visibility"] .deck-front,
+[data-theme="high-visibility"] .deck-front:active,
 [data-theme="high-visibility"] .deck-card-go {
   box-shadow: none;
 }
@@ -271,10 +286,31 @@ html:has(.home) {
   white-space: nowrap;
 }
 
+/* The card library and Explore: one quiet row, the first link's text in
+   line with the page edge. They only wrap if they truly can't fit. */
 .home-links {
   display: flex;
   flex-wrap: wrap;
-  margin: -0.25rem 0 0 -1rem;
+  column-gap: 0.75rem;
+  margin: -0.25rem 0 0 -0.5rem;
+}
+
+.home-links .quiet-button {
+  padding: 0 0.5rem;
+}
+
+/* A 320px phone with Bigger text: a touch smaller and closer, so the two
+   still share one row. */
+@container page (max-width: 17.5rem) {
+  .home-links {
+    column-gap: 0.5rem;
+    margin-left: -0.25rem;
+  }
+
+  .home-links .quiet-button {
+    padding: 0 0.25rem;
+    font-size: 0.9375rem;
+  }
 }
 
 /* The front card is a button: it starts the lesson the card is in. */
@@ -360,6 +396,33 @@ button.deck-front {
   min-height: 3.625rem;
 }
 
+/* Bigger text on a short phone (under 700px tall, a phone-width column):
+   a stuck base would cover the card and still squeeze "Start lesson" onto
+   two lines. So the base lets go and sits at the end of the page, its two
+   buttons one above the other at full width. The card above, whole in the
+   first screen, is the same action under the same words, so the way in is
+   never hidden and nothing sits on top of the page. */
+@container page (max-width: 47.99rem) {
+  @media (max-height: 43.75rem) {
+    :root[data-text="bigger"] .home-base {
+      position: static;
+    }
+
+    :root[data-text="bigger"] .home-actions {
+      flex-direction: column;
+    }
+  }
+}
+
+/* Nothing sticks there, so focus needs no room kept clear at the bottom.
+   (A media query: the page's container can't style <html>. In rem a media
+   query reads 16px, so 60rem is the 48rem column at 125%.) */
+@media (max-height: 43.75rem) and (max-width: 59.99rem) {
+  html[data-text="bigger"]:has(.home) {
+    scroll-padding-bottom: 0;
+  }
+}
+
 .site-footer {
   max-width: var(--page);
   margin: 0 auto;
@@ -413,17 +476,18 @@ button.deck-front {
   font-weight: 900;
 }
 
+/* Not done yet is plain typed text: a dashed rim would say locked or
+   wrong. Done today is a raised orange pill. */
 .daily-card-state {
-  padding: 0 0.5rem;
-  border: 2px dashed var(--line);
-  border-radius: 999px;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
 }
 
 .daily-card-state[data-done="true"] {
-  border-style: solid;
+  padding: 0 0.5rem;
+  border: 2px solid var(--line);
+  border-radius: 999px;
   background: var(--accent);
   color: var(--on-accent);
 }
@@ -462,10 +526,11 @@ button.deck-front {
     margin-bottom: 1rem;
   }
 
-  /* Rows 2 to 7 hold the headline down to the card links. */
+  /* The deck spans the rows from the headline down to the card links; how
+     many depends on whether the note and the daily card show (Home.tsx). */
   .home > .deck {
     grid-column: 2;
-    grid-row: 2 / 8;
+    grid-row: 2 / span var(--home-deck-rows, 6);
     align-self: center;
     margin-top: 0;
   }

@@ -152,6 +152,8 @@ export const WriteHalf = ({
     onSubmit: submit,
     enabled: writing,
     keyShortcuts,
+    // Escape leaves the puzzle (Daily), Backspace clears.
+    escapeClears: false,
   });
 
   const rows: TryRow[] = tries.map((guess) => {

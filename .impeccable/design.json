@@ -301,6 +301,26 @@
       "dot-numeral-small": {
         "displayName": "Dot Numeral Small",
         "purpose": "Dot numbers in the tiny lookup cells in Daily."
+      },
+      "stamp-done-compact": {
+        "displayName": "Stamp Done Compact",
+        "purpose": "LESSON DONE on a phone with Bigger text."
+      },
+      "finish-letter-compact": {
+        "displayName": "Finish Letter Compact",
+        "purpose": "Finish card letters on a short phone with Bigger text."
+      },
+      "card-letter-compact": {
+        "displayName": "Card Letter Compact",
+        "purpose": "The intro card letter on a short phone with Bigger text."
+      },
+      "card-letter-long-compact": {
+        "displayName": "Card Letter Long Compact",
+        "purpose": "Long signs on the compact intro card."
+      },
+      "dot-numeral-compact": {
+        "displayName": "Dot Numeral Compact",
+        "purpose": "Dot numbers on the compact tappable cell."
       }
     },
     "shadows": [

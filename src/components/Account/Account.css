@@ -6,6 +6,11 @@
   padding-bottom: 2rem;
 }
 
+/* 1.5rem under the frame, as on every screen, with the gap. */
+.account > .prompt-block {
+  margin-top: 0.375rem;
+}
+
 .account-status {
   margin: 0;
   font-weight: 700;

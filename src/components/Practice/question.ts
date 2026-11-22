@@ -2,6 +2,8 @@ import {
   cellsForLetter,
   CellType,
   CLEAR_CELL,
+  DOT_KEYS,
+  DotKey,
   itemId,
   ItemId,
   kindOfLetter,
@@ -11,7 +13,7 @@ import {
   raisedDots,
   spokenLetter,
 } from "../../game/braille";
-import { cellsInWords, dotsInWords, sameCells } from "../../game/cells";
+import { cellsInWords, dotsInWords, dotsToCell, sameCells } from "../../game/cells";
 import type { Course, Lesson } from "../../courses";
 import { isLetterLearnt, LEARNT_BOX } from "../../game/lessons";
 import { POINTS_PER_CORRECT, Progress } from "../../game/progress";
@@ -121,9 +123,10 @@ const isLetter = (item: ItemId): boolean => {
 };
 
 /**
- * The "dots to letter" question: "Which letter has dots 1 and 4?", or for
- * numbers and punctuation "Which sign has 2 cells, dots 3, 4, 5 and 6, then
- * dot 1?".
+ * The "dots to letter" question as screen readers hear it: "Which letter has
+ * dots 1 and 4?", or for numbers and punctuation "Which sign has 2 cells,
+ * dots 3, 4, 5 and 6, then dot 1?". The cell is hidden from them, so the
+ * dots are the question.
  */
 export const choicePrompt = (item: ItemId): string => {
   const cells = answerCells(item);
@@ -132,6 +135,44 @@ export const choicePrompt = (item: ItemId): string => {
     ? `Which ${noun} has ${dotsInWords(cells[0])}?`
     : `Which ${noun} has ${cells.length} cells, ${cellsInWords(cells)}?`;
 };
+
+/**
+ * The same question as it is shown: "Which letter is this?". The cell on
+ * screen is the question, so printing its dots would give the answer away.
+ */
+export const choiceTask = (item: ItemId): string =>
+  `Which ${isLetter(item) ? "letter" : "sign"} is this?`;
+
+/** A dot raised that the answer doesn't have, or one it has that wasn't. */
+export type DotMark = "extra" | "missed";
+export type DotMarks = Partial<Record<DotKey, DotMark>>;
+
+/**
+ * The dots that differ, cell by cell: "extra" on the given cells (raised,
+ * but not in the answer), "missed" on the answer's (raised there, not in the
+ * given ones). A cell that one side doesn't have counts as no dots.
+ */
+export const dotMarks = (
+  given: readonly CellType[],
+  answer: readonly CellType[]
+): { given: DotMarks[]; answer: DotMarks[] } => {
+  const at = (cells: readonly CellType[], index: number) => cells[index] ?? CLEAR_CELL;
+  const marks = (
+    cells: readonly CellType[],
+    other: readonly CellType[],
+    mark: DotMark
+  ): DotMarks[] =>
+    cells.map((cell, index) =>
+      Object.fromEntries(
+        DOT_KEYS.filter((dot) => cell[dot] && !at(other, index)[dot]).map((dot) => [dot, mark])
+      )
+    );
+  return { given: marks(given, answer, "extra"), answer: marks(answer, given, "missed") };
+};
+
+/** The raised dots of a cell that carry a mark, as a cell of their own. */
+const markedCell = (marks: DotMarks): CellType =>
+  dotsToCell(DOT_KEYS.filter((dot) => marks[dot]).map((dot) => Number(dot.slice(3))));
 
 const capitalize = (text: string): string =>
   text.charAt(0).toUpperCase() + text.slice(1);
@@ -186,15 +227,64 @@ export type Answer =
   | { kind: "dots"; correct: boolean; cells: CellType[] }
   | { kind: "letter"; correct: boolean; choice: string };
 
+/**
+ * Which dots differ, in short words, as the compare cells mark them: "You
+ * missed dot 4. Dot 6 is extra." for something written, "Dot 4 is missing."
+ * for a letter chosen. A sign of several cells names the cell: "In cell 2,
+ * you missed dot 4 and dot 6 is extra." Says nothing when the cell counts
+ * differ, since the dots are then already named cell by cell.
+ */
+export const differenceText = (
+  item: ItemId,
+  given: readonly CellType[],
+  wrote: boolean
+): string => {
+  const answer = answerCells(item);
+  if (given.length !== answer.length) return "";
+  const marks = dotMarks(given, answer);
+  const multi = answer.length > 1;
+  return answer
+    .map((_, index) => {
+      const missed = markedCell(marks.answer[index]);
+      const extra = markedCell(marks.given[index]);
+      const missedCount = raisedDots(missed).length;
+      const extraCount = raisedDots(extra).length;
+      const parts = [
+        missedCount === 0
+          ? ""
+          : wrote
+            ? `you missed ${dotsInWords(missed)}`
+            : `${dotsInWords(missed)} ${missedCount === 1 ? "is" : "are"} missing`,
+        extraCount === 0
+          ? ""
+          : `${dotsInWords(extra)} ${extraCount === 1 ? "is" : "are"} extra`,
+      ].filter(Boolean);
+      if (parts.length === 0) return "";
+      return multi
+        ? `In cell ${index + 1}, ${parts.join(" and ")}.`
+        : parts.map((part) => `${capitalize(part)}.`).join(" ");
+    })
+    .filter(Boolean)
+    .join(" ");
+};
+
 const mistakeText = (item: ItemId, answer: Answer): string => {
   if (answer.kind === "dots") {
-    return `You raised ${cellsInWords(answer.cells)}.`;
+    return [
+      `You raised ${cellsInWords(answer.cells)}.`,
+      differenceText(item, answer.cells, true),
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
   const { language } = parseItemId(item);
   const chosen = cellsForLetter(answer.choice, language) ?? [CLEAR_CELL];
-  return `You chose ${namedLetters([answer.choice], language)}, which is ${cellsInWords(
-    chosen
-  )}.`;
+  return [
+    `You chose ${namedLetters([answer.choice], language)}, which is ${cellsInWords(chosen)}.`,
+    differenceText(item, chosen, false),
+  ]
+    .filter(Boolean)
+    .join(" ");
 };
 
 export const resultText = (item: ItemId, answer: Answer): string =>
