@@ -29,6 +29,18 @@ export const BackIcon = () => (
   </Icon>
 );
 
+export const ForwardIcon = () => (
+  <Icon>
+    <path d="M9 6l6 6-6 6" />
+  </Icon>
+);
+
+export const CheckIcon = () => (
+  <Icon>
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </Icon>
+);
+
 export const GearIcon = () => (
   <Icon>
     <circle cx="12" cy="12" r="3" />

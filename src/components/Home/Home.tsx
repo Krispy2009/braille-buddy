@@ -12,7 +12,7 @@ import {
 } from "../../game/braille";
 import { isLetterLearnt, lessonStates } from "../../game/lessons";
 import { currentStreak, dayKey, Progress } from "../../game/progress";
-import { GearIcon, PersonIcon } from "../Icons/Icons";
+import { CheckIcon, ForwardIcon, GearIcon, PersonIcon } from "../Icons/Icons";
 import { Letter } from "../Practice/Letter";
 import { daysInARow } from "../Practice/Score";
 import { cellsInWords } from "../../game/cells";
@@ -64,8 +64,8 @@ const LetterList = ({ letters, course }: { letters: string[]; course: Course }) 
 /**
  * Home: the deck. The next card to learn is the hero, and tapping it starts
  * the lesson it belongs to; the same action, in the same words, waits on the
- * black base. The card library and Explore share one quiet row; the lesson
- * list and Settings are a step away. Points and streak live here and in
+ * black base. Today's daily puzzle is one row, and the card library and
+ * Explore share one quiet row; the lesson list and Settings are a step away. Points and streak live here and in
  * results, never next to a question.
  */
 export const Home = ({
@@ -108,6 +108,13 @@ export const Home = ({
   const isNew = !progress.letters[itemId(course.id, letter)];
   const number = String(allLetters.indexOf(letter) + 1).padStart(2, "0");
   const streak = currentStreak(progress, now());
+  // Nothing to count is said kindly: no "0 points", and no "0 days in a
+  // row" for a new player or one coming back after a break.
+  const pointsText = progress.points > 0 ? `${progress.points} points` : "No points yet";
+  const streakText = streak > 0 ? daysInARow(streak) : undefined;
+  // The card's dots, with "dot" for a single one.
+  const dotNumbers = cells.map((each) => raisedDots(each).join(" ")).join(", ");
+  const dotsLabel = cells.length === 1 && raisedDots(cell).length === 1 ? "dot" : "dots";
   // Plain words for the one action: start a lesson, carry on with one the
   // player has begun, or mix everything once every lesson is done.
   const started = lesson?.letters.some((each) => progress.letters[itemId(course.id, each)]);
@@ -119,7 +126,7 @@ export const Home = ({
   const showNote = !Object.values(progress.completedLessons).some((done) => done.length > 0);
   // On a wide window the deck sits beside the headline down to the quiet
   // links: headline, eyebrow, today's line and the links, plus the note and
-  // the daily card when they show.
+  // the daily row when they show.
   const deckRows = 4 + (showNote ? 1 : 0) + (daily ? 1 : 0);
   // After a lesson finished today, the next one's cards are up next, not
   // today's task: the day's practice is already done.
@@ -135,12 +142,16 @@ export const Home = ({
         <h1 className="wordmark">Braille Buddy</h1>
         <p className="home-stats">
           <span className="home-stats-shown" aria-hidden="true">
-            <span>{progress.points} points</span>
-            <span className="home-stats-split"> · </span>
-            <span>{daysInARow(streak)}</span>
+            <span>{pointsText}</span>
+            {streakText && (
+              <>
+                <span className="home-stats-split"> · </span>
+                <span>{streakText}</span>
+              </>
+            )}
           </span>
           <span className="sr-only">
-            {progress.points} points, {daysInARow(streak)}
+            {streakText ? `${pointsText}, ${streakText}` : pointsText}
           </span>
         </p>
         {account && onAccount && (
@@ -184,7 +195,7 @@ export const Home = ({
         >
           <span className="deck-card-top" aria-hidden="true">
             <span>card {number}</span>
-            <span>{isNew ? "new" : learnt(letter) ? "learnt" : "practise"}</span>
+            <span>{isNew ? "new" : learnt(letter) ? "learnt" : "learning"}</span>
           </span>
           <span className="deck-card-middle" aria-hidden="true">
             <span className="deck-letter" lang={LANGUAGE_TAGS[course.id]}>
@@ -197,7 +208,7 @@ export const Home = ({
             </span>
           </span>
           <span className="deck-card-bottom" aria-hidden="true">
-            <span>dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}</span>
+            <span>{dotsLabel} {dotNumbers}</span>
             <span className="deck-card-go">{action}</span>
           </span>
         </button>
@@ -205,11 +216,19 @@ export const Home = ({
 
       <p className="home-today">
         {!lesson ? (
-          <>You have done every lesson in {course.name}. Mix all the cards to keep them sharp.</>
+          <>
+            You have finished every lesson in {course.name}. Practise everything
+            to keep every card fresh.
+          </>
+        ) : toLearn.length > 0 && started ? (
+          <>
+            {countWord(toLearn.length)} {toLearn.length === 1 ? "card" : "cards"} left
+            to learn: <LetterList letters={toLearn} course={course} />.
+          </>
         ) : toLearn.length > 0 ? (
           <>
             {countWord(toLearn.length)} new {toLearn.length === 1 ? "card" : "cards"}{" "}
-            {playedToday && !started ? "up next" : "to learn today"}:{" "}
+            {playedToday ? "up next" : "to learn today"}:{" "}
             <LetterList letters={toLearn} course={course} />.
           </>
         ) : (
@@ -226,34 +245,21 @@ export const Home = ({
         </p>
       )}
       {daily && (
-        <section className="daily-card" aria-labelledby="daily-card-title">
-          <div className="daily-card-head">
-            <h3 id="daily-card-title" className="daily-card-title">
-              Daily puzzle
-            </h3>
-            <span className="daily-card-state" data-done={daily.done}>
-              <span aria-hidden="true">{daily.done ? "✓" : "○"}</span>{" "}
-              {daily.done ? "Done today" : "Not done yet"}
-            </span>
-          </div>
-          <p className="daily-card-text">
-            {daily.done
-              ? `${daily.result}. A new puzzle comes at midnight.`
-              : "Read a word in braille, then write one. The same puzzle for everyone today."}
-          </p>
-          <button
-            type="button"
-            className="outline-button daily-card-button"
-            data-return="daily"
-            onClick={onDaily}
-          >
-            {daily.done
-              ? "See today's result"
-              : daily.started
-                ? "Carry on with today's puzzle"
-                : "Play today's puzzle"}
-          </button>
-        </section>
+        <button
+          type="button"
+          className="daily-row"
+          aria-label={`Daily puzzle, ${daily.done ? "done today" : daily.started ? "started" : "new today"}`}
+          data-done={daily.done}
+          data-return="daily"
+          onClick={onDaily}
+        >
+          <span className="daily-row-title">Daily puzzle</span>
+          <span className="daily-row-state">
+            {daily.done && <CheckIcon />}
+            {daily.done ? "Done today" : daily.started ? "Started" : "New today"}
+          </span>
+          <ForwardIcon />
+        </button>
       )}
       <div className="home-links">
         <button

@@ -273,14 +273,16 @@ describe('Home and the screens it opens', () => {
   test('a new player sees the deck: the next card, the day, the points and one action', () => {
     render(<App />);
     expect(screen.getByRole('heading', { level: 1, name: 'Braille Buddy' })).toBeInTheDocument();
-    // Shown as "0 points · 0 days in a row", in two lines on a phone; said
-    // with a comma.
-    expect(shownStats()).toHaveTextContent('0 points · 0 days in a row');
+    // Nothing to count yet: no "0 points" or "0 days in a row".
+    expect(shownStats()).toHaveTextContent(/^No points yet$/);
     expect(shownStats()).toHaveAttribute('aria-hidden', 'true');
-    expect(screen.getByText('0 points, 0 days in a row')).toBeInTheDocument();
+    expect(screen.getByText('No points yet', { selector: '.sr-only' })).toBeInTheDocument();
     expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
     // The card's key says exactly what the base says: one action, two ways in.
     expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' })).toHaveTextContent('Start lesson');
+    // One dot is "dot 1", on the card as in its name.
+    expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' })).toHaveTextContent(/dot 1(?!\d)/);
+    expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' })).not.toHaveTextContent('dots');
     expect(screen.getByText(/new cards to learn today/)).toHaveTextContent(
       'Five new cards to learn today: a, b, c, d, e.'
     );
@@ -313,14 +315,29 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByText('English · 1 of 26 letters learnt')).toBeInTheDocument();
     // f is learnt, so the next card is g, seen once already.
     expect(screen.getByRole('button', { name: 'Card 7: g, dots 1, 2, 4 and 5. Keep going.' })).toHaveTextContent(
-      'practise'
+      'learning'
     );
-    expect(screen.getByText(/new cards to learn today/)).toHaveTextContent(
-      'Four new cards to learn today: g, h, i, j.'
+    // The lesson is begun, so its cards are no longer all new.
+    expect(screen.getByText(/left to learn/)).toHaveTextContent(
+      'Four cards left to learn: g, h, i, j.'
     );
     expect(screen.getByRole('button', { name: 'Keep going' })).toBeInTheDocument();
     // After a first lesson the note lives on the Accessibility page, not Home.
     expect(screen.queryByText(/teaches the dot patterns of braille/)).not.toBeInTheDocument();
+  });
+
+  test('a broken streak is not shown as "0 days in a row"', () => {
+    saveProgress({
+      points: 60,
+      streak: 5,
+      bestStreak: 5,
+      lastPlayed: '2020-01-01',
+      completedLessons: {},
+      letters: {},
+    });
+    render(<App />);
+    expect(shownStats()).toHaveTextContent(/^60 points$/);
+    expect(screen.queryByText(/days? in a row/)).not.toBeInTheDocument();
   });
 
   test("after today's lesson, the next lesson's cards are up next, not today's", () => {
@@ -414,14 +431,14 @@ describe('Home and the screens it opens', () => {
 
     // Escape never throws away a typed word: in the field it waits until
     // the field is empty.
-    await user.click(screen.getByRole('button', { name: "Play today's puzzle" }));
+    await user.click(screen.getByRole('button', { name: 'Daily puzzle, new today' }));
     const field = screen.getByRole('textbox', { name: 'Type the word in print' });
     await user.type(field, 'ca{Escape}');
     expect(field).toHaveValue('ca');
     expect(screen.getByRole('heading', { level: 3, name: 'Read it' })).toBeInTheDocument();
     await user.clear(field);
     await user.keyboard('{Escape}');
-    expect(screen.getByRole('button', { name: "Play today's puzzle" })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Daily puzzle, new today' })).toHaveFocus();
     vi.restoreAllMocks();
   });
 
@@ -489,7 +506,7 @@ describe('Home and the screens it opens', () => {
     });
     const user = userEvent.setup();
     render(<App />);
-    expect(screen.getByText(/You have done every lesson in English/)).toBeInTheDocument();
+    expect(screen.getByText(/You have finished every lesson in English. Practise everything/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Practise everything' }));
     expect(
       screen.getByRole('heading', { level: 2, name: 'English: Everything so far' })
@@ -522,20 +539,26 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus();
   });
 
-  test('the Daily puzzle card opens the puzzle, and Back returns to the card', async () => {
+  test('the Daily puzzle row opens the puzzle, and Back returns to the row', async () => {
     const user = userEvent.setup();
     render(<App />);
-    const card = screen.getByRole('region', { name: 'Daily puzzle' });
-    expect(card).toHaveTextContent('Not done yet');
-    await user.click(within(card).getByRole('button', { name: "Play today's puzzle" }));
+    const row = screen.getByRole('button', { name: 'Daily puzzle, new today' });
+    expect(row).toHaveTextContent('Daily puzzleNew today');
+    await user.click(row);
     expect(screen.getByRole('heading', { level: 2, name: /^Daily puzzle: English, / })).toHaveFocus();
     expect(screen.getByRole('heading', { level: 3, name: 'Read it' })).toBeInTheDocument();
     expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(screen.getByRole('button', { name: "Play today's puzzle" })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Daily puzzle, new today' })).toHaveFocus();
   });
 
-  test('the card says when today is done, with the result', async () => {
+  test('the row says when today is started but not done', () => {
+    saveDaily(today(), 'english', { read: ['zzz'], write: [], rewarded: false });
+    render(<App />);
+    expect(screen.getByRole('button', { name: 'Daily puzzle, started' })).toHaveTextContent('Started');
+  });
+
+  test('the row says when today is done, and opens the result', async () => {
     const puzzle = puzzleForDay('english', today())!;
     saveDaily(today(), 'english', {
       read: [puzzle.read],
@@ -544,10 +567,9 @@ describe('Home and the screens it opens', () => {
     });
     const user = userEvent.setup();
     render(<App />);
-    const card = screen.getByRole('region', { name: 'Daily puzzle' });
-    expect(card).toHaveTextContent('Done today');
-    expect(card).toHaveTextContent('Read it in 1 try, Write it in 2 tries.');
-    await user.click(within(card).getByRole('button', { name: "See today's result" }));
+    const row = screen.getByRole('button', { name: 'Daily puzzle, done today' });
+    expect(row).toHaveTextContent('Done today');
+    await user.click(row);
     expect(screen.getByRole('heading', { level: 3, name: "Today's result" })).toBeInTheDocument();
   });
 
@@ -555,7 +577,7 @@ describe('Home and the screens it opens', () => {
     const puzzle = puzzleForDay('english', today())!;
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('button', { name: "Play today's puzzle" }));
+    await user.click(screen.getByRole('button', { name: 'Daily puzzle, new today' }));
     await user.type(screen.getByRole('textbox', { name: 'Type the word in print' }), puzzle.read);
     await user.click(screen.getByRole('button', { name: 'Check' }));
     await user.click(screen.getByRole('button', { name: 'Go on to Write it' }));
@@ -566,7 +588,7 @@ describe('Home and the screens it opens', () => {
     await user.click(screen.getByRole('button', { name: "See today's result" }));
     await user.click(screen.getByRole('button', { name: 'Back to Home' }));
     expect(screen.getByText('50 points, 1 day in a row')).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Daily puzzle' })).toHaveTextContent('Done today');
+    expect(screen.getByRole('button', { name: 'Daily puzzle, done today' })).toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem('braille-buddy:progress')!)).toMatchObject({ points: 50, streak: 1 });
   });
 

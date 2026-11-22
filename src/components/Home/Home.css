@@ -320,8 +320,8 @@ button.deck-front {
   cursor: pointer;
 }
 
-/* The black base, as on the brailler: a row of keys showing the next
-   letter, then the actions. It sits at the end of Home, but sticks to the
+/* The black base, as on the brailler: the actions, and from 48rem a row of
+   keys showing the next letter. It sits at the end of Home, but sticks to the
    bottom of the window until the page reaches it, so the one action is in
    the first screen on any phone, with Bigger text too. */
 .home-base {
@@ -366,16 +366,12 @@ button.deck-front {
   outline: 2px solid var(--on-base);
 }
 
-/* A short window keeps the actions and lets the key row go, so the base
-   covers less of the page. */
-@media (max-height: 43.75rem) {
-  .home-keys {
-    display: none;
-  }
-
-  .home-base {
-    padding-top: 1rem;
-  }
+/* On a phone the base is only its actions: the card above already shows
+   the letter's dots, and a row of keys that can't be pressed would only
+   take room from the page while the base sticks. From 48rem the base runs
+   the full width and the keys fill its left end (see Wider windows). */
+.home-keys {
+  display: none;
 }
 
 /* A very short window (an old small phone) also takes the deck down a size,
@@ -443,63 +439,84 @@ button.deck-front {
   color: var(--text);
 }
 
-/* Today's daily puzzle: a plate on the page with its own way in, embossed
-   softly like the answer choices. It is a container, not something raised,
-   so it gets no hard shadow and never outweighs the base. Done or not is
-   said in words with a mark, and the border changes shape too. */
-.daily-card {
+/* Today's daily puzzle: one outlined row, the whole row the button. Flat
+   at rest like any outline button; done or not is said in words, and done
+   today is a raised accent pill with a tick, so it shows in shape too. */
+.daily-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 1.125rem 1.125rem;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.375rem 0.75rem 0.375rem 1.125rem;
   border: var(--line-width) solid var(--line);
   border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: -3px -3px 6px var(--hi), 3px 3px 6px var(--shade);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
-[data-theme="high-visibility"] .daily-card {
-  box-shadow: none;
-}
-
-.daily-card-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.25rem 0.75rem;
-}
-
-.daily-card-title {
-  margin: 0;
-  font-size: 1.25rem;
+.daily-row-title {
+  flex: 1;
+  font-size: 1.125rem;
   font-weight: 900;
+  white-space: nowrap;
 }
 
-/* Not done yet is plain typed text: a dashed rim would say locked or
-   wrong. Done today is a raised orange pill. */
-.daily-card-state {
+/* Not done yet and Started are plain typed text: a dashed rim would say
+   locked or wrong. */
+.daily-row-state {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: 0.25rem;
   font-family: var(--mono);
   font-size: 0.8125rem;
   font-weight: 700;
 }
 
-.daily-card-state[data-done="true"] {
-  padding: 0 0.5rem;
+.daily-row[data-done="true"] .daily-row-state {
+  padding: 0.125rem 0.5rem 0.125rem 0.375rem;
   border: 2px solid var(--line);
   border-radius: 999px;
   background: var(--accent);
   color: var(--on-accent);
 }
 
-.daily-card-text {
-  margin: 0;
-  font-size: 0.9375rem;
-  color: var(--text-soft);
+.daily-row svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.daily-card-button {
-  min-height: 3rem;
+.daily-row-state svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Too narrow for title and state on one line (a small phone with Bigger
+   text): the state goes under the title, each on one line. */
+@container page (max-width: 20rem) {
+  .daily-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    row-gap: 0.125rem;
+    padding-block: 0.5rem;
+  }
+
+  .daily-row-state {
+    grid-row: 2;
+    justify-self: start;
+    white-space: nowrap;
+  }
+
+  .daily-row > svg {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
 }
 
 /* ---- Wider windows --------------------------------------------------------
@@ -546,7 +563,7 @@ button.deck-front {
     margin-top: 0.625rem;
   }
 
-  .home > .daily-card {
+  .home > .daily-row {
     max-width: 30rem;
   }
 
@@ -564,6 +581,7 @@ button.deck-front {
   }
 
   .home-keys {
+    display: flex;
     gap: 0.5rem;
   }
 
