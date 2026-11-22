@@ -277,6 +277,8 @@ describe('Home and the screens it opens', () => {
     expect(shownStats()).toHaveTextContent(/^No points yet$/);
     expect(shownStats()).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('No points yet', { selector: '.sr-only' })).toBeInTheDocument();
+    // The headline says where to start; the caption keeps the count.
+    expect(screen.getByRole('heading', { level: 2, name: "Start with a. It's just one dot." })).toBeInTheDocument();
     expect(screen.getByText('English · 0 of 26 letters learnt')).toBeInTheDocument();
     // The card's key says exactly what the base says: one action, two ways in.
     expect(screen.getByRole('button', { name: 'Card 1: a, dot 1. Start lesson.' })).toHaveTextContent('Start lesson');
@@ -312,7 +314,9 @@ describe('Home and the screens it opens', () => {
     render(<App />);
     expect(shownStats()).toHaveTextContent('120 points · 4 days in a row');
     expect(screen.getByText('120 points, 4 days in a row')).toBeInTheDocument();
-    expect(screen.getByText('English · 1 of 26 letters learnt')).toBeInTheDocument();
+    // The headline gives the count, so the caption says what is left.
+    expect(screen.getByRole('heading', { level: 2, name: 'You know 1 letter. Next up: g.' })).toBeInTheDocument();
+    expect(screen.getByText('English · 25 to go')).toBeInTheDocument();
     // f is learnt, so the next card is g, seen once already.
     expect(screen.getByRole('button', { name: 'Card 7: g, dots 1, 2, 4 and 5. Keep going.' })).toHaveTextContent(
       'learning'
@@ -324,6 +328,25 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByRole('button', { name: 'Keep going' })).toBeInTheDocument();
     // After a first lesson the note lives on the Accessibility page, not Home.
     expect(screen.queryByText(/teaches the dot patterns of braille/)).not.toBeInTheDocument();
+  });
+
+  test('a lesson begun with nothing learnt yet says so, and what is next', () => {
+    saveProgress({
+      points: 10,
+      streak: 1,
+      bestStreak: 1,
+      lastPlayed: '2020-01-01',
+      completedLessons: {},
+      letters: { 'english:a': { correct: 1, wrong: 0, box: 1 } },
+    });
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 2, name: "You've made a start. Next up: a." })).toBeInTheDocument();
+  });
+
+  test('Greek: the headline names the first letter for screen readers, and counts its dots', () => {
+    localStorage.setItem('braille-buddy:practice-language', 'greek');
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 2, name: "Start with alpha. It's just one dot." })).toBeInTheDocument();
   });
 
   test('a broken streak is not shown as "0 days in a row"', () => {
@@ -352,6 +375,8 @@ describe('Home and the screens it opens', () => {
       ),
     });
     render(<App />);
+    expect(screen.getByRole('heading', { level: 2, name: 'Done for today. Next up: f.' })).toBeInTheDocument();
+    expect(screen.getByText('English · 5 of 26 letters learnt')).toBeInTheDocument();
     expect(screen.getByText(/new cards up next/)).toHaveTextContent(
       'Five new cards up next: f, g, h, i, j.'
     );
@@ -496,6 +521,19 @@ describe('Home and the screens it opens', () => {
     expect(screen.getByText(/days in a row/)).toBeInTheDocument();
   });
 
+  test('with every letter learnt, the headline says so and the caption has no count', () => {
+    const english = COURSES.find((course) => course.id === 'english')!;
+    saveProgress({
+      completedLessons: { english: english.lessons.map((lesson) => lesson.id) },
+      letters: Object.fromEntries(
+        english.lessons.flatMap((lesson) => lesson.letters).map((letter) => [`english:${letter}`, { correct: 2, wrong: 0, box: 2 }])
+      ),
+    });
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 2, name: 'You know all 26. Keep them fresh.' })).toBeInTheDocument();
+    expect(screen.getByText('English · every letter learnt')).toBeInTheDocument();
+  });
+
   test('when every lesson is done, Home offers to mix them all', async () => {
     saveProgress({
       completedLessons: {
@@ -507,6 +545,7 @@ describe('Home and the screens it opens', () => {
     const user = userEvent.setup();
     render(<App />);
     expect(screen.getByText(/You have finished every lesson in English. Practise everything/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Every lesson done. Keep them fresh.' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Practise everything' }));
     expect(
       screen.getByRole('heading', { level: 2, name: 'English: Everything so far' })

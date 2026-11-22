@@ -61,6 +61,60 @@ const LetterList = ({ letters, course }: { letters: string[]; course: Course }) 
   </strong>
 );
 
+const lettersWord = (count: number) => (count === 1 ? "letter" : "letters");
+
+/**
+ * The headline says where the player is, in two short sentences, so it is
+ * true and different as they go: where to start, how many letters they know
+ * and what comes next, that today is done, or that the course is.
+ * `count` is whether it says how many letters the player knows, so the
+ * caption under it can say what is left instead of the same number again.
+ */
+export const headlineFor = ({
+  letter,
+  dotCount,
+  learnt,
+  total,
+  newPlayer,
+  started,
+  playedToday,
+  allDone,
+}: {
+  letter: React.ReactNode;
+  dotCount: number;
+  learnt: number;
+  total: number;
+  newPlayer: boolean;
+  started: boolean;
+  playedToday: boolean;
+  allDone: boolean;
+}): { lines: [React.ReactNode, React.ReactNode]; count: boolean } => {
+  if (allDone) {
+    return learnt === total
+      ? { lines: [`You know all ${total}.`, "Keep them fresh."], count: true }
+      : { lines: ["Every lesson done.", "Keep them fresh."], count: false };
+  }
+  if (newPlayer) {
+    return {
+      lines: [
+        <>Start with {letter}.</>,
+        dotCount === 1 ? "It's just one dot." : `It's ${countWord(dotCount).toLowerCase()} dots.`,
+      ],
+      count: false,
+    };
+  }
+  if (playedToday && !started) {
+    return { lines: ["Done for today.", <>Next up: {letter}.</>], count: false };
+  }
+  if (learnt === 0) {
+    return { lines: ["You've made a start.", <>Next up: {letter}.</>], count: false };
+  }
+  return {
+    lines: [`You know ${learnt} ${lettersWord(learnt)}.`, <>Next up: {letter}.</>],
+    count: true,
+  };
+};
+
 /**
  * Home: the deck. The next card to learn is the hero, and tapping it starts
  * the lesson it belongs to; the same action, in the same words, waits on the
@@ -131,6 +185,16 @@ export const Home = ({
   // After a lesson finished today, the next one's cards are up next, not
   // today's task: the day's practice is already done.
   const playedToday = progress.lastPlayed === dayKey(now());
+  const headline = headlineFor({
+    letter: <Letter letter={letter} language={course.id} />,
+    dotCount: cells.reduce((sum, each) => sum + raisedDots(each).length, 0),
+    learnt: learntTotal,
+    total: alphabet.length,
+    newPlayer: !lesson ? false : !started && learntTotal === 0 && !playedToday,
+    started: !!started,
+    playedToday,
+    allDone: !lesson,
+  });
 
   return (
     <div
@@ -178,11 +242,15 @@ export const Home = ({
       </header>
 
       <h2 className="home-headline">
-        Six dots. <br />
-        Every letter.
+        <span>{headline.lines[0]}</span> <span>{headline.lines[1]}</span>
       </h2>
       <p className="eyebrow">
-        {course.name} · {learntTotal} of {alphabet.length} letters learnt
+        {course.name} ·{" "}
+        {!headline.count
+          ? `${learntTotal} of ${alphabet.length} letters learnt`
+          : learntTotal < alphabet.length
+            ? `${alphabet.length - learntTotal} to go`
+            : "every letter learnt"}
       </p>
       <div className="deck">
         <span className="deck-card deck-back-1" aria-hidden="true" />

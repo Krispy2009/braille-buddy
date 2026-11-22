@@ -123,13 +123,20 @@ html:has(.home) {
   text-wrap: pretty;
 }
 
+/* Two short sentences about where the player is, each on its own line
+   ("You know 5 letters." / "Next up: f."). Sized so the longer one fits a
+   390px phone on one line; on a smaller one it wraps, balanced. */
 .home-headline {
   margin: 0.25rem 0 0;
-  /* "Every letter." has to fit a narrow phone on one line. */
-  font-size: clamp(2.25rem, 11vw, 2.875rem);
+  font-size: clamp(1.75rem, 8.5vw, 2.25rem);
   font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.03em;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.home-headline > span {
+  display: block;
+  text-wrap: balance;
 }
 
 /* A fanned stack of letter cards; the front one is the next card. */
@@ -554,7 +561,7 @@ button.deck-front {
 
   .home-headline {
     margin-bottom: 0.5rem;
-    font-size: 3.5rem;
+    font-size: 2.75rem;
   }
 
   /* The eyebrow is the headline's caption; today's line starts a new
@@ -621,7 +628,7 @@ button.deck-front {
   }
 
   .home-headline {
-    font-size: 4.5rem;
+    font-size: 3.5rem;
   }
 
   .home-note,
