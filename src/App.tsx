@@ -214,7 +214,7 @@ function App() {
         {screen}
       </main>
       {onHome && (
-        <footer className="site-footer">
+        <footer className="site-footer base">
           <p className="about">
             <button
               type="button"
