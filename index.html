@@ -31,7 +31,7 @@
         var root = document.documentElement;
         root.dataset.theme = theme;
 
-        // Bigger text and less motion too, so rem container queries are right
+        // Bigger text, less motion and the accent too, so rem container queries are right
         // from the first paint. Keep in sync with the effect in src/App.tsx.
         // Less motion follows the device until it is saved, as in src/game/settings.ts.
         var saved = {};
@@ -45,6 +45,8 @@
             : !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
         root.dataset.text = saved.biggerText === true ? "bigger" : "normal";
         root.dataset.motion = lessMotion ? "less" : "full";
+        // Keep this list in step with ACCENTS in src/game/settings.ts.
+        root.dataset.accent = /^(orange|cobalt|mint)$/.test(saved.accent || "") ? saved.accent : "orange";
 
         // Match the browser/status bar to the page colour (--bg in
         // src/theme/tokens.css), also when the theme switcher changes the theme later.

@@ -60,7 +60,8 @@ function App() {
     const root = document.documentElement;
     root.dataset.motion = settings.lessMotion ? "less" : "full";
     root.dataset.text = settings.biggerText ? "bigger" : "normal";
-  }, [settings.lessMotion, settings.biggerText]);
+    root.dataset.accent = settings.accent;
+  }, [settings.lessMotion, settings.biggerText, settings.accent]);
 
   // A new screen starts at the top, as a new page would.
   React.useEffect(() => {

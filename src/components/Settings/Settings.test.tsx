@@ -10,6 +10,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   delete document.documentElement.dataset.motion;
   delete document.documentElement.dataset.text;
+  delete document.documentElement.dataset.accent;
 });
 
 /** Settings is reached from the gear on Home. */
@@ -176,6 +177,7 @@ test("the comfort switches take effect at once and are saved", async () => {
     lessMotion: true,
     biggerText: true,
     keyShortcuts: true,
+    accent: "orange",
   });
 
   // The key letters go from the keys, but stay in their names.
@@ -265,4 +267,35 @@ test("with shortcuts off, Tap the cell has no keyboard pad and number keys do no
   expect(screen.queryByRole("application", { name: "Braille keyboard" })).not.toBeInTheDocument();
   await user.keyboard("1");
   expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
+});
+
+test("Accent is three labelled swatches; choosing one sets data-accent and is saved", async () => {
+  const user = userEvent.setup();
+  const { unmount } = render(<App />);
+  const root = document.documentElement;
+  // Orange until the player chooses.
+  expect(root.dataset.accent).toBe("orange");
+
+  await openSettings(user);
+  const group = screen.getByRole("group", { name: "Accent" });
+  expect(group).toHaveAccessibleDescription("High vis keeps its own black and yellow.");
+  const radios = within(group).getAllByRole("radio");
+  expect(radios.map((radio) => radio.getAttribute("value"))).toEqual(["orange", "cobalt", "mint"]);
+  expect(within(group).getByRole("radio", { name: "Orange" })).toBeChecked();
+
+  await user.click(within(group).getByRole("radio", { name: "Cobalt" }));
+  expect(within(group).getByRole("radio", { name: "Cobalt" })).toBeChecked();
+  expect(root.dataset.accent).toBe("cobalt");
+  expect(saved()).toMatchObject({ accent: "cobalt" });
+
+  // Arrow keys move between swatches, as in any radio group.
+  await user.keyboard("{ArrowRight}");
+  expect(within(group).getByRole("radio", { name: "Mint" })).toHaveFocus();
+  expect(within(group).getByRole("radio", { name: "Mint" })).toBeChecked();
+  expect(root.dataset.accent).toBe("mint");
+
+  unmount();
+  delete root.dataset.accent;
+  render(<App />);
+  expect(root.dataset.accent).toBe("mint");
 });
