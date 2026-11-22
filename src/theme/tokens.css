@@ -3,7 +3,11 @@
    values the theme switcher and the pre-paint script in index.html set:
    light = Paper, dark = Ink, high-visibility = High vis. The selectors
    match any element, not only the root, so a small preview (the theme
-   cards in Settings) can show another theme inside the current one. */
+   cards in Settings) can show another theme inside the current one.
+
+   The accent (--accent, --on-accent) is the player's own setting, apart
+   from the theme: data-accent on <html> (see "Accents" below). The theme
+   blocks carry Orange, the default, for a page without data-accent. */
 
 :root,
 [data-theme="light"] {
@@ -64,4 +68,72 @@
   --hi: transparent;
   --shade: transparent;
   --line-width: 3px;
+}
+
+/* ---- Accents --------------------------------------------------------------
+   One block per accent and theme, setting only --accent and --on-accent.
+   Ink gets brighter variants, to stand out on its dark page. Text on every
+   accent is 4.5:1 or more; on Paper the fills lean on their ink rim, as
+   Orange always has.
+
+   Each block matches three ways, all at (0,2,0), so it beats the theme
+   blocks above (0,1,0) wherever it sits:
+   - [data-accent][data-theme]: the root, which carries both;
+   - [data-accent] [data-theme]: a theme preview inside the page;
+   - [data-theme] [data-accent]: an accent swatch in Settings, which
+     carries its own data-accent to show that accent in the current theme.
+   A bare [data-accent] shows Paper's variant, for a swatch with no theme
+   around it. */
+
+[data-accent="orange"],
+[data-accent="orange"][data-theme="light"],
+[data-accent="orange"] [data-theme="light"],
+[data-theme="light"] [data-accent="orange"] {
+  --accent: #ff5a1f;
+  --on-accent: #1a1a1a;
+}
+
+[data-accent="cobalt"],
+[data-accent="cobalt"][data-theme="light"],
+[data-accent="cobalt"] [data-theme="light"],
+[data-theme="light"] [data-accent="cobalt"] {
+  --accent: #3355ff;
+  --on-accent: #ffffff;
+}
+
+[data-accent="mint"],
+[data-accent="mint"][data-theme="light"],
+[data-accent="mint"] [data-theme="light"],
+[data-theme="light"] [data-accent="mint"] {
+  --accent: #1fc79c;
+  --on-accent: #1a1a1a;
+}
+
+[data-accent="orange"][data-theme="dark"],
+[data-accent="orange"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="orange"] {
+  --accent: #ff7a45;
+  --on-accent: #17171a;
+}
+
+[data-accent="cobalt"][data-theme="dark"],
+[data-accent="cobalt"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="cobalt"] {
+  --accent: #6b8aff;
+  --on-accent: #17171a;
+}
+
+[data-accent="mint"][data-theme="dark"],
+[data-accent="mint"] [data-theme="dark"],
+[data-theme="dark"] [data-accent="mint"] {
+  --accent: #3ddcb0;
+  --on-accent: #17171a;
+}
+
+/* High vis ignores the accent: black on yellow whatever the player chose,
+   on the page and in its preview card. The repeated attribute lifts this
+   to (0,3,0), above every accent block, so source order cannot undo it. */
+[data-theme="high-visibility"][data-theme][data-theme] {
+  --accent: #000000;
+  --on-accent: #ffd60a;
 }

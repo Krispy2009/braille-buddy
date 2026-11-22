@@ -16,6 +16,10 @@ colors:
   ink-theme-pencil: "#a9a49a"
   brailler-black: "#000000"
   signage-yellow: "#ffd60a"
+  accent-cobalt: "#3355ff"
+  accent-mint: "#1fc79c"
+  ink-theme-cobalt: "#6b8aff"
+  ink-theme-mint: "#3ddcb0"
 typography:
   display:
     fontFamily: "Commissioner, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
@@ -293,7 +297,7 @@ The feel is **chunky and friendly**. Targets are big and rounded so a child can'
 Three themes share one structure. **Paper** is warm grey paper and ink. **Ink** is a night version, with the brailler base a shade darker than the page. **High vis** is black on signage yellow, like tactile signage: flat, no soft shadows, thicker lines. The look must never drift toward a generic gamified app (gems, confetti, mascots, loud gradients), clinical or medical styling (pale blue, sterile portal forms), or soft neumorphism (grey on grey with soft shadows only and no ink lines).
 
 **Key Characteristics:**
-- One accent, Raised-Dot Orange, that always means raised, pressed, chosen or right.
+- One accent, Raised-Dot Orange unless the player picks Cobalt or Mint, that always means raised, pressed, chosen or right.
 - Ink outlines on everything (2px; 3px in High vis).
 - Soft embossed shadows for surfaces you press into; hard offset ink shadows for things that are raised.
 - A black brailler base anchors the bottom of the screen.
@@ -302,10 +306,13 @@ Three themes share one structure. **Paper** is warm grey paper and ink. **Ink** 
 
 ## Colors
 
-A warm paper-and-ink palette with one orange accent. Every colour is defined only in `src/theme/tokens.css` and used through its custom property (`--bg`, `--text`, `--accent` …), never as a raw value in a component.
+A warm paper-and-ink palette with one accent: orange by default, or the Cobalt or Mint the player picks in Settings. Every colour is defined only in `src/theme/tokens.css` and used through its custom property (`--bg`, `--text`, `--accent` …), never as a raw value in a component.
 
 ### Primary
 - **Raised-Dot Orange** (`--accent`): raised dots, pressed brailler keys, the front letter card, the next open lesson, the selected option, a right answer, the signed-in account button. Ink uses the lighter Ink-theme orange so it stays readable on the night page. Text on it is ink (`--on-accent`), never white.
+
+### Accent choice
+The player can swap Orange for **Cobalt** or **Mint** (Settings → Accent). The accent is apart from the theme: `data-accent` on `<html>`, set by App and by the pre-paint script, so there is no flash. Each accent has a Paper and a brighter Ink value, and its own `--on-accent`: ink on Orange and Mint, white on Paper Cobalt, night ink on every Ink accent; text on each is 4.5:1 or more. On Paper, Orange and Mint fills sit under 3:1 against the page, so they always keep their ink rim. Only `--accent` and `--on-accent` change; everything that means raised, pressed, chosen or right follows. High vis ignores the choice and stays black on yellow. Theme preview cards in Settings show the chosen accent.
 
 ### Neutral
 - **Press Paper** (`--bg`, `--surface`, `--key`): the page, the cell plate and the brailler keys, all one material in Paper.
@@ -317,11 +324,11 @@ A warm paper-and-ink palette with one orange accent. Every colour is defined onl
 - **Signage Yellow** (High vis `--bg`): the whole page, with black for text, lines, accent and base, and yellow on black for the accent's text.
 
 ### Named Rules
-**The One Meaning Rule.** Orange means raised, pressed, chosen or right, and nothing else. Don't use it for decoration, links, warnings or headings.
+**The One Meaning Rule.** The accent (orange by default) means raised, pressed, chosen or right, and nothing else. Don't use it for decoration, links, warnings or headings.
 
 **The Tokens Only Rule.** Components reference the theme custom properties. A new colour goes into all three theme blocks in `tokens.css` first, or it doesn't ship.
 
-**The Ink on Orange Rule.** Text on Raised-Dot Orange is always ink (`--on-accent`). White on orange fails contrast.
+**The On-Accent Rule.** Text on the accent is always `--on-accent`, never a fixed colour: ink on Orange and Mint (white on orange fails contrast), white on Paper Cobalt.
 
 ## Typography
 
@@ -422,7 +429,7 @@ An orange card, ink border, 1.25rem radius, lifted card shadow: mono corner labe
 Four in a row, 4.5rem tall, 0.875rem radius, letters at 2rem 900, embossed softly at rest. **Right** turns orange with a hard ink shadow; **wrong** lies flat, a dashed rim with no emboss and its letter still in ink; each gets a small mark in the corner so the result isn't carried by colour.
 
 ### Option Cards and Lesson Cards
-Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, or the next open lesson, fills orange with ink text and a 4px hard shadow (no shadow in High vis, where the fill is black). This is **the one selected style**: course choices in Settings and the deck toggle in Cards (a look at another course's cards; it does not change the course) use it too. Theme cards are the exception: each shows a picture of its own theme, so the chosen one lifts on the shadow without filling (a doubled rim in High vis). A locked lesson has a dashed border and Pencil Grey text. Settings options use real radio and checkbox inputs, with the focus ring drawn on the whole card.
+Outlined rows at 1rem radius and 0.875rem × 1rem padding. The selected option, or the next open lesson, fills orange with ink text and a 4px hard shadow (no shadow in High vis, where the fill is black). This is **the one selected style**: course choices in Settings and the deck toggle in Cards (a look at another course's cards; it does not change the course) use it too. Theme cards are the exception: each shows a picture of its own theme, so the chosen one lifts on the shadow without filling (a doubled rim in High vis). A locked lesson has a dashed border and Pencil Grey text. Settings options use real radio and checkbox inputs, with the focus ring drawn on the whole card. **Accent swatches** are the other exception: a 2.75rem round chip of each accent with an ink rim and its name under it, the radio hidden visually and the whole label the target. The chosen one gets a tick in `--on-accent`, a second ink ring outside a page-coloured gap, and an underlined name, so it shows in shape, not only colour; in forced colours the swatches keep their colours and the ring turns Highlight.
 
 ### Inputs / Fields
 3.5rem tall, 1rem radius, ink border, the page colour with a 2px dimple inset, 1.125rem at 700. The emailed code field uses mono at 1.625rem with wide letter spacing. **Invalid** shows a thicker, dashed border, never only a colour change.
@@ -452,8 +459,8 @@ Finishing a lesson is the loudest moment in the app, built only from Press parts
 - **Do** keep mistakes quiet and mastery loud: a wrong answer lies flat on paper with a dashed rim; the finished lesson gets the orange cards and the big stamp.
 
 ### Don't:
-- **Don't** use Raised-Dot Orange for decoration, links, warnings or headings: it means raised, pressed, chosen or right.
-- **Don't** put white text on orange; use ink (`--on-accent`).
+- **Don't** use the accent for decoration, links, warnings or headings: it means raised, pressed, chosen or right.
+- **Don't** set text on the accent in a fixed colour; use `--on-accent` (ink on orange, white on Paper Cobalt).
 - **Don't** drift toward a generic gamified app: no gems, confetti, mascots or loud gradients.
 - **Don't** drift toward clinical or medical styling: no pale-blue, sterile portal or charity-form look.
 - **Don't** drift toward soft neumorphism: never drop the ink outlines or rely on grey-on-grey soft shadows alone.

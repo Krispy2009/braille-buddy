@@ -203,6 +203,26 @@
           "#f0e8c1",
           "#f9f7ec"
         ]
+      },
+      "accent-cobalt": {
+        "role": "primary",
+        "displayName": "Accent Cobalt",
+        "canonical": "#3355ff"
+      },
+      "accent-mint": {
+        "role": "primary",
+        "displayName": "Accent Mint",
+        "canonical": "#1fc79c"
+      },
+      "ink-theme-cobalt": {
+        "role": "primary",
+        "displayName": "Ink-theme Cobalt",
+        "canonical": "#6b8aff"
+      },
+      "ink-theme-mint": {
+        "role": "primary",
+        "displayName": "Ink-theme Mint",
+        "canonical": "#3ddcb0"
       }
     },
     "typographyMeta": {

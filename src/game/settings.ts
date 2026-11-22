@@ -3,6 +3,15 @@ export const DOT_ENTRIES = ["cell", "keys"] as const;
 export type DotEntry = (typeof DOT_ENTRIES)[number];
 
 /**
+ * The accent colour of raised dots and chosen things, picked apart from the
+ * theme. App sets it on <html> as data-accent, and so does the pre-paint
+ * script in index.html (keep its list in step with this one). High vis
+ * ignores it.
+ */
+export const ACCENTS = ["orange", "cobalt", "mint"] as const;
+export type Accent = (typeof ACCENTS)[number];
+
+/**
  * Player settings, saved next to progress. To add one: give it a field here,
  * a default in defaultSettings and a check in VALIDATORS. A saved value that
  * fails its check falls back to its default without touching the others.
@@ -20,6 +29,7 @@ export type Settings = {
    * WCAG 2.1.4: they would clash with screen reader and voice shortcuts.
    */
   keyShortcuts: boolean;
+  accent: Accent;
 };
 
 const VERSION = 1;
@@ -40,6 +50,7 @@ export const defaultSettings = (): Settings => ({
   lessMotion: prefersReducedMotion(),
   biggerText: false,
   keyShortcuts: true,
+  accent: "orange",
 });
 
 const isBoolean = (value: unknown) => typeof value === "boolean";
@@ -50,6 +61,7 @@ const VALIDATORS: { [K in keyof Settings]: (value: unknown) => boolean } = {
   lessMotion: isBoolean,
   biggerText: isBoolean,
   keyShortcuts: isBoolean,
+  accent: (value) => ACCENTS.includes(value as Accent),
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

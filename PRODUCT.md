@@ -39,14 +39,14 @@ Neighbouring products are Braillito (paid, phone-first, tap the dots, 38 languag
 - Played in the browser on phones (from 320px wide) and computers, or installed as an app; works offline after the first visit.
 - Input by mouse, touch, keyboard keys 1–6, or six-key chords; used with screen readers, voice control, large text and high contrast.
 - Short daily sessions: Home shows the next card, the daily streak and points. Sections are Explore (a free six-dot cell), Cards (the whole deck), Lessons (the course path), and a daily braille puzzle ("Braille of the day").
-- No account needed. Optional sign-in by emailed 6-digit code syncs progress through Supabase; settings, theme and course stay on each device.
+- No account needed. Optional sign-in by emailed 6-digit code syncs progress through Supabase; settings, theme, accent and course stay on each device.
 
 ## Capabilities and Constraints
 
 - Courses are data files in `src/courses/` (English: 26 letters; Greek: 24 letters + ου, αι, ει, οι, ευ, αυ, υι, ηυ; plus numbers and punctuation). A new language is one JSON file, no code changes.
 - Lessons: two question types (name a letter and raise its dots; see a cell and pick from four letters). Every letter right twice (a miss never takes a right answer away) unlocks the next lesson. Points, a daily streak, missed letters come back more often. **No timers.**
 - Progress is local-first in localStorage; account sync merges it (`src/account/merge.ts`).
-- Settings: tap one big cell or use six brailler keys; three themes (Paper, Ink, High vis) that follow the system colour scheme and contrast until chosen; key letters, less motion and bigger text switches; keyboard shortcuts can be turned off (WCAG 2.1.4).
+- Settings: tap one big cell or use six brailler keys; three themes (Paper, Ink, High vis) that follow the system colour scheme and contrast until chosen; an accent colour (Orange, Cobalt or Mint; High vis keeps black and yellow); key letters, less motion and bigger text switches; keyboard shortcuts can be turned off (WCAG 2.1.4).
 - Stack: React 19, TypeScript, Vite, styled-components, Vitest; static assets on Cloudflare Workers; hand-written service worker.
 - **The interface is English only for now**, even for the Greek course; translating it (#34) is undecided. Greek text is marked up with its language.
 - **Decided:** free, funded by ads plus an optional Buddy Plus. Cookie consent (#59) comes before any analytics or ads.
