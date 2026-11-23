@@ -16,7 +16,11 @@ const TILTS = [-6, 3, -2, 5, -4, 2, -5, 4];
  * were learnt.
  */
 export const FinishDeck = ({ letters, language }: FinishDeckProps) => (
-  <ul className="finish-deck" aria-hidden="true">
+  <ul
+    className="finish-deck"
+    aria-hidden="true"
+    style={{ "--count": letters.length } as CSSProperties}
+  >
     {letters.map((letter, index) => (
       <li
         key={letter}

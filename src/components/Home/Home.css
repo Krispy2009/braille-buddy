@@ -236,7 +236,9 @@ html:has(.home)[data-overscroll="base"] {
   flex-direction: column;
   justify-content: space-between;
   width: 13.75em;
-  height: 17.5em;
+  /* 17.5em: the shape every letter card shares (--card-ratio). A set
+     height, not aspect-ratio, so its content never stretches it. */
+  height: calc(13.75em / (var(--card-ratio)));
   padding: 1.125em 1.25em;
   background: var(--accent);
   color: var(--on-accent);

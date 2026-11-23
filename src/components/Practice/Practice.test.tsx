@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import type { Language } from "../../game/braille";
@@ -778,11 +778,16 @@ describe("lesson intro", () => {
   const next = () => screen.getByRole("button", { name: "Next card" });
   const previous = () => screen.getByRole("button", { name: "Previous card" });
   const go = () => screen.queryByRole("button", { name: "Start practising" });
+  const slide = () => screen.getByRole("group", { name: /^\d+ of \d+$/ });
 
   test("every card is seen before practising: Next card turns into Start practising", async () => {
     const { user } = setup();
     await user.click(startButton("Start Letters a to e"));
-    expect(status()).toHaveTextContent("Card 1 of 5: a, dot 1.");
+    // Opening says nothing: the heading takes focus, and the card is there
+    // to read. Each turn after that is said.
+    expect(status()).toBeEmptyDOMElement();
+    expect(slide()).toHaveAccessibleName("1 of 5");
+    expect(slide()).toHaveTextContent("a, dot 1.");
     expect(go()).not.toBeInTheDocument();
     expect(previous()).toBeDisabled();
 
@@ -844,6 +849,50 @@ describe("lesson intro", () => {
     expect(screen.getByRole("button", { name: "Start practising" })).toHaveFocus();
     await user.click(screen.getByRole("button", { name: "Start practising" }));
     expect(prompt()).toHaveAccessibleName("Write the letter a in braille");
+  });
+
+  test("the cards are a carousel: a swipe and the buttons move together", async () => {
+    const scrollTo = vi.fn();
+    HTMLElement.prototype.scrollTo = scrollTo;
+    try {
+      const { user } = setup();
+      await user.click(startButton("Start Letters a to e"));
+      const carousel = screen.getByRole("region", { name: "New cards" });
+      expect(carousel).toHaveAttribute("aria-roledescription", "carousel");
+      const slides = within(carousel).getAllByRole("group", { hidden: true });
+      expect(slides).toHaveLength(5);
+      expect(within(carousel).getAllByRole("group")).toEqual([slides[0]]);
+
+      // A button turns the card and scrolls the row to it.
+      await user.click(next());
+      expect(slide()).toHaveAccessibleName("2 of 5");
+      expect(status()).toHaveTextContent("Card 2 of 5: b, dots 1 and 2.");
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+      expect(previous()).toBeEnabled();
+
+      // A swipe that brings the fifth card to the middle turns to it: the
+      // main button starts practising, as Next card would have made it.
+      slides.forEach((each, position) => {
+        Object.defineProperty(each, "offsetLeft", { value: 100 + position * 200 });
+        Object.defineProperty(each, "offsetWidth", { value: 180 });
+      });
+      Object.defineProperty(carousel, "clientWidth", { value: 380 });
+      Object.defineProperty(carousel, "scrollLeft", { value: 800, writable: true });
+      fireEvent.pointerDown(carousel);
+      fireEvent.scroll(carousel);
+      expect(slide()).toHaveAccessibleName("5 of 5");
+      expect(status()).toHaveTextContent("Card 5 of 5: e, dots 1 and 5. That's the last new card.");
+      expect(screen.getByRole("button", { name: "Start practising" })).toBeInTheDocument();
+      // The row is already there, so it isn't scrolled again.
+      expect(scrollTo).toHaveBeenCalledTimes(1);
+
+      // Previous card scrolls back to the fourth.
+      await user.click(previous());
+      expect(slide()).toHaveAccessibleName("4 of 5");
+      expect(scrollTo).toHaveBeenLastCalledWith({ left: 600, behavior: "smooth" });
+    } finally {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).scrollTo;
+    }
   });
 
   test("a single new card can be practised straight away", async () => {
@@ -936,7 +985,10 @@ describe("finishing a lesson", () => {
     expect(screenHeading()).toHaveAccessibleName("English: Letters f to j");
     expect(screenHeading()).toHaveFocus();
     expect(prompt()).toHaveTextContent("Meet the new cards");
-    expect(screen.getByRole("status")).toHaveTextContent("Card 1 of 5: f, dots 1, 2 and 4.");
+    // The card in the middle is the only slide a screen reader finds.
+    expect(screen.getByRole("group", { name: "1 of 5" })).toHaveTextContent(
+      "f, dots 1, 2 and 4."
+    );
     await user.click(screen.getByRole("button", { name: "Next card" }));
     expect(screen.getByRole("status")).toHaveTextContent("Card 2 of 5: g");
     await passIntro(user);

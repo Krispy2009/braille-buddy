@@ -6,23 +6,25 @@
   margin: 1rem 0 0;
 }
 
-/* The big orange card, on its own. Sideways swipes turn it; up and down
-   still scroll the page. */
+/* The big orange card: the Home deck's front card, the same shape (see
+   --card-ratio) and drawn the same way. Everything in it is in em of a font
+   size taken from its width (13.75em, as on Home), so the whole card scales
+   as one. --card-width is set by whoever shows it: the deck below, or the
+   lesson's carousel. */
 .flash-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
-  width: 100%;
-  max-width: 18rem;
-  min-height: 17.5rem;
-  padding: 1.125rem 1.25rem;
+  width: var(--card-width);
+  aspect-ratio: var(--card-ratio);
+  padding: 1.125em 1.25em;
   border: var(--line-width) solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: 1.25em;
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 8px 10px 0 var(--line);
-  touch-action: pan-y;
+  font-size: calc(var(--card-width) / 13.75);
   user-select: none;
 }
 
@@ -31,12 +33,30 @@
 }
 
 .flash-letter[data-long] {
-  font-size: 4rem;
+  font-size: 4em;
 }
 
 .flash-cells {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.5em;
+}
+
+/* A sign of two cells (a number and its number sign): the letter over its
+   cells, which would not fit beside it in a portrait card. */
+.flash-card .deck-card-middle[data-stack] {
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+/* The deck in Cards: as wide as Home's card at its biggest, less on a
+   phone too narrow for it. Sideways swipes turn it; up and down still
+   scroll the page. */
+.card-deck {
+  --card-width: min(15rem, 100cqi - 2 * var(--gutter) - 0.5rem);
+}
+
+.card-deck > .flash-card {
+  touch-action: pan-y;
 }
 
 .card-turn {
@@ -142,8 +162,8 @@
     max-width: var(--page-medium);
   }
 
-  /* The same card, a size up (here and before a lesson): everything in it
-     scales together, Previous and Next included. */
+  /* The same card, a size up: everything in it scales together, Previous
+     and Next included. */
   .card-deck {
     zoom: 1.2;
   }
@@ -242,11 +262,17 @@
   .meet-turn {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  /* The note wraps onto another line too. The card gives them the room. */
+  .lesson .card-carousel {
+    --meet-fold: 34rem;
+  }
 }
 
-/* Bigger text on a short phone (under 700px tall): the card a size down and
-   the buttons closer under it, so a card and the button that turns it fit
-   one screen together (the heading tightens in Practice.css). */
+/* Bigger text on a short phone (under 700px tall): the note smaller and
+   the buttons closer under the card, so a card and the button that turns
+   it fit one screen together (the heading tightens in Practice.css; the
+   card itself gives way to the window's height, see .card-carousel). */
 @container page (max-width: 47.99rem) {
   @media (max-height: 43.75rem) {
     :root[data-text="bigger"] .lesson .lesson-note {
@@ -255,21 +281,8 @@
       line-height: 1.4;
     }
 
-    :root[data-text="bigger"] .lesson .card-deck {
-      margin-top: 0.75rem;
-    }
-
-    :root[data-text="bigger"] .lesson .flash-card {
-      min-height: 12rem;
-      padding: 0.875rem 1rem;
-    }
-
-    :root[data-text="bigger"] .lesson .flash-letter {
-      font-size: 5rem;
-    }
-
-    :root[data-text="bigger"] .lesson .flash-letter[data-long] {
-      font-size: 3.25rem;
+    :root[data-text="bigger"] .lesson .card-carousel {
+      margin-top: 0.5rem;
     }
 
     :root[data-text="bigger"] .meet-actions {
@@ -291,5 +304,104 @@
 @media (pointer: coarse) {
   .meet-hint {
     display: none;
+  }
+
+  /* No hint to make room for. */
+  .card-carousel {
+    --meet-fold: 26rem;
+  }
+}
+
+/* ---- The lesson's carousel ---------------------------------------------------
+   The new cards in a row that scrolls sideways and snaps, one card in the
+   middle and its neighbours peeking in at the sides. The row runs out to
+   the window's edges (over the screen's gutters), so a peeking card comes
+   in from the edge rather than stopping short of it.
+
+   The card gives way to the window's height, as Home's deck does, so the
+   buttons that turn it are on the first screen with it. --meet-fold is
+   what the screen needs besides the card: the close button, the heading,
+   the note, the buttons, the gaps. In rem, so Bigger text counts too. */
+.card-carousel {
+  --meet-fold: 30.5rem;
+  --meet-card-tallest: 17.5rem;
+  --card-width: max(
+    8.5rem,
+    min(
+      var(--meet-card-tallest) * (var(--card-ratio)),
+      (100svh - var(--meet-fold)) * (var(--card-ratio)),
+      100cqi - 2 * var(--gutter) - 5rem
+    )
+  );
+  margin-top: 1rem;
+}
+
+/* Positioned, so the slides' offsets are measured from it. */
+.carousel-track {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  margin-inline: calc(-1 * var(--gutter));
+  /* Room at the ends for the first and last card to come to the middle,
+     and below and to the right for the card's hard shadow, which the
+     scroller would otherwise cut off. */
+  padding: 0.25rem calc(50% + var(--gutter) - var(--card-width) / 2) 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* The row runs past the column, so its focus ring goes round the column's
+   part of it instead. */
+.carousel-track:focus-visible {
+  outline: none;
+}
+
+.card-carousel:has(.carousel-track:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+/* One card per flick: a fast swipe stops at the next card, never skipping
+   one, so every card is seen. */
+.carousel-slide {
+  flex: none;
+  width: var(--card-width);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/* The neighbours are there to show there is more: quieter than the card in
+   the middle. */
+.carousel-slide:not([data-current]) {
+  opacity: 0.45;
+  transition: opacity 150ms ease;
+}
+
+/* Wider windows: the row stops at the column's padding, so the peeking
+   cards fade out there rather than being cut off square. (The mask only
+   reads the colour's opacity.) */
+@container page (min-width: 48rem) {
+  .card-carousel {
+    --meet-fold: 33.5rem;
+    --meet-card-tallest: 22rem;
+    margin-top: 1.5rem;
+  }
+
+  .carousel-track {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      currentColor var(--gutter),
+      currentColor calc(100% - var(--gutter)),
+      transparent
+    );
   }
 }
