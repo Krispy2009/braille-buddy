@@ -146,6 +146,33 @@ export const Home = ({
       ?.focus();
   }, [focus]);
 
+  // Phone overscroll: Safari paints the rubber-band with one colour, the
+  // page's. Paper in the top half of the page and the base's black in the
+  // bottom half makes the top bounce paper and the bottom bounce black. The
+  // CSS only acts below 48rem; elsewhere the attribute does nothing.
+  React.useEffect(() => {
+    const html = document.documentElement;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const max = html.scrollHeight - window.innerHeight;
+      if (max > 0 && window.scrollY > max / 2) html.dataset.overscroll = "base";
+      else delete html.dataset.overscroll;
+    };
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) window.cancelAnimationFrame(frame);
+      delete html.dataset.overscroll;
+    };
+  }, []);
+
   const learnt = (letter: string) => isLetterLearnt(progress, itemId(course.id, letter));
   const allLetters = course.lessons.flatMap((lesson) => lesson.letters);
   // Letters only: numbers and punctuation have lessons of their own.

@@ -15,6 +15,39 @@
    control reached with Tab is scrolled clear of it, never under it. */
 html:has(.home) {
   scroll-padding-bottom: 10rem;
+  /* Phone: the page's colour (--bg) from far above the top, so the top
+     rubber-band stays paper, over a colour that is paper too until the
+     player is in the bottom half (see below). */
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--bg), var(--bg));
+  background-repeat: no-repeat;
+  background-position: 0 -100vh;
+  background-size: 100% calc(100% + 100vh);
+}
+
+/* The body's paper would cover the html's colour, which is the one Safari
+   paints in the overscroll: let the html's gradient be the paper instead.
+   While the player is in the bottom half of the page (Home sets
+   data-overscroll), the colour under the gradient is the base's black, so
+   the bottom rubber-band is black; in the top half it stays paper. */
+body:has(.home) {
+  background: transparent;
+}
+
+html:has(.home)[data-overscroll="base"] {
+  background-color: var(--base);
+}
+
+/* Tablet and up: the footer ends as an object with paper below it. */
+@media (min-width: 48rem) {
+  html:has(.home),
+  html:has(.home)[data-overscroll="base"] {
+    background: var(--bg);
+  }
+
+  body:has(.home) {
+    background: var(--bg);
+  }
 }
 
 /* One row on any phone: the wordmark takes what is left and breaks between
@@ -139,46 +172,72 @@ html:has(.home) {
   text-wrap: balance;
 }
 
-/* A fanned stack of letter cards; the front one is the next card. */
+/* A fanned stack of letter cards; the front one is the next card.
+
+   On a phone the deck gives way to the window's height, so the rows under
+   it (today's line and the daily puzzle) sit whole above the stuck base
+   instead of being cut by it. --home-fold is what the first screen needs
+   besides the deck: the header, headline, eyebrow, today's line, the daily
+   row, the gaps, the base and the fade above it. In rem, so Bigger text
+   counts too. The deck never goes below 13.5rem (0.72 of its size); on a
+   window too short even for that, the rows slide under the base's fade.
+
+   Everything inside is measured in em of the cards' font size, which is
+   one rem at full size and shrinks with the deck (100cqh is the deck's
+   height), so the cards scale as one. */
 .deck {
+  --home-fold: 28.25rem;
   position: relative;
+  container-type: size;
   align-self: center;
-  width: 18rem;
   max-width: 100%;
-  height: 18.75rem;
+  height: clamp(13.5rem, 100vh - var(--home-fold), 18.75rem);
+  height: clamp(13.5rem, 100svh - var(--home-fold), 18.75rem);
+  aspect-ratio: 18 / 18.75;
   margin-top: 0.25rem;
+}
+
+/* Bigger text wraps the headline and today's line onto more lines than
+   the rem alone accounts for. */
+:root[data-text="bigger"] .deck {
+  --home-fold: 31rem;
+}
+
+/* After button.deck-front's font: inherit, so it is (0,2,0). */
+.deck > .deck-card {
+  font-size: calc(100cqh / 18.75);
 }
 
 .deck-card {
   position: absolute;
-  width: 13.125rem;
-  height: 16.875rem;
+  width: 13.125em;
+  height: 16.875em;
   border: var(--line-width) solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: 1.25em;
   background: var(--bg);
 }
 
 .deck-back-1 {
-  left: 2.25rem;
-  top: 1rem;
+  left: 2.25em;
+  top: 1em;
   transform: rotate(8deg);
 }
 
 .deck-back-2 {
-  left: 1rem;
-  top: 0.625rem;
+  left: 1em;
+  top: 0.625em;
   transform: rotate(-5deg);
 }
 
 .deck-front {
-  left: 1.375rem;
+  left: 1.375em;
   top: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 13.75rem;
-  height: 17.5rem;
-  padding: 1.125rem 1.25rem;
+  width: 13.75em;
+  height: 17.5em;
+  padding: 1.125em 1.25em;
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 8px 10px 0 var(--line);
@@ -197,9 +256,9 @@ html:has(.home) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.25rem 0.5rem;
+  gap: calc(0.25em / 0.8125) calc(0.5em / 0.8125);
   font-family: var(--mono);
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   font-weight: 700;
 }
 
@@ -207,11 +266,11 @@ html:has(.home) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .deck-letter {
-  font-size: 6.5rem;
+  font-size: 6.5em;
   font-weight: 900;
   line-height: 0.8;
 }
@@ -219,17 +278,17 @@ html:has(.home) {
 /* The letter's own dots, embossed out of the card. */
 .deck-dots {
   display: grid;
-  grid-template-rows: repeat(3, 1.375rem);
-  grid-template-columns: repeat(2, 1.375rem);
+  grid-template-rows: repeat(3, 1.375em);
+  grid-template-columns: repeat(2, 1.375em);
   grid-auto-flow: column;
-  gap: 0.625rem 0.75rem;
+  gap: 0.625em 0.75em;
 }
 
 .deck-dot {
   place-self: center;
   box-sizing: border-box;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.5em;
+  height: 0.5em;
   border: 1.5px solid var(--on-accent);
   border-radius: 50%;
   background: transparent;
@@ -238,8 +297,8 @@ html:has(.home) {
 /* Raised dots are the loudest thing in the cell: big, solid ink. Flat
    ones are a small thin ring, so size and fill differ, not only colour. */
 .deck-dot.raised {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: 1.375em;
+  height: 1.375em;
   border: 0;
   background: var(--on-accent);
 }
@@ -250,17 +309,18 @@ html:has(.home) {
 .deck-card-go {
   display: inline-flex;
   align-items: center;
-  min-height: 1.875rem;
+  min-height: 2em;
   /* Stays at the right edge when a long dots line pushes it down a row. */
   margin-left: auto;
-  padding: 0 0.75rem;
+  padding: 0 0.8em;
   border: var(--line-width) solid var(--line);
   border-radius: 999px;
   background: var(--bg);
   color: var(--text);
   box-shadow: 2px 3px 0 var(--line);
   font-family: var(--font-ui);
-  font-size: 0.9375rem;
+  /* 0.9375 of the card's unit, inside the 0.8125 bottom line. */
+  font-size: calc(0.9375em / 0.8125);
   font-weight: 900;
   line-height: 1;
 }
@@ -330,7 +390,9 @@ button.deck-front {
 /* The black base, as on the brailler: the actions, and from 48rem a row of
    keys showing the next letter. It sits at the end of Home, but sticks to the
    bottom of the window until the page reaches it, so the one action is in
-   the first screen on any phone, with Bigger text too. */
+   the first screen on any phone, with Bigger text too. At the end of the
+   page it lands on the footer, which is the same black, so the base and
+   the footer read as one slab running down to the window's edge. */
 .home-base {
   position: sticky;
   /* One pixel past the window's edge: at a fractional height (Bigger text)
@@ -341,8 +403,27 @@ button.deck-front {
   flex-direction: column;
   gap: 1rem;
   margin: 1.75rem calc(-1 * var(--gutter)) 0;
-  padding: 1.125rem 1.125rem 1.5rem;
+  padding: 1.125rem 1.125rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
   border-radius: 1.75rem 1.75rem 0 0;
+}
+
+/* While the base sticks, the page fades into paper just above it, so
+   whatever runs under it slips away instead of being cut by a hard edge.
+   It sits in the gap above the base, so at the end of the page, where the
+   base no longer covers anything, it lies over empty paper. */
+.home-base::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 100%;
+  height: 2.25rem;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  pointer-events: none;
+}
+
+@media (forced-colors: active) {
+  .home-base::before {
+    display: none;
+  }
 }
 
 .home-keys {
@@ -381,14 +462,6 @@ button.deck-front {
   display: none;
 }
 
-/* A very short window (an old small phone) also takes the deck down a size,
-   so the whole front card shows above the stuck base. */
-@media (max-height: 37.5rem) {
-  .home > .deck {
-    zoom: 0.72;
-  }
-}
-
 .home-actions {
   display: flex;
   gap: 0.625rem;
@@ -414,6 +487,11 @@ button.deck-front {
     :root[data-text="bigger"] .home-actions {
       flex-direction: column;
     }
+
+    /* Nothing covers the page, so the deck keeps its full size. */
+    :root[data-text="bigger"] .home > .deck {
+      --home-fold: 0rem;
+    }
   }
 }
 
@@ -426,24 +504,57 @@ button.deck-front {
   }
 }
 
+/* The footer (Accessibility, Privacy, credits) is the base's lower half:
+   the same black, as wide as the base, straight under it with no seam, and
+   it grows to the bottom of the window, so no paper shows below the base
+   on a short page or a tall window. It stays outside <main>, after it, as
+   the page's contentinfo landmark. */
+#root:has(> .site-footer) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .site-footer {
-  max-width: var(--page);
-  margin: 0 auto;
-  padding: 1.5rem var(--gutter) 2rem;
+  flex: 1 0 auto;
+  width: min(100%, var(--page));
+  /* One pixel under the base, so a fractional edge can't show a seam. */
+  margin: -1px auto 0;
+  /* The same side padding as the base, so the links line up with its
+     buttons. */
+  padding: calc(0.25rem + 1px) 1.125rem calc(1.75rem + env(safe-area-inset-bottom, 0px));
   font-size: 0.875rem;
-  color: var(--text-soft);
   text-align: center;
 }
 
+/* Ink gives the base a key-coloured top edge; the footer continues the
+   base, so it has none (it would draw a seam between the two). */
+[data-theme="dark"] .site-footer.base {
+  box-shadow: none;
+}
+
 .about {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.5rem;
   margin: 0 0 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.site-footer .quiet-button {
+  font-size: 0.9375rem;
 }
 
 .site-footer a {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
-  color: var(--text);
+  color: inherit;
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 /* Today's daily puzzle: one outlined row, the whole row the button. Flat
@@ -601,8 +712,25 @@ button.deck-front {
     flex: 0 1 28rem;
   }
 
+  /* The base runs the width of the page inside its gutters, and so does
+     the footer under it. */
   .site-footer {
-    max-width: var(--page-wide);
+    width: calc(min(100%, var(--page-wide)) - 2 * var(--gutter));
+    padding-inline: 2rem;
+  }
+
+  /* A wide window can be far taller than Home: there the base and footer
+     don't grow into a black wall. They end as one object, a brailler on
+     the desk, with rounded lower corners and paper below. */
+  #root > .site-footer {
+    flex: none;
+    margin-bottom: var(--gutter);
+    border-radius: 0 0 1.75rem 1.75rem;
+  }
+
+  /* The deck sits beside the words here, not above the base. */
+  .home > .deck {
+    height: 18.75rem;
   }
 }
 
