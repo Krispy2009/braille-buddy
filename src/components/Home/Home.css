@@ -16,19 +16,36 @@
 html:has(.home) {
   scroll-padding-bottom: 10rem;
   /* Phone: the page's colour (--bg) from far above the top, so the top
-     rubber-band stays paper, and the base's black everywhere below, so the
-     bottom edge, the overscroll and Safari's bottom bar are the footer's
-     black, with no line where the footer ends. */
-  background-color: var(--base);
+     rubber-band stays paper, over a colour that is paper too until the
+     player is in the bottom half (see below). */
+  background-color: var(--bg);
   background-image: linear-gradient(var(--bg), var(--bg));
   background-repeat: no-repeat;
   background-position: 0 -100vh;
   background-size: 100% calc(100% + 100vh);
 }
 
+/* The body's paper would cover the html's colour, which is the one Safari
+   paints in the overscroll: let the html's gradient be the paper instead.
+   While the player is in the bottom half of the page (Home sets
+   data-overscroll), the colour under the gradient is the base's black, so
+   the bottom rubber-band is black; in the top half it stays paper. */
+body:has(.home) {
+  background: transparent;
+}
+
+html:has(.home)[data-overscroll="base"] {
+  background-color: var(--base);
+}
+
 /* Tablet and up: the footer ends as an object with paper below it. */
 @media (min-width: 48rem) {
-  html:has(.home) {
+  html:has(.home),
+  html:has(.home)[data-overscroll="base"] {
+    background: var(--bg);
+  }
+
+  body:has(.home) {
     background: var(--bg);
   }
 }

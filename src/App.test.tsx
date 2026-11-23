@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { COURSES } from './courses';
@@ -269,6 +269,26 @@ describe('Home and the screens it opens', () => {
         ...data,
       })
     );
+
+  test('Home marks the page for the phone overscroll colour by scroll position, and clears it on leaving', () => {
+    const html = document.documentElement;
+    const set = (key: string, value: number) =>
+      Object.defineProperty(key === 'scrollY' ? window : html, key, { configurable: true, value });
+    set('scrollHeight', 2000);
+    set('scrollY', 0);
+    const { unmount } = render(<App />);
+    expect(html.dataset.overscroll).toBeUndefined();
+    set('scrollY', 1000);
+    act(() => {
+      window.dispatchEvent(new Event('scroll'));
+    });
+    return waitFor(() => expect(html.dataset.overscroll).toBe('base')).then(() => {
+      unmount();
+      expect(html.dataset.overscroll).toBeUndefined();
+      delete (html as unknown as Record<string, unknown>).scrollHeight;
+      delete (window as unknown as Record<string, unknown>).scrollY;
+    });
+  });
 
   test('a new player sees the deck: the next card, the day, the points and one action', () => {
     render(<App />);
