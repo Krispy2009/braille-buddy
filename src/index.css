@@ -20,6 +20,11 @@
   --page-medium: 44rem;
   --page-measure: 46rem;
   --page-wide: 72rem;
+
+  /* Every letter card's shape, width to height: the Home deck's front card
+     (13.75 by 17.5), portrait like a playing card. A ratio, so it works in
+     aspect-ratio and, inside calc(), as a number. */
+  --card-ratio: 13.75 / 17.5;
 }
 
 /* The app measures its own width, not the window's, so the layout

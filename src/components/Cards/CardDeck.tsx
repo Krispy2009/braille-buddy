@@ -19,14 +19,67 @@ type CardDeckProps = {
   onIndex: (index: number) => void;
   /** On the card, so the screen can move focus to it. */
   ref?: React.Ref<HTMLDivElement>;
-  /**
-   * Previous and Next under the card. A screen with its own turning buttons
-   * (the lesson intro) leaves them out.
-   */
-  turnButtons?: boolean;
-  /** Said after the card, in the same announcement. */
-  note?: string;
 };
+
+type CardFaceProps = {
+  course: Course;
+  letter: string;
+  /** Where the card sits in its deck, from 0. */
+  index: number;
+  total: number;
+};
+
+/**
+ * What a flash card shows: its number, the letter beside its dots, and the
+ * dots in type. All of it is hidden from screen readers, which get the card
+ * in words from whoever shows it.
+ */
+export const CardFace = ({ course, letter, index, total }: CardFaceProps) => {
+  const cells = cellsForLetter(letter, course.id) ?? [CLEAR_CELL];
+  return (
+    <>
+      <span className="deck-card-top" aria-hidden="true">
+        <span>card {String(index + 1).padStart(2, "0")}</span>
+        <span>
+          {index + 1} of {total}
+        </span>
+      </span>
+      {/* A sign of two or more cells stacks under its letter: side by side
+          they would not fit the card's width. */}
+      <span
+        className="deck-card-middle"
+        data-stack={cells.length > 1 || undefined}
+        aria-hidden="true"
+      >
+        <span
+          className="deck-letter flash-letter"
+          data-long={[...letter].length > 1 || undefined}
+          lang={LANGUAGE_TAGS[course.id]}
+        >
+          {letter}
+        </span>
+        <span className="flash-cells">
+          {cells.map((cell, position) => (
+            <span key={position} className="deck-dots">
+              {DOT_KEYS.map((dot) => (
+                <span key={dot} className={cell[dot] ? "deck-dot raised" : "deck-dot"} />
+              ))}
+            </span>
+          ))}
+        </span>
+      </span>
+      <span className="deck-card-bottom" aria-hidden="true">
+        dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
+      </span>
+    </>
+  );
+};
+
+/** The card in words: the letter, then where its dots are. */
+export const cardInWords = (course: Course, letter: string): string =>
+  `${spokenLetter(letter, course.id)}, ${cellsInWords(
+    cellsForLetter(letter, course.id) ?? [CLEAR_CELL]
+  )}.`;
 
 /** How far a finger has to travel sideways to turn the card. */
 const SWIPE = 40;
@@ -42,13 +95,9 @@ export const CardDeck = ({
   index,
   onIndex,
   ref,
-  turnButtons = true,
-  note,
 }: CardDeckProps) => {
   const swipeFrom = React.useRef<number | null>(null);
   const letter = letters[index];
-  const cells = cellsForLetter(letter, course.id) ?? [CLEAR_CELL];
-  const number = String(index + 1).padStart(2, "0");
   const first = index === 0;
   const last = index === letters.length - 1;
   const go = (to: number) => onIndex(Math.min(Math.max(to, 0), letters.length - 1));
@@ -76,59 +125,30 @@ export const CardDeck = ({
         }}
         onPointerCancel={() => (swipeFrom.current = null)}
       >
-        <span className="deck-card-top" aria-hidden="true">
-          <span>card {number}</span>
-          <span>
-            {index + 1} of {letters.length}
-          </span>
-        </span>
-        <span className="deck-card-middle" aria-hidden="true">
-          <span
-            className="deck-letter flash-letter"
-            data-long={[...letter].length > 1 || undefined}
-            lang={LANGUAGE_TAGS[course.id]}
-          >
-            {letter}
-          </span>
-          <span className="flash-cells">
-            {cells.map((cell, position) => (
-              <span key={position} className="deck-dots">
-                {DOT_KEYS.map((dot) => (
-                  <span key={dot} className={cell[dot] ? "deck-dot raised" : "deck-dot"} />
-                ))}
-              </span>
-            ))}
-          </span>
-        </span>
-        <span className="deck-card-bottom" aria-hidden="true">
-          dots {cells.map((each) => raisedDots(each).join(" ")).join(", ")}
-        </span>
+        <CardFace course={course} letter={letter} index={index} total={letters.length} />
         {/* Said once per card: the letter, then where its dots are. */}
         <span className="sr-only" role="status">
-          Card {index + 1} of {letters.length}: {spokenLetter(letter, course.id)},{" "}
-          {cellsInWords(cells)}.{note && ` ${note}`}
+          Card {index + 1} of {letters.length}: {cardInWords(course, letter)}
         </span>
       </div>
-      {turnButtons && (
-        <div className="card-turn">
-          <button
-            type="button"
-            className="outline-button"
-            disabled={first}
-            onClick={() => go(index - 1)}
-          >
-            Previous card
-          </button>
-          <button
-            type="button"
-            className="outline-button"
-            disabled={last}
-            onClick={() => go(index + 1)}
-          >
-            Next card
-          </button>
-        </div>
-      )}
+      <div className="card-turn">
+        <button
+          type="button"
+          className="outline-button"
+          disabled={first}
+          onClick={() => go(index - 1)}
+        >
+          Previous card
+        </button>
+        <button
+          type="button"
+          className="outline-button"
+          disabled={last}
+          onClick={() => go(index + 1)}
+        >
+          Next card
+        </button>
+      </div>
     </div>
   );
 };

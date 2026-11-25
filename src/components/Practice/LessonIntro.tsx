@@ -1,7 +1,7 @@
 import React from "react";
 import type { Course, Lesson } from "../../courses";
 import { CloseIcon } from "../Icons/Icons";
-import { CardDeck } from "../Cards/CardDeck";
+import { CardStack } from "../Cards/CardStack";
 import { entriesNoun } from "../../game/lessons";
 import { useEscape } from "../../hooks/useEscape";
 
@@ -24,7 +24,8 @@ const OWNS_ARROWS =
  * Before a lesson asks anything, its new cards: look at each letter with its
  * dots, then practise. Teaching first, testing second.
  *
- * One card at a time, and every card is seen before practice starts: the
+ * One card at a time, in a stack a finger can flick, and every card is seen
+ * before practice starts: the
  * main button says Next card until the last card, then Start practising.
  * Once every card has been seen, going back keeps a quiet Start practising
  * below, so checking one letter again never means stepping through the rest.
@@ -118,12 +119,12 @@ export const LessonIntro = ({ course, lesson, letters, onStart, onBack }: Lesson
           the lesson. A wrong answer never takes away a right one.
         </p>
       </div>
-      <CardDeck
+      <CardStack
         course={course}
         letters={letters}
         index={index}
         onIndex={turn}
-        turnButtons={false}
+        label={`New ${noun}`}
         note={onLast && lastIndex > 0 ? "That's the last new card." : undefined}
       />
       {lastIndex > 0 && (
