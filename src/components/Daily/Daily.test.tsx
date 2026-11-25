@@ -101,7 +101,8 @@ describe("Read it", () => {
     const cells = dotsOf(english.read);
     expect(within(words).getAllByRole("listitem")).toHaveLength(cells.length);
     expect(within(words).getAllByRole("listitem")[0]).toHaveTextContent(/^Cell 1: dots? /);
-    // The cells themselves are hidden; the list says them.
+    // The cells themselves are hidden; the list says them (for screen readers only).
+    expect(words).toHaveClass("sr-only");
     expect(document.querySelector(".cell-row")).toHaveAttribute("aria-hidden", "true");
   });
 
@@ -182,6 +183,14 @@ describe("Write it", () => {
     await finishRead(user);
     await writeCells(user, dotsOf(english.write));
     expect(status()).toHaveTextContent(`Yes! You wrote ${english.write}`);
+    // Solved, the screen is short: one confirmation line and the tries. The
+    // dots in words and the answer cells are for screen readers only.
+    const answer = document.querySelector(".daily-answer") as HTMLElement;
+    expect(answer.querySelector("p:not(.sr-only)")).toHaveTextContent(new RegExp(`^Yes! ${english.write}`));
+    expect(answer.querySelector("p.sr-only")).toHaveTextContent(/in braille: .*dots?/);
+    expect(answer.querySelector(".cell-row")).toBeNull();
+    expect(document.querySelector(".daily-try-number")).toBeNull();
+    expect(document.querySelector(".daily-status")).toBeNull();
     expect(onProgress).toHaveBeenCalledTimes(1);
     expect(onProgress.mock.calls[0][0]).toMatchObject({ points: 50, streak: 1, lastPlayed: "2026-11-15" });
     await user.click(screen.getByRole("button", { name: "See today's result" }));
@@ -223,6 +232,8 @@ describe("Write it", () => {
     }
     expect(status()).toHaveTextContent(`Not this time. In braille, ${english.write}`);
     expect(screen.getByText(/in braille:/, { selector: ".daily-answer p" })).toBeInTheDocument();
+    // Unsolved, the answer cells are shown as well.
+    expect(document.querySelector(".daily-answer .cell-row")).not.toBeNull();
     // Finishing counts, even without the word: points for playing and the read word.
     expect(onProgress.mock.calls[0][0]).toMatchObject({ points: 30, streak: 1 });
     await user.click(screen.getByRole("button", { name: "See today's result" }));

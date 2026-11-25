@@ -1,30 +1,75 @@
-/* One card per course: the letter the cell makes, or "not a letter". */
+/* Explore: a title and one line, then the cell as the hero with the letter
+   it makes beside or under it. Tapping the cell, Clear dots follows the
+   letters and the keyboard hint sits quietly at the foot; with brailler
+   keys, the black base holds the keys and Clear dots at the bottom. */
+
+.board-intro {
+  max-width: 34ch;
+  margin: 0.625rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+/* The cell and its readings. A phone stacks them; brailler keys put the
+   smaller cell beside the letters, so the base keeps its room. */
+.board-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.board-keys .board-stage {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem 1.5rem;
+}
+
+.board-keys .results {
+  flex-direction: column;
+}
+
+/* One card per course: the letter the cell makes. Found, it is an accent
+   card lifted on a hard shadow, like the raised dots that made it. Not
+   found, it lies flat on a dashed rim, the house mark for "flat". */
 .results {
   display: flex;
   justify-content: center;
   gap: 0.875rem;
-  margin: 0.5rem 0 0;
+  margin: 0;
 }
 
 .result {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 6.5rem;
-  padding: 0.5rem 0.875rem 0.625rem;
-  border: var(--line-width) solid var(--line);
-  border-radius: 0.875rem;
-  box-shadow: 3px 4px 0 var(--line);
+  justify-content: center;
+  gap: 0.125rem;
+  min-width: 7rem;
+  padding: 0.5rem 1rem 0.625rem;
+  border: var(--line-width) dashed var(--line);
+  border-radius: var(--radius);
+  color: var(--text-soft);
 }
 
-[data-theme="high-visibility"] .result {
+.result[data-found] {
+  border-style: solid;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 4px 5px 0 var(--line);
+}
+
+[data-theme="high-visibility"] .result[data-found] {
   box-shadow: none;
 }
 
 .result dt {
   font-family: var(--mono);
   font-size: 0.8125rem;
-  color: var(--text-soft);
+  font-weight: 700;
 }
 
 .result dd {
@@ -32,44 +77,174 @@
 }
 
 .result .letter {
-  display: block;
-  min-height: 1.1em;
-  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.25rem;
+  font-size: 3rem;
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1;
 }
 
-.result .letter.empty {
-  color: var(--text-soft);
+.result[data-found] .letter {
+  color: var(--on-accent);
 }
 
 /* Said in words, set small on the letter's line so the card keeps its size. */
 .result .letter.none {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.75rem;
-  font-size: 0.9375rem;
+  font-family: var(--mono);
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
 @media (forced-colors: active) {
   .result {
-    border: 1px solid CanvasText;
+    border: 1px dashed CanvasText;
+  }
+
+  .result[data-found] {
+    border: 3px solid CanvasText;
   }
 }
 
-/* Wider windows: a roomier column. */
+/* Tapping the cell, Clear dots belongs to the cell: right under the
+   letters, not dropped to the bottom of a tall phone. */
+.board-clear {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+/* Typing on a keyboard is the second way in: small, soft, at the foot. */
+.board-keyboard {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.board-keyboard .chord-pad-disclosure summary {
+  font-size: 0.9375rem;
+  color: var(--text-soft);
+}
+
+/* ---- Wider windows ------------------------------------------------------ */
+
 @container page (min-width: 48rem) {
   .board {
     max-width: var(--page-medium);
   }
+
+  .board-stage {
+    margin-top: 2.25rem;
+  }
+
+  .result {
+    min-width: 8.5rem;
+    padding: 0.625rem 1.25rem 0.75rem;
+  }
+
+  .result .letter {
+    height: 4rem;
+    font-size: 3.75rem;
+  }
+
+  /* Room for a bigger read-only cell beside the letters. */
+  .board-keys .cell.medium {
+    --dot-size: 3.75rem;
+    --dot-font-size: 1.375rem;
+    gap: 0.875rem 1.5rem;
+    padding: 1.25rem 1.75rem;
+    border-radius: 1.5rem;
+  }
 }
 
-/* Tapping the cell, Clear dots is the only action and belongs to the cell:
-   it follows the content instead of dropping to the bottom of a tall phone.
-   With brailler keys the base still sits at the bottom. */
-.board > .action:not(.base) {
-  margin-top: 0;
-  padding-top: 1rem;
+/* Desktop: the cell on the left, the letters it makes on the right, both
+   under the title. Reading and Tab order stay title, cell, letters, then
+   Clear dots and the keyboard help. */
+@container page (min-width: 64rem) {
+  .board {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    column-gap: 3rem;
+  }
+
+  /* The hero, a size up: the column has room for it. */
+  .board-stage > .cell:not(.medium) {
+    --dot-size: 5.75rem;
+    --dot-font-size: 1.625rem;
+    gap: 1.25rem 2.75rem;
+    padding: 1.75rem 2.75rem;
+  }
+
+  .board > * {
+    grid-column: 1 / -1;
+  }
+
+  .board-stage {
+    display: contents;
+  }
+
+  .board-stage > .cell {
+    grid-column: 1;
+    justify-self: start;
+    align-self: center;
+    margin-top: 2.25rem;
+  }
+
+  .board-stage > .results {
+    grid-column: 2;
+    flex-direction: column;
+    align-self: center;
+    justify-self: stretch;
+    margin-top: 2.25rem;
+  }
+
+  .result {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .result .letter {
+    height: 4.5rem;
+    font-size: 4rem;
+  }
+
+  /* Clear dots and the keyboard hint under the letters, in their column. */
+  .board-clear,
+  .board-keyboard {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
+  .board-clear {
+    margin-top: 1rem;
+  }
+
+  .board-clear .quiet-button {
+    padding-inline: 0;
+  }
+
+  .board-keyboard {
+    margin-top: 0;
+    padding-top: 0.5rem;
+  }
+
+  .board-keyboard .chord-pad {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Its text lines up with Clear dots; the rim it gets on focus sits out. */
+  .board-keyboard .chord-pad > [role="application"] {
+    justify-content: flex-start;
+    margin-inline-start: -0.9rem;
+  }
+
+  .board-keys .brailler-base {
+    margin-top: 2.5rem;
+  }
 }

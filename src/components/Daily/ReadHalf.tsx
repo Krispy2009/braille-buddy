@@ -75,7 +75,7 @@ export const ReadHalf = ({
         What word do these {cells.length} braille cells spell?
       </p>
       <CellRow cells={cells} size="medium" />
-      <ol className="daily-cell-words" aria-label="The cells in words">
+      <ol className="sr-only" aria-label="The cells in words">
         {cells.map((cell, index) => (
           <li key={index}>
             Cell {index + 1}: {dotsInWords(cell)}
@@ -88,8 +88,8 @@ export const ReadHalf = ({
 
       {finished ? (
         <p className="daily-answer">
-          {solved ? "You read " : "The word is "}
-          <Word word={puzzle.read} language={language} />.
+          {solved ? "Yes! " : "The word is "}
+          <Word word={puzzle.read} language={language} />
         </p>
       ) : (
         <form className="daily-form" onSubmit={submit}>
@@ -117,7 +117,7 @@ export const ReadHalf = ({
           </div>
         </form>
       )}
-      <p id={statusId} role="status" className="feedback daily-status">
+      <p id={statusId} role="status" className={finished ? "sr-only" : "feedback daily-status"}>
         {status}
       </p>
     </div>

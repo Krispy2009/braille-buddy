@@ -174,9 +174,10 @@ export const WriteHalf = ({
         Part 2 of 2
         {writing && ` · try ${tries.length + 1} of ${MAX_TRIES}`}
       </p>
-      <p id={promptId} className="daily-prompt">
-        Write <Word word={puzzle.write} language={language} /> in braille, one
-        cell for each letter.
+      <p id={promptId} className={writing ? "daily-prompt" : "sr-only"}>
+        Write <Word word={puzzle.write} language={language} /> in braille
+        {/* The rule is for sighted players too, but the cells show it. */}
+        <span className="sr-only">, one cell for each letter</span>.
       </p>
 
       {writing && (
@@ -211,15 +212,20 @@ export const WriteHalf = ({
       {finished && (
         <div className="daily-answer">
           <p>
+            {solved ? "Yes! " : "The answer is "}
+            <Word word={puzzle.write} language={language} />
+          </p>
+          {/* Said in words for screen readers; the cells show it. */}
+          <p className="sr-only">
             {solved ? "You wrote " : "Here is "}
             <Word word={puzzle.write} language={language} /> in braille:{" "}
             {cellsInWords(answer)}.
           </p>
-          <CellRow cells={answer} size="small" />
+          {!solved && <CellRow cells={answer} size="small" />}
         </div>
       )}
 
-      <p role="status" className="feedback daily-status">
+      <p role="status" className={finished ? "sr-only" : "feedback daily-status"}>
         {status}
       </p>
 

@@ -72,9 +72,10 @@
 
 /* ---- Accents --------------------------------------------------------------
    One block per accent and theme, setting only --accent and --on-accent.
-   Ink gets brighter variants, to stand out on its dark page. Text on every
-   accent is 4.5:1 or more; on Paper the fills lean on their ink rim, as
-   Orange always has.
+   Ink gets brighter variants, to stand out on its dark page; Cobalt only
+   a little, so it stays a saturated blue that carries white type. Text on
+   every accent is 4.5:1 or more, and every Ink fill is 3:1 or more on the
+   page; on Paper the fills lean on their ink rim, as Orange always has.
 
    Each block matches three ways, all at (0,2,0), so it beats the theme
    blocks above (0,1,0) wherever it sits:
@@ -119,8 +120,11 @@
 [data-accent="cobalt"][data-theme="dark"],
 [data-accent="cobalt"] [data-theme="dark"],
 [data-theme="dark"] [data-accent="cobalt"] {
-  --accent: #6b8aff;
-  --on-accent: #17171a;
+  /* A true cobalt with white type, not a pale periwinkle with night ink:
+     white letters match Ink's chalk rim, so the card reads as one piece.
+     White on it 4.57:1, the fill on the page 3.91:1. */
+  --accent: #4466ff;
+  --on-accent: #ffffff;
 }
 
 [data-accent="mint"][data-theme="dark"],
