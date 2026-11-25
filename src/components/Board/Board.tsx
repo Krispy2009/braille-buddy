@@ -43,7 +43,7 @@ type ResultProps = {
 };
 
 const Result = ({ label, lang, letter, spoken, blank }: ResultProps) => (
-  <div className="result">
+  <div className="result" data-found={letter ? "" : undefined}>
     <dt>{label}</dt>
     <dd>
       {letter && spoken ? (
@@ -61,13 +61,13 @@ const Result = ({ label, lang, letter, spoken, blank }: ResultProps) => (
         // Nothing raised yet is a dash; dots that spell nothing say so.
         blank ? (
           <>
-            <span className="letter empty" aria-hidden="true">
+            <span className="letter" aria-hidden="true">
               –
             </span>
             <span className="sr-only">No letter</span>
           </>
         ) : (
-          <span className="letter empty none">not a letter</span>
+          <span className="letter none">not a letter</span>
         )
       )}
     </dd>
@@ -121,21 +121,22 @@ export const Board = ({
   const withKeys = dotEntry === "keys";
 
   return (
-    <div className="screen board">
+    <div className={withKeys ? "screen board board-keys" : "screen board"}>
       <header className="frame">
         <button type="button" className="round-button" aria-label="Home" onClick={onHome}>
           <BackIcon />
         </button>
       </header>
 
-      <div className="prompt-block">
-        <p className="eyebrow">Explore · free play</p>
+      <div className="prompt-block board-prompt">
+        <p className="eyebrow">Explore</p>
         <h2 ref={headingRef} tabIndex={-1} className="task">
           Raise dots, see the letter
         </h2>
+        <p className="board-intro">Every alphabet reads the cell at once.</p>
       </div>
 
-      <div className="hero">
+      <div className="board-stage">
         {withKeys ? (
           // Read-only: the keys below are the buttons, and the status
           // region says the dots in words.
@@ -159,11 +160,30 @@ export const Board = ({
             );
           })}
         </dl>
+      </div>
 
-        {withKeys ? (
-          <BraillerKeysHelp id={helpId} shortcuts={keyShortcuts} />
-        ) : (
-          <>
+      {/* On screen only while keyboard focus is in the keys. */}
+      {withKeys && <BraillerKeysHelp id={helpId} shortcuts={keyShortcuts} />}
+
+      {withKeys ? (
+        <div className="action base brailler-base">
+          <BraillerKeys
+            positions={positions}
+            onToggleDot={toggleDot}
+            onChord={setPositions}
+            describedBy={helpId}
+            showLetters={showKeyLetters}
+            shortcuts={keyShortcuts}
+          />
+          <ClearButton onClick={clearCell} />
+        </div>
+      ) : (
+        <>
+          <div className="board-clear">
+            <ClearButton onClick={clearCell} />
+          </div>
+          {/* Keyboard help: quiet, at the foot of the screen. */}
+          <div className="board-keyboard">
             <p id={helpId} className="sr-only">
               Select a dot to raise or lower it.
               {keyShortcuts && (
@@ -175,23 +195,9 @@ export const Board = ({
               )}
             </p>
             {keyShortcuts && <ChordPad />}
-          </>
-        )}
-      </div>
-
-      <div className={withKeys ? "action base brailler-base" : "action"}>
-        {withKeys && (
-          <BraillerKeys
-            positions={positions}
-            onToggleDot={toggleDot}
-            onChord={setPositions}
-            describedBy={helpId}
-            showLetters={showKeyLetters}
-            shortcuts={keyShortcuts}
-          />
-        )}
-        <ClearButton onClick={clearCell} />
-      </div>
+          </div>
+        </>
+      )}
 
       <p className="sr-only" role="status">
         {describeCell(positions, readings)}

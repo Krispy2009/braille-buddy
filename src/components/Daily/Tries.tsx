@@ -21,9 +21,6 @@ export const Tries = ({ rows, label }: { rows: TryRow[]; label: string }) => {
     <ol className="daily-tries" aria-label={label}>
       {rows.map((row, index) => (
         <li key={index} className="daily-try">
-          <span className="daily-try-number" aria-hidden="true">
-            {index + 1}
-          </span>
           <span className="daily-try-places" aria-hidden="true">
             {row.places.map((place, at) => (
               <span

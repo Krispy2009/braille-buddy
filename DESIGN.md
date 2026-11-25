@@ -18,7 +18,7 @@ colors:
   signage-yellow: "#ffd60a"
   accent-cobalt: "#3355ff"
   accent-mint: "#1fc79c"
-  ink-theme-cobalt: "#6b8aff"
+  ink-theme-cobalt: "#4466ff"
   ink-theme-mint: "#3ddcb0"
 typography:
   display:
@@ -312,7 +312,7 @@ A warm paper-and-ink palette with one accent: orange by default, or the Cobalt o
 - **Raised-Dot Orange** (`--accent`): raised dots, pressed brailler keys, the front letter card, the next open lesson, the selected option, a right answer, the signed-in account button. Ink uses the lighter Ink-theme orange so it stays readable on the night page. Text on it is ink (`--on-accent`), never white.
 
 ### Accent choice
-The player can swap Orange for **Cobalt** or **Mint** (Settings → Accent). The accent is apart from the theme: `data-accent` on `<html>`, set by App and by the pre-paint script, so there is no flash. Each accent has a Paper and a brighter Ink value, and its own `--on-accent`: ink on Orange and Mint, white on Paper Cobalt, night ink on every Ink accent; text on each is 4.5:1 or more. On Paper, Orange and Mint fills sit under 3:1 against the page, so they always keep their ink rim. Only `--accent` and `--on-accent` change; everything that means raised, pressed, chosen or right follows. High vis ignores the choice and stays black on yellow. Theme preview cards in Settings show the chosen accent.
+The player can swap Orange for **Cobalt** or **Mint** (Settings → Accent). The accent is apart from the theme: `data-accent` on `<html>`, set by App and by the pre-paint script, so there is no flash. Each accent has a Paper and a brighter Ink value, and its own `--on-accent`: ink on Orange and Mint, white on Cobalt in both themes (Ink's Cobalt is a true cobalt, `#4466ff`, not a pale periwinkle: white type on it matches Ink's chalk rim, where night ink on periwinkle read muddy); text on each is 4.5:1 or more, and every Ink fill is 3:1 or more on the page. On Paper, Orange and Mint fills sit under 3:1 against the page, so they always keep their ink rim. Only `--accent` and `--on-accent` change; everything that means raised, pressed, chosen or right follows. High vis ignores the choice and stays black on yellow. Theme preview cards in Settings show the chosen accent.
 
 ### Neutral
 - **Press Paper** (`--bg`, `--surface`, `--key`): the page, the cell plate and the brailler keys, all one material in Paper.
@@ -328,7 +328,7 @@ The player can swap Orange for **Cobalt** or **Mint** (Settings → Accent). The
 
 **The Tokens Only Rule.** Components reference the theme custom properties. A new colour goes into all three theme blocks in `tokens.css` first, or it doesn't ship.
 
-**The On-Accent Rule.** Text on the accent is always `--on-accent`, never a fixed colour: ink on Orange and Mint (white on orange fails contrast), white on Paper Cobalt.
+**The On-Accent Rule.** Text on the accent is always `--on-accent`, never a fixed colour: ink on Orange and Mint (white on orange fails contrast), white on Cobalt.
 
 ## Typography
 
@@ -462,7 +462,7 @@ After the day's puzzle, the screen says each thing once. The eyebrow carries "Da
 
 ### Don't:
 - **Don't** use the accent for decoration, links, warnings or headings: it means raised, pressed, chosen or right.
-- **Don't** set text on the accent in a fixed colour; use `--on-accent` (ink on orange, white on Paper Cobalt).
+- **Don't** set text on the accent in a fixed colour; use `--on-accent` (ink on orange, white on Cobalt).
 - **Don't** drift toward a generic gamified app: no gems, confetti, mascots or loud gradients.
 - **Don't** drift toward clinical or medical styling: no pale-blue, sterile portal or charity-form look.
 - **Don't** drift toward soft neumorphism: never drop the ink outlines or rely on grey-on-grey soft shadows alone.
