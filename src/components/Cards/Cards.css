@@ -10,7 +10,7 @@
    --card-ratio) and drawn the same way. Everything in it is in em of a font
    size taken from its width (13.75em, as on Home), so the whole card scales
    as one. --card-width is set by whoever shows it: the deck below, or the
-   lesson's carousel. */
+   lesson's stack. */
 .flash-card {
   display: flex;
   flex-direction: column;
@@ -256,6 +256,171 @@
   min-height: 2.75rem;
 }
 
+/* ---- The lesson's stack ------------------------------------------------------
+   The new cards stacked like Home's deck: the current card in front, the
+   next two tilted behind it, every one of them a whole card. A finger
+   flicks the front card off to the left (CardStack moves it while it is
+   held); letting go hands each card back to its place below, and the
+   change of place is the animation.
+
+   The card gives way to the window's height, as Home's deck does, so the
+   buttons that turn it are on the first screen with it. --meet-fold is
+   what the screen needs besides the stack: the close button, the heading,
+   the note, the dots under the stack, the buttons, the gaps; and
+   --meet-hint-room the keyboard hint, where there is one. In rem, so
+   Bigger text counts too. The stack is 18em by 18.75em of the card's
+   13.75em by 17.5em, so it also fits the column's width. */
+.card-stack {
+  --meet-fold: 28rem;
+  --meet-hint-room: 2.5rem;
+  --meet-card-tallest: 17.5rem;
+  --card-width: max(
+    7.75rem,
+    min(
+      var(--meet-card-tallest) * (var(--card-ratio)),
+      (100svh - var(--meet-fold) - var(--meet-hint-room)) * (13.75 / 18.75),
+      (100cqi - 2 * var(--gutter)) * (13.75 / 18)
+    )
+  );
+  /* Out to the window's edges, and clipped there: a card flicked away
+     leaves the window rather than widening the page. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem calc((100% - 100cqi) / 2) 0;
+  overflow-x: clip;
+  /* Room for the front card's hard shadow, inside the clip. */
+  padding-bottom: 2px;
+}
+
+.stack-deck {
+  position: relative;
+  width: 18em;
+  height: 18.75em;
+  font-size: calc(var(--card-width) / 13.75);
+  border-radius: 1.25em;
+  outline-offset: 6px;
+}
+
+/* Every card is drawn whole, so nothing is blank while the front one
+   leaves. Each sits at its place by data-pos, in em of the card. */
+.stack-card {
+  position: absolute;
+  top: 0;
+  left: 1.375em;
+  box-shadow: none;
+  transform-origin: 50% 55%;
+  -webkit-user-select: none;
+  /* The cards rise into place with a little spring. */
+  transition:
+    transform 290ms cubic-bezier(0.34, 1.45, 0.64, 1),
+    box-shadow 180ms ease,
+    opacity 180ms ease,
+    visibility 0s;
+}
+
+/* Only the front card stands up off the page; and one on its way out or
+   coming back keeps its shadow. */
+.stack-card[data-pos="front"],
+.stack-card[data-pos="gone"] {
+  box-shadow: 8px 10px 0 var(--line);
+}
+
+/* High vis has no shadows, and its cards are the colour of their rim: a
+   ring of the page round each one keeps the stacked cards apart. */
+[data-theme="high-visibility"] .stack-card[data-pos] {
+  box-shadow: 0 0 0 3px var(--bg);
+}
+
+/* Sideways drags move the card; up and down still scroll the page. */
+.stack-card[data-pos="front"] {
+  transform: translate(0, 0) rotate(0deg) scale(1);
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.stack-card[data-pos="back-1"] {
+  transform: translate(0.5625em, 0.6875em) rotate(8deg) scale(0.955);
+}
+
+.stack-card[data-pos="back-2"],
+.stack-card[data-pos="deep"] {
+  transform: translate(-0.6875em, 0.3125em) rotate(-5deg) scale(0.955);
+}
+
+/* Further down the stack: there, but not drawn until it comes up. */
+.stack-card[data-pos="deep"] {
+  opacity: 0;
+}
+
+/* Flicked off to the left, past the window's edge, and hidden once there. */
+.stack-card[data-pos="gone"] {
+  visibility: hidden;
+  transform: translate(calc(-50cqi - 15.125em), 1.5em) rotate(-18deg) scale(1);
+  transition:
+    transform 300ms cubic-bezier(0.2, 0.7, 0.4, 1),
+    box-shadow 180ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 300ms;
+}
+
+/* Under a finger: it follows the finger, no easing. */
+.stack-card[data-dragging] {
+  cursor: grabbing;
+  visibility: visible;
+  transition: none;
+}
+
+:root[data-motion="less"] .stack-card {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-card {
+    transition: none;
+  }
+}
+
+/* Where you are in the stack: the current card filled in. */
+.stack-pager {
+  display: flex;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+}
+
+.stack-pager > span {
+  box-sizing: border-box;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: var(--line-width) solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color 150ms ease;
+}
+
+.stack-pager > span[data-current] {
+  background: var(--line);
+}
+
+:root[data-motion="less"] .stack-pager > span {
+  transition: none;
+}
+
+@media (forced-colors: active) {
+  .stack-pager > span[data-current] {
+    background: CanvasText;
+  }
+}
+
+@container page (min-width: 48rem) {
+  .card-stack {
+    --meet-fold: 31rem;
+    --meet-card-tallest: 22rem;
+    margin-top: 1.5rem;
+  }
+}
+
 /* Too narrow for both side by side (small phones, Bigger text): the main
    button gets the whole width, under Previous card. */
 @container page (max-width: 24rem) {
@@ -264,15 +429,15 @@
   }
 
   /* The note wraps onto another line too. The card gives them the room. */
-  .lesson .card-carousel {
-    --meet-fold: 34rem;
+  .lesson .card-stack {
+    --meet-fold: 31.5rem;
   }
 }
 
 /* Bigger text on a short phone (under 700px tall): the note smaller and
    the buttons closer under the card, so a card and the button that turns
    it fit one screen together (the heading tightens in Practice.css; the
-   card itself gives way to the window's height, see .card-carousel). */
+   card itself gives way to the window's height, see .card-stack). */
 @container page (max-width: 47.99rem) {
   @media (max-height: 43.75rem) {
     :root[data-text="bigger"] .lesson .lesson-note {
@@ -281,7 +446,7 @@
       line-height: 1.4;
     }
 
-    :root[data-text="bigger"] .lesson .card-carousel {
+    :root[data-text="bigger"] .lesson .card-stack {
       margin-top: 0.5rem;
     }
 
@@ -307,101 +472,7 @@
   }
 
   /* No hint to make room for. */
-  .card-carousel {
-    --meet-fold: 26rem;
-  }
-}
-
-/* ---- The lesson's carousel ---------------------------------------------------
-   The new cards in a row that scrolls sideways and snaps, one card in the
-   middle and its neighbours peeking in at the sides. The row runs out to
-   the window's edges (over the screen's gutters), so a peeking card comes
-   in from the edge rather than stopping short of it.
-
-   The card gives way to the window's height, as Home's deck does, so the
-   buttons that turn it are on the first screen with it. --meet-fold is
-   what the screen needs besides the card: the close button, the heading,
-   the note, the buttons, the gaps. In rem, so Bigger text counts too. */
-.card-carousel {
-  --meet-fold: 30.5rem;
-  --meet-card-tallest: 17.5rem;
-  --card-width: max(
-    8.5rem,
-    min(
-      var(--meet-card-tallest) * (var(--card-ratio)),
-      (100svh - var(--meet-fold)) * (var(--card-ratio)),
-      100cqi - 2 * var(--gutter) - 5rem
-    )
-  );
-  margin-top: 1rem;
-}
-
-/* Positioned, so the slides' offsets are measured from it. */
-.carousel-track {
-  position: relative;
-  display: flex;
-  gap: 1rem;
-  margin-inline: calc(-1 * var(--gutter));
-  /* Room at the ends for the first and last card to come to the middle,
-     and below and to the right for the card's hard shadow, which the
-     scroller would otherwise cut off. */
-  padding: 0.25rem calc(50% + var(--gutter) - var(--card-width) / 2) 1rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.carousel-track::-webkit-scrollbar {
-  display: none;
-}
-
-/* The row runs past the column, so its focus ring goes round the column's
-   part of it instead. */
-.carousel-track:focus-visible {
-  outline: none;
-}
-
-.card-carousel:has(.carousel-track:focus-visible) {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
-  border-radius: var(--radius);
-}
-
-/* One card per flick: a fast swipe stops at the next card, never skipping
-   one, so every card is seen. */
-.carousel-slide {
-  flex: none;
-  width: var(--card-width);
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
-}
-
-/* The neighbours are there to show there is more: quieter than the card in
-   the middle. */
-.carousel-slide:not([data-current]) {
-  opacity: 0.45;
-  transition: opacity 150ms ease;
-}
-
-/* Wider windows: the row stops at the column's padding, so the peeking
-   cards fade out there rather than being cut off square. (The mask only
-   reads the colour's opacity.) */
-@container page (min-width: 48rem) {
-  .card-carousel {
-    --meet-fold: 33.5rem;
-    --meet-card-tallest: 22rem;
-    margin-top: 1.5rem;
-  }
-
-  .carousel-track {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      currentColor var(--gutter),
-      currentColor calc(100% - var(--gutter)),
-      transparent
-    );
+  .card-stack {
+    --meet-hint-room: 0rem;
   }
 }
